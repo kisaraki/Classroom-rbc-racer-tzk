@@ -29,10 +29,17 @@ Included:
   also increments the canonical player counter.
 - A basic five-second malaria hood obstruction driven by an absolute deadline,
   so it expires while world simulation is paused.
+- A 15% smaller procedural RBC body and matching collision radius, providing
+  more avoidance room without changing track or entity dimensions.
+- A compact RBC label whose display plane matches the procedural 25:13 texture
+  ratio and remains fully inside the first-person camera view.
+- A desktop-only startup gate. Mobile Client Hints, mobile user agents, Android
+  tablets, and desktop-UA iPads receive a refusal screen before the game module
+  or Three.js scene is loaded.
 - The Phase 03 3000-unit lower systemic route, SVG circulation map, HUD,
   Pointer Lock controls, and continuously running real clock remain intact.
-- A shared 101-test Node/browser suite plus 1280 x 720, 1920 x 1080, and
-  390 x 844 browser layout acceptance.
+- A shared 109-test Node/browser suite plus 1280 x 720 desktop and 390 x 844
+  narrow-desktop layout acceptance.
 
 Intentionally excluded until later phases:
 
@@ -46,8 +53,9 @@ Intentionally excluded until later phases:
   victory flows.
 
 Phase 04 is PASS. Local Node/browser acceptance, GitHub Actions, GitHub Pages,
-and the live 101-test suite all passed. See `reports/phase-04-report.md` for
-exact evidence.
+and the live 109-test suite all passed. See `reports/phase-04-report.md` for the
+phase evidence and `reports/phase-04-rbc-mobile-correction-report.md` for the
+post-acceptance RBC/mobile correction.
 
 ## Controls
 
@@ -63,7 +71,8 @@ WASD, mouse buttons, the wheel, and trackpad gestures never control the RBC.
 
 ## Requirements
 
-- A current browser with native ES Module support.
+- A current desktop browser with native ES Module and Pointer Lock support,
+  plus a keyboard and mouse. Phones and tablets are intentionally blocked.
 - Node.js for command-line unit tests.
 - Python 3 or another static HTTP server for browser testing.
 
@@ -106,12 +115,14 @@ npm test
 node ./tests/run-tests.mjs
 ~~~
 
-The browser page and Node runner import the same 101 tests from `tests/unit`.
+The browser page and Node runner import the same 109 tests from `tests/unit`.
 They include every earlier regression plus all seven procedural models, exact
 labels, InstancedMesh batching, deterministic schedules, fairness and spacing,
 reserved slots, object pooling/caps, swept collision, collision priority,
 Score/HP clamping, alcohol counting, Wound fatal semantics, and absolute
-malaria-hood deadlines.
+malaria-hood deadlines. The suite also verifies compact RBC clearance, label
+aspect/projection bounds, desktop support, mobile Client Hints and user agents,
+iPadOS detection, and the refusal screen's no-initialization state.
 
 ## Three.js Vendor Record
 
