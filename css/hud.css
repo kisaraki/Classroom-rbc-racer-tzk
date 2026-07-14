@@ -1,0 +1,368 @@
+.game-hud {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  pointer-events: none;
+  animation: hud-enter 720ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.hud-brand,
+.vital-stack,
+.mission-strip,
+.clock-card,
+.system-card,
+.control-ribbon {
+  position: absolute;
+}
+
+.hud-brand {
+  top: clamp(1rem, 2vw, 2rem);
+  left: clamp(1rem, 2vw, 2rem);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  height: 2.65rem;
+  padding-right: 1rem;
+  border: 1px solid var(--line);
+  background: linear-gradient(90deg, var(--glass-strong), rgba(16, 2, 7, 0.38));
+  clip-path: polygon(0 0, calc(100% - 0.7rem) 0, 100% 0.7rem, 100% 100%, 0 100%);
+  font-family: var(--mono-font);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  backdrop-filter: blur(0.7rem);
+}
+
+.hud-brand__phase {
+  display: grid;
+  align-self: stretch;
+  place-items: center;
+  min-width: 3.2rem;
+  color: var(--blood-black);
+  background: var(--blood-hot);
+  font-weight: 900;
+}
+
+.hud-brand__name {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.hud-brand__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  color: var(--ink-soft);
+}
+
+.hud-brand__status i {
+  width: 0.42rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--oxygen);
+  box-shadow: 0 0 0.8rem var(--oxygen);
+}
+
+.vital-stack {
+  top: 5.4rem;
+  left: clamp(1rem, 2vw, 2rem);
+  display: grid;
+  gap: 0.6rem;
+  width: min(18rem, calc(100vw - 2rem));
+}
+
+.vital-card {
+  --meter-color: var(--blood-hot);
+  position: relative;
+  padding: 0.9rem 1rem 0.85rem;
+  border-left: 0.18rem solid var(--meter-color);
+  background: linear-gradient(100deg, var(--glass-strong), rgba(24, 3, 9, 0.45));
+  clip-path: polygon(0 0, calc(100% - var(--panel-cut)) 0, 100% var(--panel-cut), 100% 100%, 0 100%);
+  backdrop-filter: blur(0.65rem);
+}
+
+.vital-card--bp {
+  --meter-color: var(--oxygen);
+}
+
+.vital-card__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+  color: var(--ink-soft);
+  font-family: var(--mono-font);
+  font-size: 0.62rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.vital-card__heading strong {
+  color: var(--meter-color);
+  font-size: 0.8rem;
+}
+
+.vital-card output {
+  display: block;
+  margin-bottom: 0.48rem;
+  font-family: var(--mono-font);
+  font-size: clamp(1.15rem, 2vw, 1.55rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.vital-meter {
+  position: relative;
+  height: 0.26rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.vital-meter span {
+  position: absolute;
+  inset: 0;
+  width: calc(var(--meter-fill) * 100%);
+  background: var(--meter-color);
+  box-shadow: 0 0 1rem var(--meter-color);
+  transition: width 120ms linear;
+}
+
+.vital-meter--bp::after {
+  position: absolute;
+  inset-block: 0;
+  left: 23.08%;
+  width: 38.46%;
+  border-inline: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(169, 217, 239, 0.2);
+  content: "";
+}
+
+.vital-meter--bp[data-range="LOW"] {
+  --meter-color: var(--bp-low);
+}
+
+.vital-meter--bp[data-range="HIGH"] {
+  --meter-color: var(--bp-high);
+}
+
+.vital-card small {
+  display: block;
+  margin-top: 0.45rem;
+  color: var(--ink-soft);
+  font-family: var(--mono-font);
+  font-size: 0.52rem;
+  letter-spacing: 0.08em;
+}
+
+.mission-strip {
+  bottom: clamp(3.8rem, 7vh, 5.6rem);
+  left: clamp(1rem, 2vw, 2rem);
+  display: grid;
+  grid-template-columns: minmax(10rem, 1.6fr) repeat(3, minmax(6rem, 0.8fr));
+  width: min(47rem, calc(100vw - 4rem));
+  border-top: 1px solid var(--line-hot);
+  background: linear-gradient(90deg, var(--glass-strong), rgba(9, 1, 4, 0.36));
+  backdrop-filter: blur(0.55rem);
+}
+
+.mission-strip div {
+  min-width: 0;
+  padding: 0.72rem 0.85rem;
+  border-right: 1px solid var(--line);
+}
+
+.mission-strip span,
+.clock-card span,
+.clock-card small,
+.system-card span {
+  display: block;
+  color: var(--ink-soft);
+  font-family: var(--mono-font);
+  font-size: 0.52rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.mission-strip strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 0.22rem;
+  font-family: var(--mono-font);
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clock-card {
+  top: clamp(1rem, 2vw, 2rem);
+  right: clamp(1rem, 2vw, 2rem);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.7rem 0.8rem;
+  min-width: 13rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--oxygen);
+  background: linear-gradient(120deg, rgba(8, 18, 25, 0.88), rgba(11, 1, 4, 0.66));
+  clip-path: polygon(var(--panel-cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--panel-cut));
+  backdrop-filter: blur(0.65rem);
+}
+
+.clock-card__signal {
+  align-self: center;
+  width: 0.52rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--oxygen);
+  box-shadow: 0 0 1rem var(--oxygen);
+  animation: clock-pulse 1.4s ease-in-out infinite;
+}
+
+.clock-card strong {
+  display: block;
+  margin-top: 0.1rem;
+  color: var(--oxygen);
+  font-family: var(--mono-font);
+  font-size: 1.2rem;
+}
+
+.clock-card small {
+  grid-column: 2;
+  color: rgba(169, 217, 239, 0.62);
+  font-size: 0.46rem;
+}
+
+.system-card {
+  top: 7rem;
+  right: clamp(1rem, 2vw, 2rem);
+  display: grid;
+  justify-items: end;
+  gap: 0.35rem;
+}
+
+.system-card strong {
+  color: var(--ink);
+}
+
+.reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2.6rem;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border: 1px solid rgba(255, 211, 187, 0.42);
+  border-radius: 50%;
+  box-shadow: inset 0 0 1rem rgba(255, 82, 101, 0.16);
+}
+
+.reticle::before,
+.reticle::after,
+.reticle i,
+.reticle span {
+  position: absolute;
+  background: var(--plasma);
+  content: "";
+}
+
+.reticle::before,
+.reticle::after {
+  top: 50%;
+  width: 0.65rem;
+  height: 1px;
+}
+
+.reticle::before {
+  right: calc(100% + 0.2rem);
+}
+
+.reticle::after {
+  left: calc(100% + 0.2rem);
+}
+
+.reticle i,
+.reticle span {
+  top: 50%;
+  left: 50%;
+  width: 0.18rem;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  box-shadow: 0 0 0.6rem var(--plasma);
+}
+
+.control-ribbon {
+  right: clamp(1rem, 2vw, 2rem);
+  bottom: clamp(1rem, 2vw, 2rem);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem 0.85rem;
+  max-width: calc(100vw - 4rem);
+  color: var(--ink-soft);
+  font-family: var(--mono-font);
+  font-size: 0.56rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.control-ribbon kbd {
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 900;
+}
+
+@keyframes hud-enter {
+  from {
+    opacity: 0;
+    transform: scale(1.015);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes clock-pulse {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.72);
+  }
+}
+
+@media (max-width: 48rem) {
+  .hud-brand__name,
+  .hud-brand__status {
+    display: none;
+  }
+
+  .hud-brand {
+    padding-right: 0;
+  }
+
+  .vital-stack {
+    top: 4.6rem;
+    width: 12.5rem;
+  }
+
+  .vital-card {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .system-card,
+  .control-ribbon,
+  .mission-strip div:nth-child(2),
+  .mission-strip div:nth-child(3) {
+    display: none;
+  }
+
+  .clock-card {
+    min-width: 10.5rem;
+  }
+
+  .mission-strip {
+    grid-template-columns: 1fr 0.5fr;
+    width: calc(100vw - 2rem);
+  }
+}

@@ -1,0 +1,209 @@
+import { GAME_CONFIG } from "../config.js";
+
+export const GAS_EXCHANGE_STATUS = Object.freeze({
+  PENDING: "PENDING",
+  SUCCESS: "SUCCESS",
+  FAILED: "FAILED"
+});
+
+export const PLAYER_STATE_SCHEMA = Object.freeze({
+  hp: "finite number",
+  maxHp: "finite number",
+  bp: "finite number",
+  score: "finite number",
+  alcoholCount: "non-negative integer",
+  currentLevel: "configured level id",
+  distanceAlongTrack: "finite number",
+  previousDistanceAlongTrack: "finite number",
+  lateralX: "finite number",
+  lateralY: "finite number",
+  collisionRadius: "positive finite number",
+  gasExchangeStatus: "GAS_EXCHANGE_STATUS",
+  gasExchangeAttempts: "non-negative integer",
+  woundDodgedCount: "non-negative integer",
+  qteSuccessCount: "non-negative integer"
+});
+
+export const ENTITY_STATE_SCHEMA = Object.freeze({
+  id: "string",
+  typeId: "configured entity type id",
+  distanceAlongTrack: "finite number",
+  previousDistanceAlongTrack: "finite number",
+  lateralX: "finite number",
+  lateralY: "finite number",
+  collisionRadius: "positive finite number",
+  consumed: "boolean"
+});
+
+export const LEVEL_DATA_SCHEMA = Object.freeze({
+  id: "configured level id",
+  name: "string",
+  targetDriveSeconds: "positive finite number",
+  trackLength: "positive finite number",
+  seed: "integer",
+  minimapPathId: "string",
+  sections: "array",
+  multipliers: "object"
+});
+
+export const LEVEL_CHECKPOINT_SCHEMA = Object.freeze({
+  levelId: "configured level id",
+  hp: "finite number",
+  score: "finite number",
+  seed: "integer"
+});
+
+function isObject(value) {
+  return value !== null && typeof value === "object";
+}
+
+function isFiniteNumber(value) {
+  return Number.isFinite(value);
+}
+
+function isNonNegativeInteger(value) {
+  return Number.isInteger(value) && value >= 0;
+}
+
+function isConfiguredLevelId(levelId) {
+  return Object.hasOwn(GAME_CONFIG.levels, levelId);
+}
+
+export function isPlayerState(value) {
+  return (
+    isObject(value) &&
+    isFiniteNumber(value.hp) &&
+    isFiniteNumber(value.maxHp) &&
+    isFiniteNumber(value.bp) &&
+    isFiniteNumber(value.score) &&
+    isNonNegativeInteger(value.alcoholCount) &&
+    isConfiguredLevelId(value.currentLevel) &&
+    isFiniteNumber(value.distanceAlongTrack) &&
+    isFiniteNumber(value.previousDistanceAlongTrack) &&
+    isFiniteNumber(value.lateralX) &&
+    isFiniteNumber(value.lateralY) &&
+    isFiniteNumber(value.collisionRadius) &&
+    value.collisionRadius > 0 &&
+    Object.values(GAS_EXCHANGE_STATUS).includes(value.gasExchangeStatus) &&
+    isNonNegativeInteger(value.gasExchangeAttempts) &&
+    isNonNegativeInteger(value.woundDodgedCount) &&
+    isNonNegativeInteger(value.qteSuccessCount)
+  );
+}
+
+export function createPlayerState(overrides = {}) {
+  const playerState = {
+    hp: GAME_CONFIG.hp.initial,
+    maxHp: GAME_CONFIG.hp.max,
+    bp: GAME_CONFIG.bp.initial,
+    score: GAME_CONFIG.score.initial,
+    alcoholCount: 0,
+    currentLevel: GAME_CONFIG.game.initialLevelId,
+    distanceAlongTrack: 0,
+    previousDistanceAlongTrack: 0,
+    lateralX: 0,
+    lateralY: 0,
+    collisionRadius: GAME_CONFIG.track.playerCollisionRadius,
+    gasExchangeStatus: GAS_EXCHANGE_STATUS.PENDING,
+    gasExchangeAttempts: 0,
+    woundDodgedCount: 0,
+    qteSuccessCount: 0,
+    ...overrides
+  };
+
+  if (!isPlayerState(playerState)) {
+    throw new TypeError("Player state does not match PLAYER_STATE_SCHEMA.");
+  }
+
+  return playerState;
+}
+
+export function isEntityState(value) {
+  return (
+    isObject(value) &&
+    typeof value.id === "string" &&
+    typeof value.typeId === "string" &&
+    isFiniteNumber(value.distanceAlongTrack) &&
+    isFiniteNumber(value.previousDistanceAlongTrack) &&
+    isFiniteNumber(value.lateralX) &&
+    isFiniteNumber(value.lateralY) &&
+    isFiniteNumber(value.collisionRadius) &&
+    value.collisionRadius > 0 &&
+    typeof value.consumed === "boolean"
+  );
+}
+
+export function createEntityState({
+  id,
+  typeId,
+  distanceAlongTrack,
+  previousDistanceAlongTrack = distanceAlongTrack,
+  lateralX = 0,
+  lateralY = 0,
+  collisionRadius,
+  consumed = false
+}) {
+  const entityState = {
+    id,
+    typeId,
+    distanceAlongTrack,
+    previousDistanceAlongTrack,
+    lateralX,
+    lateralY,
+    collisionRadius,
+    consumed
+  };
+
+  if (!isEntityState(entityState)) {
+    throw new TypeError("Entity state does not match ENTITY_STATE_SCHEMA.");
+  }
+
+  return entityState;
+}
+
+export function isLevelData(value) {
+  return (
+    isObject(value) &&
+    isConfiguredLevelId(value.id) &&
+    typeof value.name === "string" &&
+    isFiniteNumber(value.targetDriveSeconds) &&
+    value.targetDriveSeconds > 0 &&
+    isFiniteNumber(value.trackLength) &&
+    value.trackLength > 0 &&
+    Number.isInteger(value.seed) &&
+    typeof value.minimapPathId === "string" &&
+    Array.isArray(value.sections) &&
+    isObject(value.multipliers)
+  );
+}
+
+export function isLevelCheckpoint(value) {
+  return (
+    isObject(value) &&
+    isConfiguredLevelId(value.levelId) &&
+    isFiniteNumber(value.hp) &&
+    isFiniteNumber(value.score) &&
+    Number.isInteger(value.seed)
+  );
+}
+
+export function createLevelCheckpoint(playerState, seed) {
+  if (!isPlayerState(playerState)) {
+    throw new TypeError("Cannot checkpoint an invalid player state.");
+  }
+
+  const checkpoint = {
+    levelId: playerState.currentLevel,
+    hp: playerState.hp,
+    score: playerState.score,
+    seed
+  };
+
+  if (!isLevelCheckpoint(checkpoint)) {
+    throw new TypeError(
+      "Checkpoint does not match LEVEL_CHECKPOINT_SCHEMA."
+    );
+  }
+
+  return checkpoint;
+}

@@ -1,0 +1,98 @@
+:root {
+  --test-shell-width: 70rem;
+  --test-row-gap: 0.5rem;
+  --test-row-radius: 0.75rem;
+  --test-pass: #176b4d;
+  --test-pass-surface: #e6f5ed;
+  --test-fail: #a62c2c;
+  --test-fail-surface: #fff0ef;
+}
+
+html,
+body {
+  min-height: 100%;
+  overflow: auto;
+  color: #1b2028;
+  background: #f5eee5;
+}
+
+body {
+  background:
+    radial-gradient(circle at 90% 10%, rgba(215, 36, 63, 0.12), transparent 28rem),
+    #f5eee5;
+}
+
+.test-shell {
+  width: min(calc(100% - 2rem), var(--test-shell-width));
+  margin: 0 auto;
+  padding: 4rem 0;
+}
+
+.test-header {
+  margin-bottom: 2rem;
+}
+
+.test-header .eyebrow {
+  color: #b01c35;
+  font-family: var(--mono-font);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.test-header h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(2.8rem, 8vw, 6rem);
+  line-height: 0.9;
+}
+
+.text-link {
+  color: #8f172b;
+  font-family: var(--mono-font);
+  font-weight: 800;
+}
+
+.test-summary {
+  font-weight: 700;
+}
+
+.test-summary[data-status="PASS"] {
+  color: var(--test-pass);
+}
+
+.test-summary[data-status="FAIL"] {
+  color: var(--test-fail);
+}
+
+.test-results {
+  display: grid;
+  gap: var(--test-row-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.test-result {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--test-row-radius);
+}
+
+.test-result--pass {
+  color: var(--test-pass);
+  background: var(--test-pass-surface);
+}
+
+.test-result--fail {
+  color: var(--test-fail);
+  background: var(--test-fail-surface);
+}
+
+@media (max-width: 42rem) {
+  .test-result {
+    flex-direction: column;
+  }
+}

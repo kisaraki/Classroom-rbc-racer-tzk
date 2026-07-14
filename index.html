@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="RBC Racer Phase 01 first-person red blood cell driving prototype"
+    >
+    <title>RBC Racer | Phase 01 Driving Prototype</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/hud.css">
+    <link rel="stylesheet" href="./css/menu.css">
+  </head>
+  <body>
+    <main id="game-root" class="game-root" data-game-state="BOOT">
+      <canvas
+        id="game-canvas"
+        aria-label="RBC Racer 第一人稱測試血管"
+        tabindex="0"
+      ></canvas>
+      <div class="screen-vignette" aria-hidden="true"></div>
+      <div class="screen-grain" aria-hidden="true"></div>
+
+      <section id="game-hud" class="game-hud" aria-label="遊戲狀態">
+        <header class="hud-brand">
+          <span class="hud-brand__phase">P01</span>
+          <span class="hud-brand__name">RBC / RACER</span>
+          <span class="hud-brand__status">
+            <i aria-hidden="true"></i>
+            <span id="state-value">READY</span>
+          </span>
+        </header>
+
+        <section class="vital-stack" aria-label="生命徵象">
+          <article class="vital-card vital-card--hp">
+            <div class="vital-card__heading">
+              <span>Cell integrity</span>
+              <strong>HP</strong>
+            </div>
+            <output id="hp-value">100 / 200</output>
+            <div id="hp-meter" class="vital-meter" style="--meter-fill: 0.5">
+              <span></span>
+            </div>
+          </article>
+
+          <article class="vital-card vital-card--bp">
+            <div class="vital-card__heading">
+              <span>Blood pressure</span>
+              <strong>BP</strong>
+            </div>
+            <output id="bp-value">100 mmHg</output>
+            <div
+              id="bp-meter"
+              class="vital-meter vital-meter--bp"
+              data-range="SAFE"
+              style="--meter-fill: 0.3846"
+            >
+              <span></span>
+            </div>
+            <small>SAFE BAND 80–130</small>
+          </article>
+        </section>
+
+        <section class="mission-strip" aria-label="原型資訊">
+          <div>
+            <span>Location</span>
+            <strong id="location-value">Phase 01 測試血管</strong>
+          </div>
+          <div>
+            <span>Distance</span>
+            <strong id="distance-value">0.0 / 720.0</strong>
+          </div>
+          <div>
+            <span>Velocity</span>
+            <strong id="speed-value">10 u/s</strong>
+          </div>
+          <div>
+            <span>Score</span>
+            <strong id="score-value">0</strong>
+          </div>
+        </section>
+
+        <aside class="clock-card" aria-label="絕對計時器">
+          <span class="clock-card__signal" aria-hidden="true"></span>
+          <div>
+            <span>Real clock</span>
+            <strong id="timer-value">--.- s</strong>
+          </div>
+          <small>CONTINUES IN PAUSE</small>
+        </aside>
+
+        <aside class="system-card" aria-label="系統診斷">
+          <span>VIEW <strong id="pointer-value">RELEASED</strong></span>
+          <span>FPS <strong id="fps-value">0</strong></span>
+        </aside>
+
+        <div class="reticle" aria-hidden="true">
+          <i></i>
+          <span></span>
+        </div>
+
+        <footer class="control-ribbon" aria-label="操作說明">
+          <span><kbd>↑ ↓ ← →</kbd> 局部截面</span>
+          <span><kbd>Z</kbd> BP +</span>
+          <span><kbd>X</kbd> BP −</span>
+          <span><kbd>MOUSE</kbd> 只調整視角</span>
+          <span><kbd>ESC</kbd> 暫停</span>
+        </footer>
+      </section>
+
+      <section
+        id="game-overlay"
+        class="game-overlay"
+        data-mode="READY"
+        aria-labelledby="overlay-title"
+      >
+        <div class="overlay-index" aria-hidden="true">01</div>
+        <div class="overlay-panel">
+          <p id="overlay-kicker" class="overlay-kicker">
+            Phase 01 / Driving prototype
+          </p>
+          <h1 id="overlay-title">進入血流</h1>
+          <p id="overlay-copy" class="overlay-copy">
+            本原型用於驗證紅血球駕駛與血液循環介面，不構成醫療建議。方向鍵在血管截面移動，Z／X 調整血壓；滑鼠只改變視角。
+          </p>
+          <div class="overlay-controls" aria-label="核心操作">
+            <span><b>↑↓←→</b> STRAFE</span>
+            <span><b>Z / X</b> PRESSURE</span>
+            <span><b>MOUSE</b> LOOK ONLY</span>
+          </div>
+          <button id="overlay-action" type="button">
+            開始遊戲並鎖定滑鼠視角
+          </button>
+          <p class="overlay-note">
+            Pointer Lock 僅會在此次點擊後請求，頁面不會自動鎖定滑鼠。
+          </p>
+        </div>
+      </section>
+
+      <noscript class="noscript-message">
+        RBC Racer 需要啟用 JavaScript ES Modules。
+      </noscript>
+    </main>
+
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>

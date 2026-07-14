@@ -1,0 +1,197 @@
+.game-overlay {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(31rem, 0.8fr);
+  align-items: stretch;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(8, 0, 3, 0.3), rgba(8, 0, 3, 0.84) 50%),
+    radial-gradient(circle at 32% 50%, rgba(215, 36, 63, 0.2), transparent 34%);
+  backdrop-filter: blur(0.38rem) saturate(0.72);
+  animation: overlay-enter 420ms ease-out both;
+}
+
+.overlay-index {
+  align-self: end;
+  margin: 0 0 -0.16em -0.08em;
+  color: rgba(255, 82, 101, 0.1);
+  font-family: var(--hud-font);
+  font-size: min(46vw, 41rem);
+  font-weight: 900;
+  line-height: 0.68;
+  letter-spacing: -0.12em;
+  user-select: none;
+}
+
+.overlay-panel {
+  position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  padding: clamp(2rem, 7vw, 7rem);
+  border-left: 1px solid var(--line);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 1.8rem, rgba(255, 255, 255, 0.015) 1.85rem),
+    linear-gradient(150deg, rgba(26, 3, 9, 0.93), rgba(8, 0, 3, 0.96));
+  box-shadow: -2rem 0 6rem rgba(0, 0, 0, 0.34);
+}
+
+.overlay-panel::before {
+  position: absolute;
+  top: 0;
+  left: -0.2rem;
+  width: 0.2rem;
+  height: 34%;
+  background: var(--blood-hot);
+  box-shadow: 0 0 2rem rgba(255, 82, 101, 0.62);
+  content: "";
+}
+
+.overlay-kicker {
+  margin: 0 0 1rem;
+  color: var(--blood-hot);
+  font-family: var(--mono-font);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.overlay-panel h1 {
+  max-width: 8ch;
+  margin: 0;
+  font-size: clamp(4rem, 8vw, 8.5rem);
+  font-weight: 900;
+  line-height: 0.82;
+  letter-spacing: -0.08em;
+}
+
+.overlay-copy {
+  max-width: 36rem;
+  margin: 1.7rem 0;
+  color: var(--ink-soft);
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: clamp(0.9rem, 1.25vw, 1.05rem);
+  line-height: 1.75;
+}
+
+.overlay-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-bottom: 1.5rem;
+}
+
+.overlay-controls span {
+  padding: 0.46rem 0.62rem;
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.035);
+  font-family: var(--mono-font);
+  font-size: 0.54rem;
+  letter-spacing: 0.07em;
+}
+
+.overlay-controls b {
+  color: var(--plasma);
+}
+
+#overlay-action {
+  position: relative;
+  min-height: 3.4rem;
+  padding: 0.9rem 3.8rem 0.9rem 1.25rem;
+  border: 0;
+  color: var(--button-ink);
+  background: var(--blood-hot);
+  clip-path: polygon(0 0, calc(100% - 1.15rem) 0, 100% 1.15rem, 100% 100%, 0 100%);
+  box-shadow: 0 1rem 3rem rgba(215, 36, 63, 0.24);
+  cursor: pointer;
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: 0.93rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  transition: filter 150ms ease, transform 150ms ease;
+}
+
+#overlay-action::after {
+  position: absolute;
+  top: 50%;
+  right: 1.2rem;
+  color: var(--button-ink);
+  content: "\2192";
+  font-family: var(--mono-font);
+  font-size: 1.25rem;
+  translate: 0 -50%;
+}
+
+#overlay-action:hover,
+#overlay-action:focus-visible {
+  filter: brightness(1.15);
+  transform: translateX(0.25rem);
+}
+
+#overlay-action:focus-visible {
+  outline: 0.15rem solid var(--plasma);
+  outline-offset: 0.25rem;
+}
+
+.overlay-note {
+  max-width: 32rem;
+  margin: 0.85rem 0 0;
+  color: rgba(255, 236, 226, 0.43);
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: 0.68rem;
+  line-height: 1.6;
+}
+
+.game-overlay[data-mode="PAUSED"] .overlay-panel::before {
+  height: 100%;
+  background: var(--oxygen);
+  box-shadow: 0 0 2rem rgba(169, 217, 239, 0.5);
+}
+
+.game-overlay[data-mode="PAUSED"] .overlay-kicker {
+  color: var(--oxygen);
+}
+
+.game-overlay[data-mode="PAUSED"] #overlay-action {
+  background: var(--oxygen);
+}
+
+.game-overlay[data-mode="ERROR"] .overlay-panel::before {
+  height: 100%;
+  background: var(--bp-high);
+}
+
+@keyframes overlay-enter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 58rem) {
+  .game-overlay {
+    grid-template-columns: 1fr;
+  }
+
+  .overlay-index {
+    position: absolute;
+    inset: auto auto 0 -0.08em;
+    font-size: min(90vw, 34rem);
+  }
+
+  .overlay-panel {
+    border-left: 0;
+    background: linear-gradient(150deg, rgba(26, 3, 9, 0.88), rgba(8, 0, 3, 0.96));
+  }
+
+  .overlay-panel h1 {
+    font-size: clamp(3.4rem, 18vw, 7rem);
+  }
+}
