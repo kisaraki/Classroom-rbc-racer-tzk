@@ -6,64 +6,61 @@ build. It has no runtime backend, database, framework, CDN, or external media.
 
 ## Current Phase
 
-Phase 04 adds procedural gameplay entities and deterministic collision handling
-to the data-driven first level while retaining the Phase 03 circulation HUD.
+Phase 05 adds deterministic blood-pressure hazards and subtle vessel-color
+reflection to the data-driven first level while retaining all Phase 04 entity,
+collision, circulation HUD, compact RBC, and desktop-only startup behavior.
 
 Included:
 
-- Seven fully procedural models: C, B12, Fe²⁺, CO, malaria, C₂H₅OH, and
-  Wound. No image, model, video, font, or network asset is loaded.
-- CanvasTexture/Sprite labels with exact Unicode text; malaria intentionally
-  uses an irregular core, loops, and spikes without a text label.
-- One InstancedMesh batch per entity type, pooled entity state objects, a
-  24-general-entity cap, and a separate two-Wound cap.
-- A deterministic level-seeded schedule with configured 8-16 unit spacing,
-  weighted empty slots, uniform-area cross-section placement, reserved gas/QTE
-  distances, and no more than two identical consecutive debuffs.
-- Activation 35-70 units ahead and recycling 20 units behind the player.
-- Swept longitudinal collision over the previous/current frame plus circular
-  cross-section tests, preventing high-speed tunnelling.
-- Stable same-frame priority: Wound, debuffs, HP depletion, then buffs. Wound
-  applies Score -200 and reports fatal without subtracting HP first.
-- Working Score/HP effects for nutrients, CO, malaria, and alcohol; alcohol
-  also increments the canonical player counter.
-- A basic five-second malaria hood obstruction driven by an absolute deadline,
-  so it expires while world simulation is paused.
-- A 15% smaller procedural RBC body and matching collision radius, providing
-  more avoidance room without changing track or entity dimensions.
-- A compact RBC label whose display plane matches the procedural 25:13 texture
-  ratio and remains fully inside the first-person camera view.
-- A desktop-only startup gate. Mobile Client Hints, mobile user agents, Android
-  tablets, and desktop-UA iPads receive a refusal screen before the game module
-  or Three.js scene is loaded.
-- The Phase 03 3000-unit lower systemic route, SVG circulation map, HUD,
-  Pointer Lock controls, and continuously running real clock remain intact.
-- A shared 109-test Node/browser suite plus 1280 x 720 desktop and 390 x 844
-  narrow-desktop layout acceptance.
+- One deterministic blood-pressure check per real-clock second while PLAYING;
+  paused and stasis time never backfills missed world-hazard checks.
+- Levels 1-3 produce Wound only above BP 130. Level 4 uses the configured
+  exponential formula from BP 80 through 130, then applies its x3 multiplier
+  above 130, with the configured 45% per-second cap.
+- BP-triggered Wounds appear 35-70 units ahead, respect gas/end/entity
+  reservations, maintain a 45-unit Wound gap, and share the existing two-Wound
+  cap, pooling, dodge, collision, and fatal-effect contracts.
+- BP below 80 uses `min(35%, (80 - BP) * 2.5%)` once per second. A successful
+  roll creates five seconds of `LOW_BP_STASIS`, followed by a ten-second
+  absolute cooldown.
+- During stasis, track flow, distance, lateral movement, entity generation,
+  animation, and collision are frozen. Rendering, HUD updates, the real clock,
+  and Z-only BP recovery continue; X is ignored even when held with Z.
+- Stasis and cooldown deadlines continue while paused, and stasis expiry while
+  paused safely changes the eventual resume target back to PLAYING.
+- The procedural RBC body and cockpit sample the current vessel-section color
+  gradient every render frame. Configured low-strength color/emissive blending
+  and exponential response produce a smooth, subtle arterial/venous reflection
+  without external textures or environment maps.
+- HUD warnings, status countdowns, and `data-*` diagnostics expose probabilities,
+  checks, trigger counts, deadlines, Wound counts, and reflected colors.
+- All earlier procedural entities, collision rules, compact RBC/label,
+  circulation map, desktop-only startup gate, Pointer Lock controls, and
+  continuously running real clock remain intact.
+- A shared 125-test Node/browser suite plus 1280 x 720, 1920 x 1080, and
+  390 x 844 layout acceptance.
 
 Intentionally excluded until later phases:
 
-- Automatic Wound probability/spawning and BP-dependent Wound frequency
-  (Phase 05). The model, pool lane, dodge counter, and fatal collision contract
-  are ready but the first level does not generate Wound yet.
 - Gas-exchange QTE, failed-pass handling, and level completion (Phase 06).
 - Full alcohol intoxication steering and continuous malaria hood flutter
-  animation (Phase 07). Phase 04 applies their base Score/HP effects only.
-- Levels 2 through 4, cutscenes, low-BP stasis, game-over, retry, endings, and
-  victory flows.
+  animation (Phase 07). Their existing base Score/HP effects remain unchanged.
+- Playable Levels 2 through 4, cutscenes, game-over, retry, endings, and victory
+  flows. Level 4 blood-pressure math is implemented and tested as a data-driven
+  contract, but the level is not yet registered for play.
 
-Phase 04 is PASS. Local Node/browser acceptance, GitHub Actions, GitHub Pages,
-and the live 109-test suite all passed. See `reports/phase-04-report.md` for the
-phase evidence and `reports/phase-04-rbc-mobile-correction-report.md` for the
-post-acceptance RBC/mobile correction.
+Phase 05 is PASS. Local Node/browser acceptance, GitHub Actions, GitHub Pages,
+and the live 125-test suite all passed. See `reports/phase-05-report.md` for the
+complete evidence and `tests/phase-05-manual-test-checklist.md` for the
+acceptance checklist.
 
 ## Controls
 
 | Input | Action |
 | --- | --- |
 | Arrow keys | Move in the vessel's local cross-section |
-| Z | Raise BP and increase speed |
-| X | Lower BP and decrease speed |
+| Z | Raise BP and increase speed; remains active during low-BP stasis |
+| X | Lower BP and decrease speed; ignored during low-BP stasis |
 | Mouse | Change yaw and pitch only |
 | Esc | Release Pointer Lock and pause world simulation |
 
@@ -105,7 +102,7 @@ require an HTTP server.
 
 ## Automated Tests
 
-Run the shared Phase 04 suite with either command:
+Run the shared Phase 05 suite with either command:
 
 ~~~powershell
 npm test
@@ -115,14 +112,13 @@ npm test
 node ./tests/run-tests.mjs
 ~~~
 
-The browser page and Node runner import the same 109 tests from `tests/unit`.
-They include every earlier regression plus all seven procedural models, exact
-labels, InstancedMesh batching, deterministic schedules, fairness and spacing,
-reserved slots, object pooling/caps, swept collision, collision priority,
-Score/HP clamping, alcohol counting, Wound fatal semantics, and absolute
-malaria-hood deadlines. The suite also verifies compact RBC clearance, label
-aspect/projection bounds, desktop support, mobile Client Hints and user agents,
-iPadOS detection, and the refusal screen's no-initialization state.
+The browser page and Node runner import the same 125 tests from `tests/unit`.
+They include every earlier regression plus high/low-BP formula boundaries,
+once-per-second scheduling, pause behavior, absolute stasis/cooldown deadlines,
+Z-only recovery, Level 4 multipliers, safe Wound placement, and smooth
+arterial/venous RBC reflection. Earlier entity, collision, compact RBC/label,
+circulation map, desktop/mobile detection, and refusal-screen contracts remain
+covered by the same suite.
 
 ## Three.js Vendor Record
 
