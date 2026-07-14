@@ -1,4 +1,4 @@
-import { createPhase06TestHarness } from "./unit/suites.js?v=phase06-qte";
+import { createPhase06TestHarness } from "./unit/suites.js?v=phase06-qte-r2";
 
 const resultList = document.querySelector("#test-results");
 const summaryElement = document.querySelector("#test-summary");

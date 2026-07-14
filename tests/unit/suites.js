@@ -15,7 +15,7 @@ import { registerMinimapTests } from "./minimap.test.js?v=phase06-qte";
 import { registerPlayerRbcTests } from "./playerRbc.test.js?v=phase06-qte";
 import { registerPointerLockTests } from "./pointerLock.test.js?v=phase06-qte";
 import { registerProceduralAssetTests } from "./proceduralAssets.test.js?v=phase06-qte";
-import { registerQteTests } from "./qte.test.js?v=phase06-qte";
+import { registerQteTests } from "./qte.test.js?v=phase06-qte-r2";
 import { registerSchemaTests } from "./schemas.test.js?v=phase06-qte";
 import { registerSeededRandomTests } from "./seededRandom.test.js";
 import { registerTimingTests } from "./timing.test.js?v=phase01-real-clock";
