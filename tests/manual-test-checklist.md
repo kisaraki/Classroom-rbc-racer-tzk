@@ -29,29 +29,28 @@ In-app Browser through local HTTP servers.
   error, and shows a retryable message.
 - [x] Deterministic browser-event tests cover successful capture, release,
   rejection deduplication, retry, and unsupported API behavior.
-- [ ] A foreground desktop browser successfully enters Pointer Lock, advances
+- [x] A foreground desktop browser successfully enters Pointer Lock, advances
   the vessel, and accepts mouse yaw/pitch.
 - [ ] Pressing Esc after successful capture enters PAUSED, shows
   `點擊恢復遊戲`, keeps distance fixed, decreases the absolute timer,
   and continues Renderer/HUD frames.
 
-The two unchecked cases cannot be automated in the available browser backends:
-both Chrome Extension control and the visible In-app Browser reject mouse
-capture even when tested with Playwright click, DOM click, and coordinate CUA
-click. The same pause and absolute-time contracts pass in the shared browser
-unit suite, but those tests do not replace the required foreground acceptance.
+The user confirmed successful desktop capture and all other behavior. The
+remaining unchecked item is limited to rechecking the corrected `T+` Real
+Clock display after deployment; available automated browser backends still
+cannot perform physical mouse capture.
 
 ## Resolution And Deployment
 
 - [x] 1280 x 720 has no horizontal or vertical overflow.
 - [x] 1920 x 1080 has no horizontal or vertical overflow.
 - [x] 390 x 844 keeps the start flow readable with no horizontal overflow.
-- [x] The test page remains readable at narrow width and reports 50 PASS.
+- [x] The test page remains readable at narrow width and reports 51 PASS.
 - [x] `/rbc-racer/` project-subpath loading resolves all relative assets.
-- [x] `/rbc-racer/tests/unit-test.html` reports 50 passed and 0 failed.
+- [x] `/rbc-racer/tests/unit-test.html` reports 51 passed and 0 failed.
 - [x] The public GitHub Pages root returns HTTP 200 and renders Three.js r184,
   six vessel sections, 1,025 cached frames, and 13,860 triangles.
-- [x] The public GitHub Pages test page reports 50 passed and 0 failed with no
+- [x] The public GitHub Pages test page reports 51 passed and 0 failed with no
   horizontal overflow.
 - [x] Runtime HTML, CSS, and JavaScript reference no remote image, model,
   video, font, CDN, backend, or database.

@@ -15,6 +15,7 @@ export function registerTimingTests(harness) {
 
     nowMs = 3500;
     assertApproximately(clock.remainingSeconds(deadlineMs), 2.5, 0);
+    assertApproximately(clock.elapsedSeconds(1000), 2.5, 0);
     assertEqual(clock.hasExpired(deadlineMs), false);
 
     nowMs = 6000;
@@ -30,6 +31,17 @@ export function registerTimingTests(harness) {
     nowMs = 4000;
     assertEqual(clock.hasExpired(deadlineMs), true);
     assertEqual(clock.remainingMs(deadlineMs), 0);
+    assertEqual(clock.elapsedSeconds(2000), 2);
+  });
+
+  harness.test("GameClock elapsed time continues after a deadline", () => {
+    let nowMs = 1000;
+    const clock = new GameClock({ nowProvider: () => nowMs });
+    const deadlineMs = clock.deadlineAfterSeconds(1);
+
+    nowMs = 4500;
+    assertEqual(clock.remainingSeconds(deadlineMs), 0);
+    assertEqual(clock.elapsedSeconds(1000), 3.5);
   });
 
   harness.test("GameClock rejects negative durations", () => {

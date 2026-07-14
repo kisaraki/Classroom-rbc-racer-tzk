@@ -59,11 +59,13 @@ export function registerPointerLockTests(harness) {
       assertEqual(session.isWorldRunning, false);
       assertEqual(session.deadlineMs, 31000);
       assertEqual(session.remainingSeconds, 30);
+      assertEqual(session.elapsedSeconds, 0);
 
       nowMs = 6000;
       session.rejectPointerLock();
       assertEqual(session.state, GAME_STATES.PAUSED);
       assertEqual(session.remainingSeconds, 25);
+      assertEqual(session.elapsedSeconds, 5);
     }
   );
 

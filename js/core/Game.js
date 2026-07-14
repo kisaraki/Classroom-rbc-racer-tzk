@@ -243,6 +243,7 @@ export class Game {
     this.#updateFps(rawDeltaSeconds);
 
     const timerRemainingSeconds = this.#session.remainingSeconds;
+    const realClockElapsedSeconds = this.#session.elapsedSeconds;
     const pointerLocked = this.#pointerLock.isLocked;
 
     this.hud.update({
@@ -254,12 +255,16 @@ export class Game {
       speed: this.player.speed,
       distance: this.player.state.distanceAlongTrack,
       trackLength: this.track.trackLength,
-      timerRemainingSeconds,
+      realClockElapsedSeconds,
       state: this.#session.state,
       fps: this.#fps,
       pointerLocked
     });
-    this.#publishDiagnostics(timerRemainingSeconds, pointerLocked);
+    this.#publishDiagnostics(
+      timerRemainingSeconds,
+      realClockElapsedSeconds,
+      pointerLocked
+    );
   }
 
   #updateFps(rawDeltaSeconds) {
@@ -277,7 +282,11 @@ export class Game {
     }
   }
 
-  #publishDiagnostics(timerRemainingSeconds, pointerLocked) {
+  #publishDiagnostics(
+    timerRemainingSeconds,
+    realClockElapsedSeconds,
+    pointerLocked
+  ) {
     const state = this.player.state;
     this.#root.dataset.gameState = this.#session.state;
     this.#root.dataset.pointerLocked = String(pointerLocked);
@@ -306,6 +315,12 @@ export class Game {
       timerRemainingSeconds === null
         ? ""
         : timerRemainingSeconds.toFixed(
+            GAME_CONFIG.hud.timerPrecision
+          );
+    this.#root.dataset.timerElapsed =
+      realClockElapsedSeconds === null
+        ? ""
+        : realClockElapsedSeconds.toFixed(
             GAME_CONFIG.hud.timerPrecision
           );
     this.#root.dataset.renderFrames = String(this.#renderFrameCount);

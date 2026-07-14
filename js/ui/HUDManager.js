@@ -24,7 +24,9 @@ export class HUDManager {
       locationValue: requireElement(root, "#location-value"),
       speedValue: requireElement(root, "#speed-value"),
       distanceValue: requireElement(root, "#distance-value"),
+      clockCard: requireElement(root, ".clock-card"),
       timerValue: requireElement(root, "#timer-value"),
+      timerCaption: requireElement(root, "#timer-caption"),
       stateValue: requireElement(root, "#state-value"),
       fpsValue: requireElement(root, "#fps-value"),
       pointerValue: requireElement(root, "#pointer-value"),
@@ -49,7 +51,7 @@ export class HUDManager {
     speed,
     distance,
     trackLength,
-    timerRemainingSeconds,
+    realClockElapsedSeconds,
     state,
     fps,
     pointerLocked
@@ -92,11 +94,18 @@ export class HUDManager {
       " / " +
       trackLength.toFixed(GAME_CONFIG.hud.distancePrecision);
     this.#elements.timerValue.textContent =
-      timerRemainingSeconds === null
+      realClockElapsedSeconds === null
         ? "--.- s"
-        : timerRemainingSeconds.toFixed(
+        : "T+" + realClockElapsedSeconds.toFixed(
             GAME_CONFIG.hud.timerPrecision
           ) + " s";
+    this.#elements.clockCard.dataset.active = String(
+      realClockElapsedSeconds !== null
+    );
+    this.#elements.timerCaption.textContent =
+      realClockElapsedSeconds === null
+        ? "STARTS ON CLICK"
+        : "CONTINUES IN PAUSE";
     this.#elements.stateValue.textContent = state;
     this.#elements.fpsValue.textContent =
       fps.toFixed(GAME_CONFIG.hud.fpsPrecision);

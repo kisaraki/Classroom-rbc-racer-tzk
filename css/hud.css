@@ -214,6 +214,12 @@
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--oxygen);
+  opacity: 0.28;
+  transition: opacity 180ms ease, box-shadow 180ms ease;
+}
+
+.clock-card[data-active="true"] .clock-card__signal {
+  opacity: 1;
   box-shadow: 0 0 1rem var(--oxygen);
   animation: clock-pulse 1.4s ease-in-out infinite;
 }

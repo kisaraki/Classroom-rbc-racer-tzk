@@ -18,6 +18,7 @@ export class GameSession {
   #stateMachine;
   #clock;
   #durationSeconds;
+  #startedAtMs = null;
   #deadlineMs = null;
 
   constructor({
@@ -43,6 +44,12 @@ export class GameSession {
     return this.#deadlineMs;
   }
 
+  get elapsedSeconds() {
+    return this.#startedAtMs === null
+      ? null
+      : this.#clock.elapsedSeconds(this.#startedAtMs);
+  }
+
   get remainingSeconds() {
     return this.#deadlineMs === null
       ? null
@@ -54,14 +61,17 @@ export class GameSession {
       return false;
     }
 
+    const startedAtMs = this.#clock.nowMs;
     const deadlineMs = this.#clock.deadlineAfterSeconds(
-      this.#durationSeconds
+      this.#durationSeconds,
+      startedAtMs
     );
 
     if (!this.#stateMachine.start()) {
       return false;
     }
 
+    this.#startedAtMs = startedAtMs;
     this.#deadlineMs = deadlineMs;
     this.#stateMachine.pause();
     return true;

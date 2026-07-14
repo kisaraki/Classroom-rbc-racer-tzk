@@ -69,6 +69,19 @@ export class GameClock {
     );
   }
 
+  elapsedMs(startedAtMs, nowMs = this.nowMs) {
+    assertFiniteNumber(startedAtMs, "startedAtMs");
+    assertFiniteNumber(nowMs, "nowMs");
+    return Math.max(0, nowMs - startedAtMs);
+  }
+
+  elapsedSeconds(startedAtMs, nowMs = this.nowMs) {
+    return (
+      this.elapsedMs(startedAtMs, nowMs) /
+      GAME_CONFIG.timing.millisecondsPerSecond
+    );
+  }
+
   hasExpired(deadlineMs, nowMs = this.nowMs) {
     assertFiniteNumber(deadlineMs, "deadlineMs");
     assertFiniteNumber(nowMs, "nowMs");

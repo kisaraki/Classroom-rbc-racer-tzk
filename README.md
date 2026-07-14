@@ -22,7 +22,7 @@ Included:
 - Basic HP, BP, Score, Location, distance, speed, and absolute-clock HUD.
 - A RAF loop where world simulation stops in PAUSED while GameClock and HUD
   continue.
-- A shared 50-test Node and browser suite, including deterministic Pointer Lock
+- A shared 51-test Node and browser suite, including deterministic Pointer Lock
   session and browser-event coverage.
 
 Intentionally excluded until later phases:
@@ -32,12 +32,11 @@ Intentionally excluded until later phases:
 - QTE, low-BP stasis, alcohol, malaria, and Wound gameplay.
 - Cutscenes, game-over, retry, ending, and victory flows.
 
-Phase 01 code and automated tests are complete. Pointer Lock rejection now
-starts the absolute deadline, pauses world simulation, keeps rendering active,
-and preserves the browser error for diagnosis. The stage report remains
-BLOCKED only because the available automated browser backends cannot perform
-physical mouse capture; the positive foreground Pointer Lock plus Esc path
-still requires one manual desktop-browser acceptance run. See
+Phase 01 code and automated tests are complete. Desktop Pointer Lock, driving,
+mouse look, and Esc release have been manually confirmed. Real Clock now shows
+continuous `T+` elapsed time, while gameplay deadlines remain absolute and
+continue through PAUSED. The stage report remains BLOCKED only until the
+corrected Real Clock readout receives one desktop-browser recheck. See
 reports/phase-01-report.md for exact evidence.
 
 ## Controls
@@ -97,7 +96,7 @@ npm test
 node ./tests/run-tests.mjs
 ~~~
 
-The browser page and Node runner import the same 50 tests from tests/unit.
+The browser page and Node runner import the same 51 tests from tests/unit.
 They include all Phase 00 regressions plus BP driving, input isolation, paused
 RAF behavior, segmented vessel geometry, parallel-transport frames, PlayerRBC,
 the independent hood, camera-only mouse look, and Pointer Lock session flow.
