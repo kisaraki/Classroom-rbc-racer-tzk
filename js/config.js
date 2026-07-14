@@ -48,6 +48,17 @@ export const GAME_CONFIG = deepFreeze({
     vesselVenous: "#294a89",
     vesselReturn: "#8f1f48",
     vesselEmissive: "#3d0711",
+    vitaminC: "#ffd34e",
+    vitaminB12: "#45e0d0",
+    iron: "#bfcbd5",
+    carbonMonoxide: "#20242d",
+    alcohol: "#e6b85c",
+    entityOxygen: "#ff5263",
+    entityHydrogen: "#f5fbff",
+    entityBond: "#7d8792",
+    entityLabelPanel: "#14070a",
+    entityLabelInk: "#f5fbff",
+    entityWoundRim: "#b2152c",
     cockpitTrim: "#ffb2a7",
     cockpitShadow: "#480711",
     headlight: "#ffe4dc",
@@ -463,7 +474,12 @@ export const GAME_CONFIG = deepFreeze({
   },
 
   collision: {
-    window: 0.75
+    window: 0.75,
+    categoryPriority: {
+      FATAL: 0,
+      DEBUFF: 1,
+      BUFF: 2
+    }
   },
 
   entities: {
@@ -474,7 +490,9 @@ export const GAME_CONFIG = deepFreeze({
     despawnBehind: 20,
     maximumActive: 24,
     minimumGap: 2.5,
-    maximumConsecutiveSameDebuff: 2
+    maximumConsecutiveSameDebuff: 2,
+    reservedDistancePadding: 3,
+    fullRotationRadians: Math.PI * 2
   },
 
   entityTypes: {
@@ -520,6 +538,405 @@ export const GAME_CONFIG = deepFreeze({
     },
     empty: {
       baseWeight: 8
+    }
+  },
+
+  entityVisuals: {
+    label: {
+      canvasWidth: 256,
+      canvasHeight: 112,
+      borderWidth: 6,
+      fontSize: 46,
+      fontWeight: 800,
+      fontFamily: "sans-serif",
+      horizontalTextRatio: 0.5,
+      verticalTextRatio: 0.54,
+      spriteWidth: 2.7,
+      spriteHeight: 1.18,
+      offsetY: 1.35,
+      renderOrder: 8,
+      backgroundColorKey: "entityLabelPanel",
+      textColorKey: "entityLabelInk"
+    },
+    models: {
+      vitaminC: {
+        accentColorKey: "vitaminC",
+        worldScale: 0.82,
+        spinRadiansPerSecond: 1.35,
+        pulseFrequencyRadiansPerSecond: 2.4,
+        pulseAmplitude: 0.06,
+        parts: [
+          {
+            geometry: "octahedron",
+            args: [0.7, 0],
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "vitaminC",
+            emissiveColorKey: "vitaminC",
+            roughness: 0.32,
+            metalness: 0.12,
+            emissiveIntensity: 0.2
+          },
+          {
+            geometry: "torus",
+            args: [0.82, 0.055, 8, 28],
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "hudGlow",
+            emissiveColorKey: "vitaminC",
+            roughness: 0.24,
+            metalness: 0.18,
+            emissiveIntensity: 0.32
+          }
+        ]
+      },
+      vitaminB12: {
+        accentColorKey: "vitaminB12",
+        worldScale: 0.84,
+        spinRadiansPerSecond: -1.1,
+        pulseFrequencyRadiansPerSecond: 2.1,
+        pulseAmplitude: 0.055,
+        parts: [
+          {
+            geometry: "dodecahedron",
+            args: [0.68, 0],
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "vitaminB12",
+            emissiveColorKey: "vitaminB12",
+            roughness: 0.38,
+            metalness: 0.1,
+            emissiveIntensity: 0.2
+          },
+          {
+            geometry: "torus",
+            args: [0.84, 0.065, 8, 28],
+            position: [0, 0, 0],
+            rotation: [Math.PI / 2, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "hudGlow",
+            emissiveColorKey: "vitaminB12",
+            roughness: 0.28,
+            metalness: 0.16,
+            emissiveIntensity: 0.3
+          }
+        ]
+      },
+      iron: {
+        accentColorKey: "iron",
+        worldScale: 0.86,
+        spinRadiansPerSecond: 0.9,
+        pulseFrequencyRadiansPerSecond: 1.7,
+        pulseAmplitude: 0.045,
+        parts: [
+          {
+            geometry: "sphere",
+            args: [0.62, 20, 14],
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 0.78],
+            colorKey: "iron",
+            emissiveColorKey: "entityBond",
+            roughness: 0.24,
+            metalness: 0.78,
+            emissiveIntensity: 0.08
+          },
+          {
+            geometry: "torus",
+            args: [0.8, 0.085, 8, 24],
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "hudGlow",
+            emissiveColorKey: "iron",
+            roughness: 0.2,
+            metalness: 0.72,
+            emissiveIntensity: 0.18
+          }
+        ]
+      },
+      carbonMonoxide: {
+        accentColorKey: "entityOxygen",
+        worldScale: 0.92,
+        spinRadiansPerSecond: 1.25,
+        pulseFrequencyRadiansPerSecond: 2.8,
+        pulseAmplitude: 0.035,
+        parts: [
+          {
+            geometry: "sphere",
+            args: [0.4, 18, 12],
+            position: [-0.38, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "carbonMonoxide",
+            emissiveColorKey: "malariaDark",
+            roughness: 0.48,
+            metalness: 0.12,
+            emissiveIntensity: 0.12
+          },
+          {
+            geometry: "sphere",
+            args: [0.4, 18, 12],
+            position: [0.38, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "entityOxygen",
+            emissiveColorKey: "oxygenatedRed",
+            roughness: 0.42,
+            metalness: 0.08,
+            emissiveIntensity: 0.2
+          },
+          {
+            geometry: "cylinder",
+            args: [0.11, 0.11, 0.56, 12],
+            position: [0, 0, 0],
+            rotation: [0, 0, Math.PI / 2],
+            scale: [1, 1, 1],
+            colorKey: "entityBond",
+            emissiveColorKey: "carbonMonoxide",
+            roughness: 0.36,
+            metalness: 0.28,
+            emissiveIntensity: 0.08
+          }
+        ]
+      },
+      malaria: {
+        accentColorKey: "venousPurple",
+        worldScale: 1.05,
+        spinRadiansPerSecond: -0.72,
+        pulseFrequencyRadiansPerSecond: 4.2,
+        pulseAmplitude: 0.11,
+        parts: [
+          {
+            geometry: "irregularIcosahedron",
+            args: [0.64, 2],
+            distortionAmplitude: 0.16,
+            distortionFrequency: 5.3,
+            distortionAxisWeights: [1, 1.7, 2.3],
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 0.9, 0.82],
+            colorKey: "malariaDark",
+            emissiveColorKey: "venousPurple",
+            roughness: 0.78,
+            metalness: 0.02,
+            emissiveIntensity: 0.24
+          },
+          {
+            geometry: "torusKnot",
+            args: [0.53, 0.075, 40, 8, 2, 3],
+            position: [0, 0, 0],
+            rotation: [0.28, 0.4, 0],
+            scale: [1.25, 1.1, 0.62],
+            colorKey: "venousPurple",
+            emissiveColorKey: "malariaDark",
+            roughness: 0.7,
+            metalness: 0.04,
+            emissiveIntensity: 0.14
+          },
+          {
+            geometry: "cone",
+            args: [0.14, 0.52, 8],
+            position: [0, 0.73, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "malariaDark",
+            emissiveColorKey: "venousPurple",
+            roughness: 0.74,
+            metalness: 0.02,
+            emissiveIntensity: 0.18
+          },
+          {
+            geometry: "cone",
+            args: [0.14, 0.48, 8],
+            position: [0.68, -0.12, 0],
+            rotation: [0, 0, -Math.PI / 2],
+            scale: [1, 1, 1],
+            colorKey: "malariaDark",
+            emissiveColorKey: "venousPurple",
+            roughness: 0.74,
+            metalness: 0.02,
+            emissiveIntensity: 0.18
+          },
+          {
+            geometry: "cone",
+            args: [0.13, 0.44, 8],
+            position: [-0.62, -0.15, 0.06],
+            rotation: [0, 0, Math.PI / 2],
+            scale: [1, 1, 1],
+            colorKey: "malariaDark",
+            emissiveColorKey: "venousPurple",
+            roughness: 0.74,
+            metalness: 0.02,
+            emissiveIntensity: 0.18
+          },
+          {
+            geometry: "cone",
+            args: [0.12, 0.42, 8],
+            position: [0.08, -0.65, 0.12],
+            rotation: [0, 0, Math.PI],
+            scale: [1, 1, 1],
+            colorKey: "malariaDark",
+            emissiveColorKey: "venousPurple",
+            roughness: 0.74,
+            metalness: 0.02,
+            emissiveIntensity: 0.18
+          }
+        ]
+      },
+      alcohol: {
+        accentColorKey: "alcohol",
+        worldScale: 0.9,
+        spinRadiansPerSecond: -1.45,
+        pulseFrequencyRadiansPerSecond: 2.6,
+        pulseAmplitude: 0.04,
+        parts: [
+          {
+            geometry: "sphere",
+            args: [0.32, 16, 12],
+            position: [-0.52, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "carbonMonoxide",
+            emissiveColorKey: "alcohol",
+            roughness: 0.5,
+            metalness: 0.08,
+            emissiveIntensity: 0.08
+          },
+          {
+            geometry: "sphere",
+            args: [0.32, 16, 12],
+            position: [0.05, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "carbonMonoxide",
+            emissiveColorKey: "alcohol",
+            roughness: 0.5,
+            metalness: 0.08,
+            emissiveIntensity: 0.08
+          },
+          {
+            geometry: "sphere",
+            args: [0.34, 16, 12],
+            position: [0.62, 0.08, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "entityOxygen",
+            emissiveColorKey: "oxygenatedRed",
+            roughness: 0.42,
+            metalness: 0.05,
+            emissiveIntensity: 0.18
+          },
+          {
+            geometry: "sphere",
+            args: [0.2, 14, 10],
+            position: [0.86, 0.4, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "entityHydrogen",
+            emissiveColorKey: "hudGlow",
+            roughness: 0.34,
+            metalness: 0.02,
+            emissiveIntensity: 0.2
+          },
+          {
+            geometry: "cylinder",
+            args: [0.08, 0.08, 0.46, 10],
+            position: [-0.235, 0, 0],
+            rotation: [0, 0, Math.PI / 2],
+            scale: [1, 1, 1],
+            colorKey: "entityBond",
+            emissiveColorKey: "alcohol",
+            roughness: 0.38,
+            metalness: 0.18,
+            emissiveIntensity: 0.06
+          },
+          {
+            geometry: "cylinder",
+            args: [0.08, 0.08, 0.44, 10],
+            position: [0.335, 0.04, 0],
+            rotation: [0, 0, Math.PI / 2],
+            scale: [1, 1, 1],
+            colorKey: "entityBond",
+            emissiveColorKey: "alcohol",
+            roughness: 0.38,
+            metalness: 0.18,
+            emissiveIntensity: 0.06
+          }
+        ]
+      },
+      wound: {
+        accentColorKey: "entityWoundRim",
+        worldScale: 1,
+        spinRadiansPerSecond: 0.28,
+        pulseFrequencyRadiansPerSecond: 1.8,
+        pulseAmplitude: 0.045,
+        parts: [
+          {
+            geometry: "torus",
+            args: [0.95, 0.2, 10, 36],
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1.18, 1],
+            colorKey: "entityWoundRim",
+            emissiveColorKey: "oxygenatedRed",
+            roughness: 0.82,
+            metalness: 0.02,
+            emissiveIntensity: 0.18
+          },
+          {
+            geometry: "circle",
+            args: [0.82, 32],
+            position: [0, 0, 0.06],
+            rotation: [0, 0, 0],
+            scale: [1, 1.18, 1],
+            colorKey: "woundDark",
+            emissiveColorKey: "prototypeBackground",
+            roughness: 0.96,
+            metalness: 0,
+            emissiveIntensity: 0.08
+          },
+          {
+            geometry: "cone",
+            args: [0.18, 0.54, 8],
+            position: [0, 1.12, 0],
+            rotation: [0, 0, Math.PI],
+            scale: [1, 1, 1],
+            colorKey: "entityWoundRim",
+            emissiveColorKey: "oxygenatedRed",
+            roughness: 0.8,
+            metalness: 0.02,
+            emissiveIntensity: 0.16
+          },
+          {
+            geometry: "cone",
+            args: [0.16, 0.48, 8],
+            position: [0.98, -0.42, 0],
+            rotation: [0, 0, Math.PI / 2],
+            scale: [1, 1, 1],
+            colorKey: "entityWoundRim",
+            emissiveColorKey: "oxygenatedRed",
+            roughness: 0.8,
+            metalness: 0.02,
+            emissiveIntensity: 0.16
+          },
+          {
+            geometry: "cone",
+            args: [0.17, 0.5, 8],
+            position: [-0.95, -0.38, 0],
+            rotation: [0, 0, -Math.PI / 2],
+            scale: [1, 1, 1],
+            colorKey: "entityWoundRim",
+            emissiveColorKey: "oxygenatedRed",
+            roughness: 0.8,
+            metalness: 0.02,
+            emissiveIntensity: 0.16
+          }
+        ]
+      }
     }
   },
 

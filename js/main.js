@@ -1,4 +1,4 @@
-import { Game } from "./core/Game.js?v=phase03-heart-map";
+import { Game } from "./core/Game.js?v=phase04-entities";
 
 const gameRoot = document.querySelector("#game-root");
 

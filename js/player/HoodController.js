@@ -9,7 +9,7 @@ import {
   UnsignedByteType,
   Group
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js";
+import { GAME_CONFIG } from "../config.js?v=phase04-entities";
 
 const RBC_GLYPHS = Object.freeze({
   R: [
@@ -125,15 +125,22 @@ export function createRbcLabelTexture(
 export class HoodController {
   constructor({
     config = GAME_CONFIG.playerModel,
-    palette = GAME_CONFIG.palette
+    palette = GAME_CONFIG.palette,
+    malariaConfig = GAME_CONFIG.malaria,
+    timingConfig = GAME_CONFIG.timing
   } = {}) {
     const cockpit = config.cockpit;
     const hood = config.hood;
 
+    this.closedAngleRadians = hood.closedAngleRadians;
+    this.malariaConfig = malariaConfig;
+    this.timingConfig = timingConfig;
+    this.obstructionExpiresAtMs = null;
+
     this.group = new Group();
     this.group.name = "independent-rbc-hood";
     this.group.position.fromArray(hood.pivotPosition);
-    this.group.rotation.x = hood.closedAngleRadians;
+    this.group.rotation.x = this.closedAngleRadians;
     this.group.userData.independentHood = true;
     this.group.userData.hingeOffset = [...hood.hingeOffset];
 
@@ -155,7 +162,46 @@ export class HoodController {
     this.group.add(this.mesh);
   }
 
+  get isBasicObstructionActive() {
+    return this.obstructionExpiresAtMs !== null;
+  }
+
+  triggerBasicObstruction(nowMs) {
+    if (!Number.isFinite(nowMs)) {
+      throw new TypeError("Malaria obstruction requires an absolute time.");
+    }
+
+    this.obstructionExpiresAtMs =
+      nowMs +
+      this.malariaConfig.obstructionDurationSeconds *
+        this.timingConfig.millisecondsPerSecond;
+    this.group.rotation.x =
+      this.closedAngleRadians + this.malariaConfig.hoodOpenAngle;
+    return this.obstructionExpiresAtMs;
+  }
+
+  update(nowMs) {
+    if (!Number.isFinite(nowMs)) {
+      throw new TypeError("Hood updates require an absolute time.");
+    }
+
+    if (
+      this.obstructionExpiresAtMs !== null &&
+      nowMs >= this.obstructionExpiresAtMs
+    ) {
+      this.clearBasicObstruction();
+    }
+
+    return this.isBasicObstructionActive;
+  }
+
+  clearBasicObstruction() {
+    this.obstructionExpiresAtMs = null;
+    this.group.rotation.x = this.closedAngleRadians;
+  }
+
   dispose() {
+    this.clearBasicObstruction();
     this.geometry.dispose();
     this.material.dispose();
     this.group.clear();

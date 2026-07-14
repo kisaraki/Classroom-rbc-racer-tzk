@@ -10,18 +10,20 @@ import {
   SRGBColorSpace,
   WebGLRenderer
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase03-heart-map";
+import { GAME_CONFIG } from "../config.js?v=phase04-entities";
+import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase04-entities";
 import { CameraController } from "../input/CameraController.js";
 import { InputController } from "../input/InputController.js";
 import { PointerLockController } from "../input/PointerLockController.js";
-import { PlayerRBC } from "../player/PlayerRBC.js";
-import { HUDManager } from "../ui/HUDManager.js?v=phase03-heart-map";
-import { VesselTrack } from "../world/VesselTrack.js?v=phase03-heart-map";
+import { PlayerRBC } from "../player/PlayerRBC.js?v=phase04-entities";
+import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase04-entities";
+import { EntityManager } from "../systems/EntityManager.js?v=phase04-entities";
+import { HUDManager } from "../ui/HUDManager.js?v=phase04-entities";
+import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase04-entities";
+import { VesselTrack } from "../world/VesselTrack.js?v=phase04-entities";
 import { GameLoop } from "./GameLoop.js";
-import { GameSession } from "./GameSession.js?v=phase03-heart-map";
-import { LevelManager } from "./LevelManager.js?v=phase03-heart-map";
-
-const EMPTY_STATUSES = Object.freeze([]);
+import { GameSession } from "./GameSession.js?v=phase04-entities";
+import { LevelManager } from "./LevelManager.js?v=phase04-entities";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);
@@ -47,6 +49,10 @@ export class Game {
   #fpsElapsedSeconds = 0;
   #fpsFrameCount = 0;
   #fps = 0;
+  #collisionCount = 0;
+  #lastCollisionTypeId = "";
+  #fatalTypeId = "";
+  #playerDepleted = false;
   #started = false;
   #disposed = false;
 
@@ -97,6 +103,13 @@ export class Game {
       config: GAME_CONFIG,
       stateOverrides: { currentLevel: this.level.id }
     });
+    this.assetFactory = new ProceduralAssetFactory({ documentRef });
+    this.entityManager = new EntityManager({
+      track: this.track,
+      level: this.level,
+      assetFactory: this.assetFactory
+    });
+    this.collisionSystem = new CollisionSystem();
     this.input = new InputController({ target: windowRef });
     this.cameraController = new CameraController({
       targetElement: this.#canvas,
@@ -110,6 +123,7 @@ export class Game {
     });
 
     this.scene.add(this.track.group);
+    this.scene.add(this.entityManager.group);
     this.scene.add(this.player.worldGroup);
     this.camera.add(this.player.cockpitGroup);
     this.scene.add(this.camera);
@@ -119,6 +133,7 @@ export class Game {
       this.player.state.distanceAlongTrack
     );
     this.player.syncWorldTransform(initialFrame);
+    this.entityManager.update(this.player.state, 0);
     this.cameraController.updateCamera(
       this.camera,
       initialFrame,
@@ -157,6 +172,17 @@ export class Game {
     this.#root.dataset.independentHood = String(
       this.player.hoodController.group.parent ===
         this.player.cockpitGroup
+    );
+    this.#root.dataset.phase = "04";
+    this.#root.dataset.proceduralAssets = "true";
+    this.#root.dataset.entityBatchCount = String(
+      this.entityManager.batchCount
+    );
+    this.#root.dataset.entityScheduleCount = String(
+      this.entityManager.scheduleCount
+    );
+    this.#root.dataset.collisionWindow = String(
+      GAME_CONFIG.collision.window
     );
     this.hud.showReady();
     this.#resize();
@@ -207,6 +233,7 @@ export class Game {
       this.#handleVisibilityChange
     );
     this.#window.removeEventListener("resize", this.#resize);
+    this.entityManager.dispose();
     this.track.dispose();
     this.player.dispose();
     this.renderer.dispose();
@@ -243,6 +270,13 @@ export class Game {
 
   #updateSimulation(deltaSeconds) {
     this.player.update(deltaSeconds, this.input, this.track);
+    this.entityManager.update(this.player.state, deltaSeconds);
+    const collisionResult = this.collisionSystem.resolve(
+      this.player.state,
+      this.entityManager.activeEntities
+    );
+    this.#handleCollisionResult(collisionResult);
+    this.entityManager.recycleConsumed();
     this.track.update(deltaSeconds);
     this.#simulationUpdateCount += 1;
   }
@@ -271,6 +305,7 @@ export class Game {
     const minimapProgress =
       this.levelManager.getMinimapProgressAtDistance(distanceAlongTrack);
     const clockNowMs = this.#session.nowMs;
+    this.player.hoodController.update(clockNowMs);
 
     this.hud.update({
       hp: this.player.state.hp,
@@ -292,7 +327,7 @@ export class Game {
       minimapPathId: this.level.minimapPathId,
       minimapProgress,
       clockNowMs,
-      statuses: EMPTY_STATUSES
+      statuses: this.#getStatuses()
     });
     this.#publishDiagnostics(
       timerRemainingSeconds,
@@ -385,6 +420,119 @@ export class Game {
     this.#root.dataset.triangles = String(
       this.renderer.info.render.triangles
     );
+    this.#root.dataset.drawCalls = String(
+      this.renderer.info.render.calls
+    );
+    this.#root.dataset.geometries = String(
+      this.renderer.info.memory.geometries
+    );
+    this.#root.dataset.textures = String(
+      this.renderer.info.memory.textures
+    );
+    const nearestEntity = this.entityManager.getNearestAhead(
+      state.distanceAlongTrack
+    );
+    this.#root.dataset.hp = state.hp.toFixed(
+      GAME_CONFIG.hud.valuePrecision
+    );
+    this.#root.dataset.score = state.score.toFixed(
+      GAME_CONFIG.hud.valuePrecision
+    );
+    this.#root.dataset.alcoholCount = String(state.alcoholCount);
+    this.#root.dataset.entityActiveCount = String(
+      this.entityManager.activeCount
+    );
+    this.#root.dataset.entityPoolCount = String(
+      this.entityManager.pooledCount
+    );
+    this.#root.dataset.entityRecycledCount = String(
+      this.entityManager.recycledCount
+    );
+    this.#root.dataset.entityPendingCount = String(
+      this.entityManager.pendingScheduleCount
+    );
+    this.#root.dataset.entitySpawnCount = String(
+      this.entityManager.spawnCount
+    );
+    this.#root.dataset.nearestEntityType = nearestEntity?.typeId ?? "";
+    this.#root.dataset.nearestEntityDistance = nearestEntity
+      ? nearestEntity.distanceAlongTrack.toFixed(
+          GAME_CONFIG.hud.distancePrecision
+        )
+      : "";
+    this.#root.dataset.collisionCount = String(this.#collisionCount);
+    this.#root.dataset.lastCollisionType = this.#lastCollisionTypeId;
+    this.#root.dataset.fatalType = this.#fatalTypeId;
+    this.#root.dataset.playerDepleted = String(this.#playerDepleted);
+    this.#root.dataset.malariaHoodActive = String(
+      this.player.hoodController.isBasicObstructionActive
+    );
+    this.#root.dataset.malariaHoodExpiresAt =
+      this.player.hoodController.obstructionExpiresAtMs === null
+        ? ""
+        : String(this.player.hoodController.obstructionExpiresAtMs);
+  }
+
+  #handleCollisionResult(result) {
+    if (result.collisionCount === 0) {
+      return;
+    }
+
+    this.#collisionCount += result.collisionCount;
+    this.#lastCollisionTypeId = result.events[0].typeId;
+    this.#playerDepleted = result.playerDepleted;
+
+    if (result.fatalTypeId) {
+      this.#fatalTypeId = result.fatalTypeId;
+    }
+
+    if (result.triggers.includes(ENTITY_TRIGGERS.MALARIA_HOOD)) {
+      this.player.hoodController.triggerBasicObstruction(
+        this.#session.nowMs
+      );
+    }
+
+    const primaryEvent = result.events[0];
+    const deltaCopy =
+      "Score " +
+      this.#formatSigned(result.scoreDelta) +
+      " / HP " +
+      this.#formatSigned(result.hpDelta);
+    this.hud.showMessage({
+      kicker:
+        primaryEvent.category === "BUFF"
+          ? "Nutrient acquired"
+          : primaryEvent.category === "FATAL"
+            ? "Fatal collision"
+            : "Hazard contact",
+      title: primaryEvent.displayName,
+      copy:
+        result.collisionCount > 1
+          ? deltaCopy + " / " + result.collisionCount + " contacts"
+          : deltaCopy,
+      tone: primaryEvent.category === "BUFF" ? "INFO" : "CAUTION",
+      nowMs: this.#session.nowMs
+    });
+  }
+
+  #getStatuses() {
+    if (!this.player.hoodController.isBasicObstructionActive) {
+      return [];
+    }
+
+    return [
+      {
+        id: "malaria-hood",
+        label: "瘧原蟲頭罩遮蔽",
+        tone: "CAUTION",
+        expiresAtMs:
+          this.player.hoodController.obstructionExpiresAtMs
+      }
+    ];
+  }
+
+  #formatSigned(value) {
+    return value > 0 ? "+" + value : String(value);
   }
 
   #requestPointerLock = () => {

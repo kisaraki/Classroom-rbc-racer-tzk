@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="RBC Racer Phase 03 procedural circulation HUD and SVG minimap"
+      content="RBC Racer Phase 04 procedural entities, pooling, and swept collision"
     >
-    <title>RBC Racer | Phase 03 Circulation HUD</title>
-    <link rel="stylesheet" href="./css/main.css?v=phase03-heart-map">
-    <link rel="stylesheet" href="./css/hud.css?v=phase03-heart-map">
-    <link rel="stylesheet" href="./css/menu.css?v=phase03-heart-map">
+    <title>RBC Racer | Phase 04 Entities & Collision</title>
+    <link rel="stylesheet" href="./css/main.css?v=phase04-entities">
+    <link rel="stylesheet" href="./css/hud.css?v=phase04-entities">
+    <link rel="stylesheet" href="./css/menu.css?v=phase04-entities">
   </head>
   <body>
     <main id="game-root" class="game-root" data-game-state="BOOT">
@@ -24,7 +24,7 @@
 
       <section id="game-hud" class="game-hud" aria-label="遊戲狀態">
         <header class="hud-brand">
-          <span class="hud-brand__phase">P03</span>
+          <span class="hud-brand__phase">P04</span>
           <span class="hud-brand__name">RBC / RACER</span>
           <span class="hud-brand__status">
             <i aria-hidden="true"></i>
@@ -162,14 +162,14 @@
         data-mode="READY"
         aria-labelledby="overlay-title"
       >
-        <div class="overlay-index" aria-hidden="true">03</div>
+        <div class="overlay-index" aria-hidden="true">04</div>
         <div class="overlay-panel">
           <p id="overlay-kicker" class="overlay-kicker">
-            Phase 03 / Circulation telemetry
+            Phase 04 / Entities &amp; collision
           </p>
-          <h1 id="overlay-title">下半身體循環</h1>
+          <h1 id="overlay-title">血流物件上線</h1>
           <p id="overlay-copy" class="overlay-copy">
-            從左心室出發，依序通過動脈、組織微血管與靜脈，抵達右心室。左側循環圖會沿 SVG Path 連續追蹤紅血球位置；方向鍵在血管截面移動，Z／X 調整血壓。
+            收集 C、B12 與 Fe²⁺，避開 CO、瘧原蟲與 C₂H₅OH。所有物件與標示皆由程式生成，掃掠碰撞可避免高速穿透；方向鍵在血管截面移動，Z／X 調整血壓。
           </p>
           <div class="overlay-controls" aria-label="核心操作">
             <span><b>↑↓←→</b> STRAFE</span>
@@ -190,6 +190,6 @@
       </noscript>
     </main>
 
-    <script type="module" src="./js/main.js?v=phase03-heart-map"></script>
+    <script type="module" src="./js/main.js?v=phase04-entities"></script>
   </body>
 </html>

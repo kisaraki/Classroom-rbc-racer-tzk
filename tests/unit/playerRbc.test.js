@@ -1,11 +1,12 @@
 import { Vector3 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js";
+import { GAME_CONFIG } from "../../js/config.js?v=phase04-entities";
 import { InputController } from "../../js/input/InputController.js";
-import { PlayerRBC } from "../../js/player/PlayerRBC.js";
+import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase04-entities";
 import {
   assert,
   assertApproximately,
-  assertEqual
+  assertEqual,
+  assertThrows
 } from "./TestHarness.js";
 
 function createStraightTrack() {
@@ -72,6 +73,36 @@ export function registerPlayerRbcTests(harness) {
     );
     assertApproximately(player.state.lateralX, 4.5, Number.EPSILON);
     assertEqual(player.hitWall, true);
+    player.dispose();
+  });
+
+  harness.test("malaria hood uses an absolute five-second deadline", () => {
+    const player = new PlayerRBC();
+    const hood = player.hoodController;
+    const expiresAtMs = hood.triggerBasicObstruction(1000);
+
+    assertEqual(expiresAtMs, 6000);
+    assertEqual(hood.isBasicObstructionActive, true);
+    assertApproximately(
+      hood.group.rotation.x,
+      GAME_CONFIG.malaria.hoodOpenAngle,
+      Number.EPSILON
+    );
+    assertEqual(hood.update(5999), true);
+    assertEqual(hood.update(6000), false);
+    assertApproximately(hood.group.rotation.x, 0, Number.EPSILON);
+    player.dispose();
+  });
+
+  harness.test("a repeated malaria hit refreshes the hood deadline", () => {
+    const player = new PlayerRBC();
+    const hood = player.hoodController;
+    hood.triggerBasicObstruction(1000);
+
+    assertEqual(hood.triggerBasicObstruction(3000), 8000);
+    assertEqual(hood.update(6000), true);
+    assertEqual(hood.update(8000), false);
+    assertThrows(() => hood.update(Number.NaN), TypeError);
     player.dispose();
   });
 }

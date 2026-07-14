@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase03-heart-map";
+import { GAME_CONFIG } from "../config.js?v=phase04-entities";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);

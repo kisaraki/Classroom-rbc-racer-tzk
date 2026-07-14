@@ -1,6 +1,6 @@
-import { GAME_CONFIG } from "../config.js?v=phase03-heart-map";
-import { MessageOverlay } from "./MessageOverlay.js?v=phase03-heart-map";
-import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase03-heart-map";
+import { GAME_CONFIG } from "../config.js?v=phase04-entities";
+import { MessageOverlay } from "./MessageOverlay.js?v=phase04-entities";
+import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase04-entities";
 
 const EMPTY_STATUSES = Object.freeze([]);
 
@@ -158,10 +158,10 @@ export class HUDManager {
   showReady() {
     this.#elements.overlay.hidden = false;
     this.#elements.overlay.dataset.mode = "READY";
-    this.#elements.overlayKicker.textContent = "Phase 03 / Circulation telemetry";
-    this.#elements.overlayTitle.textContent = "下半身體循環";
+    this.#elements.overlayKicker.textContent = "Phase 04 / Entities & collision";
+    this.#elements.overlayTitle.textContent = "血流物件上線";
     this.#elements.overlayCopy.textContent =
-      "從左心室出發，依序通過動脈、組織微血管與靜脈，抵達右心室。左側循環圖會沿 SVG Path 連續追蹤紅血球位置；方向鍵在血管截面移動，Z／X 調整血壓。";
+      "收集 C、B12 與 Fe²⁺，避開 CO、瘧原蟲與 C₂H₅OH。所有物件與標示皆由程式生成，掃掠碰撞可避免高速穿透；方向鍵在血管截面移動，Z／X 調整血壓。";
     this.#elements.overlayAction.textContent =
       "開始遊戲並鎖定滑鼠視角";
     this.#elements.overlayAction.disabled = false;
