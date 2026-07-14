@@ -36,7 +36,7 @@ Included:
 - All earlier BP hazards, low-BP stasis, procedural entities, collisions,
   compact RBC, circulation map, desktop-only startup gate, and continuously
   running timers remain intact.
-- A shared 144-test Node/browser suite plus 1280 x 720, 1920 x 1080, and
+- A shared 145-test Node/browser suite plus 1280 x 720, 1920 x 1080, and
   390 x 844 layout acceptance.
 
 Intentionally excluded until later phases:
@@ -112,7 +112,7 @@ npm test
 node ./tests/run-tests.mjs
 ~~~
 
-The browser page and Node runner import the same 144 tests from `tests/unit`.
+The browser page and Node runner import the same 145 tests from `tests/unit`.
 They include every earlier regression plus longitudinal/fallback gas triggers,
 O/C thresholds, first-failure retry, second-failure pass, absolute QTE result
 deadlines, state transitions, checkpoint reset, exchange-gated vessel colors,

@@ -1,6 +1,8 @@
 import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
 import { LEVELS } from "../../js/data/levels.js?v=phase06-qte";
 import { GAS_EXCHANGE_STATUS } from "../../js/data/schemas.js?v=phase06-qte";
+import { GameSession } from "../../js/core/GameSession.js?v=phase06-qte";
+import { GAME_STATES } from "../../js/core/GameStateMachine.js?v=phase06-qte";
 import {
   canCompleteLevel,
   QTE_ACTIONS,
@@ -152,6 +154,40 @@ export function registerQteTests(harness) {
       qte.update(lateNowMs).type,
       QTE_EVENTS.RESULT_EXPIRED
     );
+  });
+
+  harness.test("Level 1 vertical slice permits completion after two failures", () => {
+    const qte = createQte();
+    const session = new GameSession({
+      durationSeconds: LEVELS[0].targetDriveSeconds
+    });
+    session.prepareForPointerLock();
+    session.acquirePointerLock();
+    assertEqual(session.state, GAME_STATES.PLAYING);
+
+    startAt(qte, "primary", 0);
+    session.enterQte();
+    qte.update(GAME_CONFIG.qte.durationMs);
+    qte.update(
+      GAME_CONFIG.qte.durationMs + GAME_CONFIG.qte.resultDisplayMs
+    );
+    session.completeQte();
+
+    startAt(qte, "retry", 3000);
+    session.enterQte();
+    qte.update(3000 + GAME_CONFIG.qte.durationMs);
+    qte.update(
+      3000 +
+        GAME_CONFIG.qte.durationMs +
+        GAME_CONFIG.qte.resultDisplayMs
+    );
+    session.completeQte();
+
+    assertEqual(qte.status, GAS_EXCHANGE_STATUS.FAILED);
+    assertEqual(canCompleteLevel(qte.status), true);
+    assertEqual(session.enterTransferCutscene(), true);
+    assertEqual(session.completeTransferCutscene(), true);
+    assertEqual(session.state, GAME_STATES.LEVEL_COMPLETE);
   });
 
   harness.test("QTE rejects unknown input and invalid completion status", () => {
