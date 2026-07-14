@@ -13,12 +13,13 @@ import {
   Vector2,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase06-qte";
+import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
 import {
   createPlayerState,
   isLevelCheckpoint
-} from "../data/schemas.js?v=phase06-qte";
+} from "../data/schemas.js?v=phase07-status-r2";
 import {
+  clampBloodPressure,
   getSpeedForBloodPressure,
   updateBloodPressure
 } from "../systems/BloodPressureSystem.js";
@@ -26,7 +27,7 @@ import { clampLateralOffset } from "../world/TrackMath.js";
 import {
   createRbcLabelTexture,
   HoodController
-} from "./HoodController.js?v=phase06-qte";
+} from "./HoodController.js?v=phase07-status-r2";
 
 function createBiconcaveGeometry(modelConfig) {
   const profile = [];
@@ -246,6 +247,12 @@ export class PlayerRBC {
       deltaSeconds,
       this.config
     );
+    this.speed = getSpeedForBloodPressure(this.state.bp, this.config);
+    return this.state.bp;
+  }
+
+  setBloodPressure(bp) {
+    this.state.bp = clampBloodPressure(bp, this.config);
     this.speed = getSpeedForBloodPressure(this.state.bp, this.config);
     return this.state.bp;
   }

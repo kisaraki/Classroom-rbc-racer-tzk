@@ -1,5 +1,5 @@
-import { GAME_CONFIG } from "../config.js?v=phase06-qte";
-import { isPlayerState } from "../data/schemas.js?v=phase06-qte";
+import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
+import { isPlayerState } from "../data/schemas.js?v=phase07-status-r2";
 
 function clamp(value, minimum, maximum) {
   return Math.min(maximum, Math.max(minimum, value));

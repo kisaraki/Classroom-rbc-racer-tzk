@@ -22,7 +22,7 @@ import {
   TorusKnotGeometry,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase06-qte";
+import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
 
 const LOCAL_Z_AXIS = new Vector3(0, 0, 1);
 

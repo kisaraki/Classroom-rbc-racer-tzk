@@ -9,7 +9,7 @@ import {
   UnsignedByteType,
   Group
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase06-qte";
+import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
 
 const RBC_GLYPHS = Object.freeze({
   R: [
@@ -135,8 +135,12 @@ export class HoodController {
     this.closedAngleRadians = hood.closedAngleRadians;
     this.malariaConfig = malariaConfig;
     this.timingConfig = timingConfig;
+    this.obstructionStartedAtMs = null;
     this.obstructionExpiresAtMs = null;
+    this.restoreStartedAtMs = null;
+    this.restoreExpiresAtMs = null;
     this.qteModeActive = false;
+    this.combinedEffectActive = false;
 
     this.group = new Group();
     this.group.name = "independent-rbc-hood";
@@ -161,10 +165,45 @@ export class HoodController {
     this.mesh.scale.fromArray(hood.meshScale);
     this.mesh.renderOrder = hood.renderOrder;
     this.group.add(this.mesh);
+    this.basePosition = this.group.position.clone();
+    this.baseMeshScale = this.mesh.scale.clone();
+    this.restoreFrom = {
+      rotationX: this.closedAngleRadians,
+      rotationZ: 0,
+      positionY: this.basePosition.y
+    };
+    this.group.userData.screenCoverageMinimum =
+      this.malariaConfig.minimumScreenCoverage;
+    this.group.userData.screenCoverageLimit =
+      this.malariaConfig.maximumScreenCoverage;
   }
 
   get isBasicObstructionActive() {
     return this.obstructionExpiresAtMs !== null;
+  }
+
+  get isRestoring() {
+    return this.restoreExpiresAtMs !== null;
+  }
+
+  get currentCoverageLimit() {
+    return this.combinedEffectActive
+      ? this.malariaConfig.combinedMaximumCoverage
+      : this.malariaConfig.maximumScreenCoverage;
+  }
+
+  get animationDiagnostics() {
+    return Object.freeze({
+      active: this.isBasicObstructionActive,
+      restoring: this.isRestoring,
+      qteModeActive: this.qteModeActive,
+      combinedEffectActive: this.combinedEffectActive,
+      coverageLimit: this.currentCoverageLimit,
+      rotationX: this.group.rotation.x,
+      rotationZ: this.group.rotation.z,
+      offsetY: this.group.position.y - this.basePosition.y,
+      restoreExpiresAtMs: this.restoreExpiresAtMs
+    });
   }
 
   triggerBasicObstruction(nowMs) {
@@ -172,12 +211,16 @@ export class HoodController {
       throw new TypeError("Malaria obstruction requires an absolute time.");
     }
 
+    this.obstructionStartedAtMs = nowMs;
     this.obstructionExpiresAtMs =
       nowMs +
       this.malariaConfig.obstructionDurationSeconds *
         this.timingConfig.millisecondsPerSecond;
-    this.group.rotation.x =
-      this.closedAngleRadians + this.malariaConfig.hoodOpenAngle;
+    this.restoreStartedAtMs = null;
+    this.restoreExpiresAtMs = null;
+    this.#syncCoverageScale();
+    this.#applyFlapTransform(nowMs);
+    this.group.visible = !this.qteModeActive;
     return this.obstructionExpiresAtMs;
   }
 
@@ -186,19 +229,33 @@ export class HoodController {
       throw new TypeError("Hood updates require an absolute time.");
     }
 
-    if (
-      this.obstructionExpiresAtMs !== null &&
-      nowMs >= this.obstructionExpiresAtMs
-    ) {
-      this.clearBasicObstruction();
+    if (this.obstructionExpiresAtMs !== null) {
+      if (nowMs >= this.obstructionExpiresAtMs) {
+        this.#beginRestore(this.obstructionExpiresAtMs);
+      } else {
+        this.#applyFlapTransform(nowMs);
+      }
     }
 
+    if (this.restoreExpiresAtMs !== null) {
+      if (nowMs >= this.restoreExpiresAtMs) {
+        this.#completeRestore();
+      } else {
+        this.#applyRestoreTransform(nowMs);
+      }
+    }
+
+    this.group.visible = !this.qteModeActive;
     return this.isBasicObstructionActive;
   }
 
   clearBasicObstruction() {
+    this.obstructionStartedAtMs = null;
     this.obstructionExpiresAtMs = null;
-    this.group.rotation.x = this.closedAngleRadians;
+    this.restoreStartedAtMs = null;
+    this.restoreExpiresAtMs = null;
+    this.#syncCoverageScale();
+    this.#setClosedTransform();
   }
 
   setQteMode(active) {
@@ -208,12 +265,30 @@ export class HoodController {
 
     this.qteModeActive = active;
     this.group.visible = !active;
+
+    if (!active && !this.isBasicObstructionActive && !this.isRestoring) {
+      this.#setClosedTransform();
+    }
+
     return this.qteModeActive;
+  }
+
+  setCombinedEffectMode(active) {
+    if (typeof active !== "boolean") {
+      throw new TypeError("Combined hood mode requires a boolean.");
+    }
+
+    this.combinedEffectActive = active;
+    this.#syncCoverageScale();
+    this.group.userData.screenCoverageLimit =
+      this.currentCoverageLimit;
+    return this.currentCoverageLimit;
   }
 
   reset() {
     this.clearBasicObstruction();
     this.setQteMode(false);
+    this.setCombinedEffectMode(false);
   }
 
   dispose() {
@@ -221,5 +296,100 @@ export class HoodController {
     this.geometry.dispose();
     this.material.dispose();
     this.group.clear();
+  }
+
+  #getFlapTransform(nowMs) {
+    const elapsedSeconds =
+      (nowMs - this.obstructionStartedAtMs) /
+      this.timingConfig.millisecondsPerSecond;
+    return {
+      rotationX:
+        this.closedAngleRadians +
+        this.malariaConfig.hoodOpenAngle +
+        Math.sin(
+          elapsedSeconds *
+            this.malariaConfig.hoodPrimaryFrequency
+        ) * this.malariaConfig.hoodPrimaryAmplitude +
+        Math.sin(
+          elapsedSeconds *
+            this.malariaConfig.hoodSecondaryFrequency
+        ) * this.malariaConfig.hoodSecondaryAmplitude,
+      rotationZ:
+        Math.sin(
+          elapsedSeconds * this.malariaConfig.hoodRollFrequency
+        ) * this.malariaConfig.hoodRollAmplitude,
+      positionY:
+        this.basePosition.y +
+        Math.sin(
+          elapsedSeconds * this.malariaConfig.hoodOffsetFrequency
+        ) * this.malariaConfig.hoodOffsetAmplitude
+    };
+  }
+
+  #applyFlapTransform(nowMs) {
+    const transform = this.#getFlapTransform(nowMs);
+    this.group.rotation.x = transform.rotationX;
+    this.group.rotation.z = transform.rotationZ;
+    this.group.position.y = transform.positionY;
+  }
+
+  #beginRestore(startedAtMs) {
+    const transform = this.#getFlapTransform(startedAtMs);
+    this.restoreFrom = transform;
+    this.obstructionStartedAtMs = null;
+    this.obstructionExpiresAtMs = null;
+    this.restoreStartedAtMs = startedAtMs;
+    this.restoreExpiresAtMs =
+      startedAtMs +
+      this.malariaConfig.restoreDurationSeconds *
+        this.timingConfig.millisecondsPerSecond;
+    this.#syncCoverageScale();
+    this.group.rotation.x = transform.rotationX;
+    this.group.rotation.z = transform.rotationZ;
+    this.group.position.y = transform.positionY;
+  }
+
+  #applyRestoreTransform(nowMs) {
+    const durationMs =
+      this.malariaConfig.restoreDurationSeconds *
+      this.timingConfig.millisecondsPerSecond;
+    const progress = Math.min(
+      1,
+      Math.max(0, (nowMs - this.restoreStartedAtMs) / durationMs)
+    );
+    const easedProgress = 1 - Math.pow(1 - progress, 3);
+    this.group.rotation.x =
+      this.restoreFrom.rotationX +
+      (this.closedAngleRadians - this.restoreFrom.rotationX) *
+        easedProgress;
+    this.group.rotation.z =
+      this.restoreFrom.rotationZ * (1 - easedProgress);
+    this.group.position.y =
+      this.restoreFrom.positionY +
+      (this.basePosition.y - this.restoreFrom.positionY) *
+        easedProgress;
+  }
+
+  #completeRestore() {
+    this.restoreStartedAtMs = null;
+    this.restoreExpiresAtMs = null;
+    this.#syncCoverageScale();
+    this.#setClosedTransform();
+  }
+
+  #syncCoverageScale() {
+    const hasVisibleMalariaEffect =
+      this.isBasicObstructionActive || this.isRestoring;
+    const scale = this.combinedEffectActive && hasVisibleMalariaEffect
+      ? this.malariaConfig.combinedMaximumCoverage /
+        this.malariaConfig.maximumScreenCoverage
+      : 1;
+    this.mesh.scale.copy(this.baseMeshScale).multiplyScalar(scale);
+  }
+
+  #setClosedTransform() {
+    this.group.rotation.x = this.closedAngleRadians;
+    this.group.rotation.z = 0;
+    this.group.position.copy(this.basePosition);
   }
 }

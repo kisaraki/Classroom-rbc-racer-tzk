@@ -6,51 +6,51 @@ build. It has no runtime backend, database, framework, CDN, or external media.
 
 ## Current Phase
 
-Phase 06 completes the first playable vertical slice with a procedural gas
-exchange QTE, first-level completion, terminal failures, and deterministic
-checkpoint retry while retaining every Phase 00-05 behavior.
+Phase 07 completes the alcohol-intoxication and malaria-obstruction systems on
+top of the playable Level 1 vertical slice while retaining every Phase 00-06
+behavior.
 
 Included:
 
-- A programmatic `O₂ / CO₂` Gas Token appears at the Level 1 tissue-capillary
-  trigger. Crossing is longitudinal and unavoidable regardless of lateral
-  position, with a configured fallback before the route end.
-- QTE enters a world-frozen state while rendering, HUD, the real clock, and all
-  absolute deadlines continue. Only non-repeating O and C input is accepted.
-- Each attempt lasts 1.5 seconds and requires three O plus three C presses in
-  any order. Success adds 10; each failure subtracts 3; the result remains
-  visible for 0.8 seconds.
-- The first failure preserves `PENDING` and exposes one retry token. A second
-  failure records `FAILED` but still permits completion, as required.
-- Successful exchange reveals the configured tissue-to-venous vessel gradient;
-  pending or failed exchange retains the pre-exchange color. RBC environment
-  reflection continues sampling the live vessel color.
-- Level 1 now reaches `TRANSFER_CUTSCENE` and `LEVEL_COMPLETE`. Wound enters
-  `GAME_OVER_FALL`; HP depletion enters `GAME_OVER_RECYCLE`.
-- Level completion and both game-over screens can rebuild Level 1 from its
-  checkpoint with at least the configured retry HP, initial BP, cleared input
-  and statuses, and the same deterministic entity seed.
+- The fifth alcohol collision starts one absolute 15-second intoxication
+  deadline. Further alcohol still applies its normal Score/HP penalty but never
+  extends the active deadline; natural completion resets the count and BP 100.
+- Arrow and Z/X transitions use one timestamped queue instead of per-input
+  timers. Each transition is delayed 250-700ms and has a 35% failure chance.
+- BP is deterministically resampled in the 80-130 range once per 400ms update,
+  without catch-up bursts after a hidden or late frame.
+- Configured S sway affects the RBC only while world movement is permitted. A
+  subtle procedural canvas distortion communicates intoxication without
+  distorting the HUD.
+- Malaria drives the independent hood from its original transform with two flap
+  frequencies, roll, and vertical offset for five absolute seconds, followed by
+  a 0.4-second restore. Repeated hits reset the same hood instead of adding one.
+- Alcohol and malaria can overlap with separately calculated deadlines. The
+  combined hood is capped at 55% configured coverage.
+- QTE O/C input bypasses intoxication. Delayed driving actions that expire in
+  QTE, PAUSED, transfer, or another disallowed state are discarded; low-BP
+  stasis accepts delayed Z only.
+- Rendering, HUD, status countdowns, malaria animation, and all real-time
+  deadlines continue through QTE, low-BP stasis, PAUSED, and transfer. Game
+  Over, Level Complete, and checkpoint retry clear every transient effect.
+- The Phase 06 Gas Token, QTE retry/failed-pass behavior, exchange colors,
+  Level Complete, terminal failures, and deterministic retry remain intact.
 - The right status area now contains the always-available `KOSMOS TOOLKIT` /
   `探真拓知酷` keyboard and mouse guide, while active condition countdowns remain
   above it.
-- All earlier BP hazards, low-BP stasis, procedural entities, collisions,
-  compact RBC, circulation map, desktop-only startup gate, and continuously
-  running timers remain intact.
-- A shared 145-test Node/browser suite plus 1280 x 720, 1920 x 1080, and
+- A shared 158-test Node/browser suite plus 1280 x 720, 1920 x 1080, and
   390 x 844 layout acceptance.
 
 Intentionally excluded until later phases:
 
-- Full alcohol intoxication steering and continuous malaria hood flutter
-  animation (Phase 07). Their existing base Score/HP effects remain unchanged.
-- Playable Levels 2 through 4, inter-level cinematic content, endings, and
-  victory flows. Level 4 blood-pressure math remains tested as a data-driven
-  contract but is not registered for play.
+- Playable Levels 2 through 4 and their data-driven route expansion (Phase 08).
+- Inter-level cinematic content, complete endings, and victory flows. Level 4
+  blood-pressure math remains tested as a contract but is not registered.
 - Phase 10 long-duration performance and cross-browser acceptance.
 
-Phase 06 local acceptance is PASS. Deployment evidence is recorded after the
-implementation push in `reports/phase-06-report.md`; the matching acceptance
-checklist is `tests/phase-06-manual-test-checklist.md`.
+Phase 07 local acceptance is PASS. Deployment evidence is recorded after the
+implementation push in `reports/phase-07-report.md`; the matching acceptance
+checklist is `tests/phase-07-manual-test-checklist.md`.
 
 ## Controls
 
@@ -102,7 +102,7 @@ require an HTTP server.
 
 ## Automated Tests
 
-Run the shared Phase 06 suite with either command:
+Run the shared Phase 07 suite with either command:
 
 ~~~powershell
 npm test
@@ -112,13 +112,13 @@ npm test
 node ./tests/run-tests.mjs
 ~~~
 
-The browser page and Node runner import the same 145 tests from `tests/unit`.
-They include every earlier regression plus longitudinal/fallback gas triggers,
-O/C thresholds, first-failure retry, second-failure pass, absolute QTE result
-deadlines, state transitions, checkpoint reset, exchange-gated vessel colors,
-the procedural Gas Token, and QTE hood behavior. Earlier BP, entity, collision,
-compact RBC, circulation map, desktop/mobile detection, and refusal-screen
-contracts remain covered by the same suite.
+The browser page and Node runner import the same 158 tests from `tests/unit`.
+They include every earlier regression plus fifth-hit intoxication, absolute
+15-second expiry, delayed/failed input, state-aware queue disposal, 400ms BP
+randomization, configured sway, continuous malaria flap/restore transforms,
+55% overlap coverage, QTE coexistence, and cross-state deadline cleanup.
+Earlier Gas QTE, BP, entity, collision, compact RBC, circulation map,
+desktop/mobile detection, and refusal-screen contracts remain covered.
 
 ## Three.js Vendor Record
 

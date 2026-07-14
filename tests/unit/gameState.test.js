@@ -1,11 +1,11 @@
 import {
   GameLoop,
   getSimulationDeltaSeconds
-} from "../../js/core/GameLoop.js?v=phase06-qte";
+} from "../../js/core/GameLoop.js?v=phase07-status-r2";
 import {
   GAME_STATES,
   GameStateMachine
-} from "../../js/core/GameStateMachine.js?v=phase06-qte";
+} from "../../js/core/GameStateMachine.js?v=phase07-status-r2";
 import {
   assertEqual,
   assertThrows

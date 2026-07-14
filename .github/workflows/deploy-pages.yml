@@ -22,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Run Phase 06 tests
+      - name: Run Phase 07 tests
         run: npm test
 
       - name: Configure GitHub Pages

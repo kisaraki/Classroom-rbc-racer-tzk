@@ -1,6 +1,6 @@
-import { GAME_CONFIG } from "../config.js?v=phase06-qte";
-import { MessageOverlay } from "./MessageOverlay.js?v=phase06-qte";
-import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase06-qte";
+import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
+import { MessageOverlay } from "./MessageOverlay.js?v=phase07-status-r2";
+import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase07-status-r2";
 
 const EMPTY_STATUSES = Object.freeze([]);
 
@@ -170,10 +170,10 @@ export class HUDManager {
   showReady() {
     this.#elements.overlay.hidden = false;
     this.#elements.overlay.dataset.mode = "READY";
-    this.#elements.overlayKicker.textContent = "Phase 06 / Gas exchange protocol";
-    this.#elements.overlayTitle.textContent = "氣體交換上線";
+    this.#elements.overlayKicker.textContent = "Phase 07 / Status overlap protocol";
+    this.#elements.overlayTitle.textContent = "狀態效果上線";
     this.#elements.overlayCopy.textContent =
-      "穿越組織微血管的 Gas Token 後，請在絕對倒數內分別按滿 O 與 C。第一次失敗可重試；第二次失敗仍允許通過。";
+      "第五次酒精碰撞觸發十五秒中毒；瘧原蟲使引擎蓋翻動五秒。效果可重疊，絕對期限在 QTE、低血壓與暫停中繼續。";
     this.#elements.overlayAction.textContent =
       "開始遊戲並鎖定滑鼠視角";
     this.#elements.overlayAction.hidden = false;
@@ -189,7 +189,7 @@ export class HUDManager {
       ? "世界位移已停止，但氣體交換與 REAL CLOCK 的絕對倒數仍持續。"
       : pausedFromState === "TRANSFER_CUTSCENE"
         ? "轉場倒數仍持續；完成後會直接顯示第一關結算。"
-        : "血管中的世界位移已停止；右上角 REAL CLOCK 仍依絕對時間繼續。";
+        : "世界位移已停止；REAL CLOCK、酒精與瘧原蟲的絕對期限及動畫仍繼續。";
     this.#elements.overlayAction.textContent = "點擊恢復遊戲";
     this.#elements.overlayAction.hidden = false;
     this.#elements.overlayAction.disabled = false;
@@ -310,7 +310,7 @@ export class HUDManager {
         : "氣體交換失敗，但已依規則通過。") +
       " 最終分數：" +
       score +
-      "。Phase 06 僅開放第一關，可重新挑戰。";
+      "。Phase 07 僅開放第一關，可重新挑戰。";
     this.#elements.overlayAction.textContent = "重新挑戰第一關";
     this.#elements.overlayAction.hidden = false;
     this.#elements.overlayAction.disabled = false;

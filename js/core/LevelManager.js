@@ -1,6 +1,6 @@
-import { GAME_CONFIG } from "../config.js?v=phase06-qte";
-import { LEVELS } from "../data/levels.js?v=phase06-qte";
-import { isLevelData } from "../data/schemas.js?v=phase06-qte";
+import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
+import { LEVELS } from "../data/levels.js?v=phase07-status-r2";
+import { isLevelData } from "../data/schemas.js?v=phase07-status-r2";
 
 function requireDistance(distanceAlongTrack) {
   if (!Number.isFinite(distanceAlongTrack)) {

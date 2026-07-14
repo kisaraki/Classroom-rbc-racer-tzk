@@ -5,15 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="RBC Racer Phase 06 gas-exchange QTE and first-level completion"
+      content="RBC Racer Phase 07 alcohol and malaria status effects"
     >
-    <title>RBC Racer | Phase 06 Gas Exchange</title>
-    <link rel="stylesheet" href="./css/main.css?v=phase06-qte">
-    <link rel="stylesheet" href="./css/hud.css?v=phase06-qte">
-    <link rel="stylesheet" href="./css/menu.css?v=phase06-qte">
+    <title>RBC Racer | Phase 07 Status Effects</title>
+    <link rel="stylesheet" href="./css/main.css?v=phase07-status-r2">
+    <link rel="stylesheet" href="./css/hud.css?v=phase07-status-r2">
+    <link rel="stylesheet" href="./css/menu.css?v=phase07-status-r2">
   </head>
   <body>
-    <main id="game-root" class="game-root" data-game-state="BOOT">
+    <main
+      id="game-root"
+      class="game-root"
+      data-game-state="BOOT"
+      data-intoxicated="false"
+    >
       <canvas
         id="game-canvas"
         aria-label="RBC Racer 第一關下半身體循環血管"
@@ -24,7 +29,7 @@
 
       <section id="game-hud" class="game-hud" aria-label="遊戲狀態">
         <header class="hud-brand">
-          <span class="hud-brand__phase">P06</span>
+          <span class="hud-brand__phase">P07</span>
           <span class="hud-brand__name">RBC / RACER</span>
           <span class="hud-brand__status">
             <i aria-hidden="true"></i>
@@ -216,14 +221,14 @@
         data-mode="READY"
         aria-labelledby="overlay-title"
       >
-        <div class="overlay-index" aria-hidden="true">06</div>
+        <div class="overlay-index" aria-hidden="true">07</div>
         <div class="overlay-panel">
           <p id="overlay-kicker" class="overlay-kicker">
-            Phase 06 / Gas exchange protocol
+            Phase 07 / Status overlap protocol
           </p>
-          <h1 id="overlay-title">氣體交換上線</h1>
+          <h1 id="overlay-title">狀態效果上線</h1>
           <p id="overlay-copy" class="overlay-copy">
-            穿越組織微血管的 Gas Token 後，請在絕對倒數內分別按滿 O 與 C。第一次失敗可重試；第二次失敗仍允許通過。
+            第五次酒精碰撞將觸發十五秒中毒；瘧原蟲會使引擎蓋翻動五秒。兩種效果可重疊，所有期限在 QTE、低血壓與暫停中繼續。
           </p>
           <div class="overlay-controls" aria-label="核心操作">
             <span><b>↑↓←→</b> STRAFE</span>
@@ -244,6 +249,6 @@
       </noscript>
     </main>
 
-    <script type="module" src="./js/main.js?v=phase06-qte"></script>
+    <script type="module" src="./js/main.js?v=phase07-status-r2"></script>
   </body>
 </html>

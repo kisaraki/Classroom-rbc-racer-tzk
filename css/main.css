@@ -67,6 +67,13 @@ output {
   outline: none;
 }
 
+.game-root[data-intoxicated="true"] #game-canvas {
+  transform-origin: center;
+  animation: intoxication-distortion 1.2s ease-in-out infinite alternate;
+  filter: saturate(1.24) contrast(1.08) hue-rotate(-4deg);
+  will-change: filter, transform;
+}
+
 .screen-vignette,
 .screen-grain {
   position: absolute;
@@ -87,6 +94,39 @@ output {
     repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 255, 255, 0.025) 4px),
     repeating-linear-gradient(90deg, transparent 0 17px, rgba(255, 108, 120, 0.018) 18px);
   mix-blend-mode: screen;
+}
+
+.game-root[data-intoxicated="true"] .screen-grain {
+  opacity: 0.42;
+  animation: intoxication-echo 780ms steps(2, end) infinite;
+  background-image:
+    radial-gradient(circle at 48% 52%, transparent 0 26%, rgba(74, 210, 255, 0.08) 54%, transparent 72%),
+    radial-gradient(circle at 52% 48%, transparent 0 30%, rgba(255, 82, 101, 0.1) 58%, transparent 76%),
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 255, 255, 0.035) 4px);
+}
+
+@keyframes intoxication-distortion {
+  0% {
+    transform: scale(1.012) translateX(-0.22rem) skewX(-0.16deg);
+  }
+
+  50% {
+    filter: saturate(1.34) contrast(1.04) hue-rotate(5deg);
+  }
+
+  100% {
+    transform: scale(1.018) translateX(0.28rem) skewX(0.2deg);
+  }
+}
+
+@keyframes intoxication-echo {
+  0% {
+    transform: translateX(-0.18rem);
+  }
+
+  100% {
+    transform: translateX(0.18rem);
+  }
 }
 
 .noscript-message {

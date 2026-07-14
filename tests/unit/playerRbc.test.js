@@ -3,10 +3,10 @@ import {
   PerspectiveCamera,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
-import { createLevelCheckpoint } from "../../js/data/schemas.js?v=phase06-qte";
+import { GAME_CONFIG } from "../../js/config.js?v=phase07-status-r2";
+import { createLevelCheckpoint } from "../../js/data/schemas.js?v=phase07-status-r2";
 import { InputController } from "../../js/input/InputController.js";
-import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase06-qte";
+import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase07-status-r2";
 import {
   assert,
   assertApproximately,
@@ -94,6 +94,19 @@ export function registerPlayerRbcTests(harness) {
       Number.EPSILON
     );
     assertEqual(player.hitWall, true);
+    player.dispose();
+  });
+
+  harness.test("direct BP overrides keep speed synchronized and clamped", () => {
+    const player = new PlayerRBC();
+
+    assertEqual(player.setBloodPressure(125), 125);
+    assertEqual(player.speed, 12.5);
+    assertEqual(
+      player.setBloodPressure(GAME_CONFIG.bp.max + 100),
+      GAME_CONFIG.bp.max
+    );
+    assertEqual(player.speed, GAME_CONFIG.movement.maxSpeed);
     player.dispose();
   });
 
@@ -233,7 +246,7 @@ export function registerPlayerRbcTests(harness) {
     player.dispose();
   });
 
-  harness.test("malaria hood uses an absolute five-second deadline", () => {
+  harness.test("malaria hood uses five-second effect and 0.4-second restore deadlines", () => {
     const player = new PlayerRBC();
     const hood = player.hoodController;
     const expiresAtMs = hood.triggerBasicObstruction(1000);
@@ -247,7 +260,43 @@ export function registerPlayerRbcTests(harness) {
     );
     assertEqual(hood.update(5999), true);
     assertEqual(hood.update(6000), false);
+    assertEqual(hood.isRestoring, true);
+    assert(
+      Math.abs(hood.group.rotation.x) > Number.EPSILON,
+      "Restore must begin from the final flap transform."
+    );
+    hood.update(6200);
+    assertEqual(hood.isRestoring, true);
+    hood.update(6400);
+    assertEqual(hood.isRestoring, false);
     assertApproximately(hood.group.rotation.x, 0, Number.EPSILON);
+    player.dispose();
+  });
+
+  harness.test("malaria flutter derives from the original transform", () => {
+    const player = new PlayerRBC();
+    const hood = player.hoodController;
+    hood.triggerBasicObstruction(1000);
+    hood.update(1375);
+    const first = hood.animationDiagnostics;
+    hood.update(1375);
+    const repeated = hood.animationDiagnostics;
+
+    assertApproximately(
+      repeated.rotationX,
+      first.rotationX,
+      Number.EPSILON
+    );
+    assertApproximately(
+      repeated.rotationZ,
+      first.rotationZ,
+      Number.EPSILON
+    );
+    assertApproximately(repeated.offsetY, first.offsetY, Number.EPSILON);
+    assert(
+      Math.abs(first.rotationZ) > Number.EPSILON,
+      "Flap animation must include configured roll."
+    );
     player.dispose();
   });
 
@@ -259,6 +308,7 @@ export function registerPlayerRbcTests(harness) {
     assertEqual(hood.triggerBasicObstruction(3000), 8000);
     assertEqual(hood.update(6000), true);
     assertEqual(hood.update(8000), false);
+    assertEqual(hood.isRestoring, true);
     assertThrows(() => hood.update(Number.NaN), TypeError);
     player.dispose();
   });
@@ -271,9 +321,37 @@ export function registerPlayerRbcTests(harness) {
     assertEqual(hood.setQteMode(true), true);
     assertEqual(hood.group.visible, false);
     assertEqual(hood.update(6000), false);
+    assertEqual(hood.isRestoring, true);
     assertEqual(hood.setQteMode(false), false);
     assertEqual(hood.group.visible, true);
+    hood.update(6400);
+    assertApproximately(hood.group.rotation.x, 0, Number.EPSILON);
     assertThrows(() => hood.setQteMode("yes"), TypeError);
+    player.dispose();
+  });
+
+  harness.test("malaria and intoxication overlap caps hood coverage at 55 percent", () => {
+    const player = new PlayerRBC();
+    const hood = player.hoodController;
+    const baseScale = hood.mesh.scale.x;
+    const coverage = hood.setCombinedEffectMode(true);
+
+    assertEqual(coverage, GAME_CONFIG.malaria.combinedMaximumCoverage);
+    assertApproximately(hood.mesh.scale.x, baseScale, Number.EPSILON);
+    hood.triggerBasicObstruction(1000);
+    assert(
+      hood.mesh.scale.x < baseScale,
+      "Overlapping effects must reduce the active hood obstruction scale."
+    );
+    assertEqual(
+      hood.group.userData.screenCoverageLimit,
+      GAME_CONFIG.malaria.combinedMaximumCoverage
+    );
+    hood.clearBasicObstruction();
+    assertApproximately(hood.mesh.scale.x, baseScale, Number.EPSILON);
+    hood.setCombinedEffectMode(false);
+    assertApproximately(hood.mesh.scale.x, baseScale, Number.EPSILON);
+    assertThrows(() => hood.setCombinedEffectMode("yes"), TypeError);
     player.dispose();
   });
 

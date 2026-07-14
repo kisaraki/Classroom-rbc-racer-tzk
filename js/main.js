@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "./config.js?v=phase06-qte";
+import { GAME_CONFIG } from "./config.js?v=phase07-status-r2";
 import {
   getDeviceSupport,
   showUnsupportedMobileDevice
-} from "./core/DeviceSupport.js?v=phase06-qte";
+} from "./core/DeviceSupport.js?v=phase07-status-r2";
 
 const gameRoot = document.querySelector("#game-root");
 const deviceSupport = getDeviceSupport(window.navigator);
@@ -17,7 +17,7 @@ if (!deviceSupport.supported) {
 
   try {
     const { Game } = await import(
-      "./core/Game.js?v=phase06-qte"
+      "./core/Game.js?v=phase07-status-r2"
     );
     const game = new Game();
     game.start();

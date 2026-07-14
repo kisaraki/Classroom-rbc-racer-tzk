@@ -1,18 +1,18 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
+import { GAME_CONFIG } from "../../js/config.js?v=phase07-status-r2";
 import {
   ENTITY_TRIGGERS,
   getEntityType
-} from "../../js/data/entityTypes.js?v=phase06-qte";
+} from "../../js/data/entityTypes.js?v=phase07-status-r2";
 import {
   createEntityState,
   createPlayerState
-} from "../../js/data/schemas.js?v=phase06-qte";
+} from "../../js/data/schemas.js?v=phase07-status-r2";
 import {
   CollisionSystem,
   isCrossSectionHit,
   isSweptLongitudinalHit
-} from "../../js/systems/CollisionSystem.js?v=phase06-qte";
-import { applyEntityScoreEffect } from "../../js/systems/ScoreSystem.js?v=phase06-qte";
+} from "../../js/systems/CollisionSystem.js?v=phase07-status-r2";
+import { applyEntityScoreEffect } from "../../js/systems/ScoreSystem.js?v=phase07-status-r2";
 import {
   assertEqual,
   assertThrows

@@ -393,6 +393,29 @@
   border-left-color: var(--bp-high);
 }
 
+.status-panel[data-active="true"] .status-toolkit {
+  margin-top: 0.42rem;
+  padding-top: 0.42rem;
+}
+
+.status-panel[data-active="true"] .status-toolkit__brand {
+  margin-bottom: 0.34rem;
+}
+
+.status-panel[data-active="true"] .status-toolkit__controls {
+  gap: 0.16rem;
+}
+
+.status-panel[data-active="true"] .status-toolkit__controls div {
+  min-height: 1.25rem;
+  padding-block: 0.12rem;
+}
+
+.status-panel[data-active="true"] .status-toolkit__controls kbd,
+.status-panel[data-active="true"] .status-toolkit__controls span {
+  font-size: 0.62rem;
+}
+
 .status-panel header {
   display: flex;
   align-items: baseline;

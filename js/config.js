@@ -1288,7 +1288,8 @@ export const GAME_CONFIG = deepFreeze({
     inputFailureChance: 0.35,
     bpRandomIntervalMs: 400,
     swayFrequency: 3.2,
-    swayAmplitude: 0.75
+    swayAmplitude: 0.75,
+    randomSeedSalt: 0x53544637
   },
 
   malaria: {
@@ -1302,6 +1303,7 @@ export const GAME_CONFIG = deepFreeze({
     hoodRollAmplitude: 0.12,
     hoodOffsetFrequency: 11,
     hoodOffsetAmplitude: 0.025,
+    minimumScreenCoverage: 0.4,
     maximumScreenCoverage: 0.65,
     combinedMaximumCoverage: 0.55,
     restoreDurationSeconds: 0.4

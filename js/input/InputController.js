@@ -1,10 +1,15 @@
-const CONTROL_CODES = new Set([
+export const DRIVING_CONTROL_CODES = Object.freeze([
   "ArrowUp",
   "ArrowDown",
   "ArrowLeft",
   "ArrowRight",
   "KeyZ",
-  "KeyX",
+  "KeyX"
+]);
+
+const DRIVING_CONTROL_CODE_SET = new Set(DRIVING_CONTROL_CODES);
+const CONTROL_CODES = new Set([
+  ...DRIVING_CONTROL_CODES,
   "KeyO",
   "KeyC"
 ]);
@@ -12,6 +17,7 @@ const CONTROL_CODES = new Set([
 export class InputController {
   #target;
   #pressedCodes = new Set();
+  #drivingActions = [];
   #qteActions = [];
   #attached = false;
 
@@ -64,7 +70,23 @@ export class InputController {
 
   reset() {
     this.#pressedCodes.clear();
+    this.#drivingActions.length = 0;
     this.#qteActions.length = 0;
+  }
+
+  resetDrivingControls() {
+    DRIVING_CONTROL_CODES.forEach((code) => {
+      this.#pressedCodes.delete(code);
+    });
+    this.#drivingActions.length = 0;
+  }
+
+  getPressedDrivingCodes() {
+    return DRIVING_CONTROL_CODES.filter((code) => this.isPressed(code));
+  }
+
+  consumeDrivingActions() {
+    return this.#drivingActions.splice(0);
   }
 
   getLateralAxes() {
@@ -111,7 +133,19 @@ export class InputController {
       return;
     }
 
+    const wasPressed = this.isPressed(event.code);
     this.setPressed(event.code, true);
+
+    if (
+      DRIVING_CONTROL_CODE_SET.has(event.code) &&
+      !wasPressed &&
+      !event.repeat
+    ) {
+      this.#drivingActions.push(Object.freeze({
+        code: event.code,
+        pressed: true
+      }));
+    }
 
     if (event.code === "KeyO" || event.code === "KeyC") {
       this.#qteActions.push(event.code);
@@ -124,7 +158,15 @@ export class InputController {
     }
 
     event.preventDefault();
+    const wasPressed = this.isPressed(event.code);
     this.setPressed(event.code, false);
+
+    if (DRIVING_CONTROL_CODE_SET.has(event.code) && wasPressed) {
+      this.#drivingActions.push(Object.freeze({
+        code: event.code,
+        pressed: false
+      }));
+    }
   };
 
   #handleBlur = () => {

@@ -1,17 +1,17 @@
 import { Group } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase06-qte";
+import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
 import {
   ENTITY_CATEGORIES,
   ENTITY_TYPES,
   GENERAL_SPAWN_TYPE_IDS,
   getEntityType
-} from "../data/entityTypes.js?v=phase06-qte";
+} from "../data/entityTypes.js?v=phase07-status-r2";
 import {
   createEntityState,
   isPlayerState
-} from "../data/schemas.js?v=phase06-qte";
+} from "../data/schemas.js?v=phase07-status-r2";
 import { SeededRandom } from "../utils/SeededRandom.js";
-import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase06-qte";
+import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase07-status-r2";
 
 function requireUnitValue(value) {
   if (!Number.isFinite(value) || value < 0 || value >= 1) {

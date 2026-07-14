@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
+import { GAME_CONFIG } from "../../js/config.js?v=phase07-status-r2";
 import {
   assembleLevel,
   LEVELS
-} from "../../js/data/levels.js?v=phase06-qte";
+} from "../../js/data/levels.js?v=phase07-status-r2";
 import {
   createEntityState,
   createLevelCheckpoint,
@@ -11,7 +11,7 @@ import {
   isLevelCheckpoint,
   isLevelData,
   isPlayerState
-} from "../../js/data/schemas.js?v=phase06-qte";
+} from "../../js/data/schemas.js?v=phase07-status-r2";
 import {
   assert,
   assertApproximately,

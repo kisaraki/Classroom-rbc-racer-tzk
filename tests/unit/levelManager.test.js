@@ -1,9 +1,9 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
-import { LevelManager } from "../../js/core/LevelManager.js?v=phase06-qte";
-import { LEVELS } from "../../js/data/levels.js?v=phase06-qte";
+import { GAME_CONFIG } from "../../js/config.js?v=phase07-status-r2";
+import { LevelManager } from "../../js/core/LevelManager.js?v=phase07-status-r2";
+import { LEVELS } from "../../js/data/levels.js?v=phase07-status-r2";
 import { InputController } from "../../js/input/InputController.js";
 import { PlayerRBC } from "../../js/player/PlayerRBC.js";
-import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase06-qte";
+import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase07-status-r2";
 import {
   assert,
   assertApproximately,

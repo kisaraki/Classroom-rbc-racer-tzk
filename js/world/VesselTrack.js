@@ -10,13 +10,13 @@ import {
   UnsignedByteType,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase06-qte";
+import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
 import {
   GAS_EXCHANGE_STATUS,
   isLevelData
-} from "../data/schemas.js?v=phase06-qte";
+} from "../data/schemas.js?v=phase07-status-r2";
 import { distanceToNormalizedProgress } from "./TrackMath.js";
-import { TrackSection } from "./TrackSection.js?v=phase06-qte";
+import { TrackSection } from "./TrackSection.js?v=phase07-status-r2";
 
 function clampUnit(value) {
   return Math.min(1, Math.max(0, value));

@@ -1,4 +1,4 @@
-import { InputController } from "../../js/input/InputController.js?v=phase06-qte";
+import { InputController } from "../../js/input/InputController.js?v=phase07-status-r2";
 import {
   assert,
   assertApproximately,
@@ -110,6 +110,37 @@ export function registerInputTests(harness) {
     assertEqual(preventedCount, 3);
     assertEqual(input.consumeQteActions().join(" "), "KeyO KeyC");
     assertEqual(input.consumeQteActions().length, 0);
+    input.detach();
+  });
+
+  harness.test("driving transitions queue separately from unaffected QTE input", () => {
+    const target = new FakeEventTarget();
+    const input = new InputController({ target });
+    const emit = (type, code, repeat = false) => target.emit(type, {
+      code,
+      repeat,
+      preventDefault: () => {}
+    });
+
+    input.attach();
+    emit("keydown", "ArrowRight");
+    emit("keydown", "ArrowRight", true);
+    emit("keydown", "KeyO");
+    emit("keyup", "ArrowRight");
+
+    const actions = input.consumeDrivingActions();
+    assertEqual(actions.length, 2);
+    assertEqual(actions[0].code, "ArrowRight");
+    assertEqual(actions[0].pressed, true);
+    assertEqual(actions[1].pressed, false);
+    assertEqual(input.consumeQteActions().join(" "), "KeyO");
+
+    emit("keydown", "KeyZ");
+    emit("keydown", "KeyC");
+    input.resetDrivingControls();
+    assertEqual(input.getPressedDrivingCodes().length, 0);
+    assertEqual(input.consumeDrivingActions().length, 0);
+    assertEqual(input.consumeQteActions().join(" "), "KeyC");
     input.detach();
   });
 }

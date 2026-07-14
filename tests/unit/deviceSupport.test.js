@@ -1,9 +1,9 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
+import { GAME_CONFIG } from "../../js/config.js?v=phase07-status-r2";
 import {
   getDeviceSupport,
   isMobileDevice,
   showUnsupportedMobileDevice
-} from "../../js/core/DeviceSupport.js?v=phase06-qte";
+} from "../../js/core/DeviceSupport.js?v=phase07-status-r2";
 import {
   assertEqual,
   assertThrows
