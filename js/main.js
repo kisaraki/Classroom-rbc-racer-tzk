@@ -1,4 +1,4 @@
-import { Game } from "./core/Game.js";
+import { Game } from "./core/Game.js?v=phase01-real-clock";
 
 const gameRoot = document.querySelector("#game-root");
 

@@ -15,10 +15,10 @@ import { CameraController } from "../input/CameraController.js";
 import { InputController } from "../input/InputController.js";
 import { PointerLockController } from "../input/PointerLockController.js";
 import { PlayerRBC } from "../player/PlayerRBC.js";
-import { HUDManager } from "../ui/HUDManager.js";
+import { HUDManager } from "../ui/HUDManager.js?v=phase01-real-clock";
 import { VesselTrack } from "../world/VesselTrack.js";
 import { GameLoop } from "./GameLoop.js";
-import { GameSession } from "./GameSession.js";
+import { GameSession } from "./GameSession.js?v=phase01-real-clock";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);

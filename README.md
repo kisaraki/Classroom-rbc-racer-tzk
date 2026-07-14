@@ -139,7 +139,9 @@ test resources use relative paths, so the same files work from the repository
 subpath at https://kisaraki.github.io/Classroom-rbc-racer-tzk/.
 
 The Pages workflow deploys this directory without replacing the vendored
-Three.js files with a CDN reference.
+Three.js files with a CDN reference. Entry styles and ES Module paths use a
+release query token so a newly deployed UI does not reuse an older GitHub Pages
+asset from the browser cache.
 
 ## Specifications
 

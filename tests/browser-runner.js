@@ -1,4 +1,4 @@
-import { createPhase01TestHarness } from "./unit/suites.js";
+import { createPhase01TestHarness } from "./unit/suites.js?v=phase01-real-clock";
 
 const resultList = document.querySelector("#test-results");
 const summaryElement = document.querySelector("#test-summary");

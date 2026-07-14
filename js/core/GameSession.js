@@ -1,4 +1,4 @@
-import { GameClock } from "./GameClock.js";
+import { GameClock } from "./GameClock.js?v=phase01-real-clock";
 import {
   GAME_STATES,
   GameStateMachine
