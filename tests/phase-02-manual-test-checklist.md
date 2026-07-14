@@ -39,7 +39,7 @@
 - [x] 1920 x 1080 has no horizontal or vertical game-page overflow.
 - [x] 1920 x 1080 PLAYING runs at 59 to 60 FPS after the render-scale fix.
 - [x] Final local game and test pages produce no console errors or warnings.
-- [ ] GitHub Pages workflow passes and the live subpath serves Phase 02 assets.
+- [x] GitHub Pages workflow passes and the live subpath serves Phase 02 assets.
 
-The temporary BLOCKED conclusion and all evidence are recorded in
+The PASS conclusion and all evidence are recorded in
 `reports/phase-02-report.md`.

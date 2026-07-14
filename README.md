@@ -35,9 +35,9 @@ Intentionally excluded until later phases:
 - QTE, low-BP stasis, alcohol, malaria, and Wound gameplay.
 - Cutscenes, game-over, retry, ending, and victory flows.
 
-Phase 02 implementation and local acceptance are complete. The stage remains
-BLOCKED only until the new build passes GitHub Pages deployment and live-site
-verification. See reports/phase-02-report.md for exact evidence.
+Phase 02 is PASS. Local, desktop Chrome, GitHub Actions, GitHub Pages, and the
+shared live browser suite all passed. Phase 03 is authorized but has not
+started. See reports/phase-02-report.md for exact evidence.
 
 ## Controls
 
