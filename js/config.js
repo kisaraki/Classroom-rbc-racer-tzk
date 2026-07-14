@@ -100,8 +100,26 @@ export const GAME_CONFIG = deepFreeze({
     fpsSampleWindowSeconds: 1
   },
 
+  deviceSupport: {
+    mobileUserAgentPattern:
+      "Mobi|Android|iPhone|iPad|iPod|IEMobile|Windows Phone|Opera Mini",
+    touchTabletPlatform: "MacIntel",
+    touchTabletMinimumPoints: 2,
+    mobileReason: "MOBILE_DEVICE",
+    supportedDatasetValue: "SUPPORTED",
+    blockedState: "UNSUPPORTED",
+    blockedDatasetValue: "MOBILE_BLOCKED",
+    overlayMode: "UNSUPPORTED",
+    overlayIndex: "!",
+    overlayKicker: "Device check / Desktop required",
+    overlayTitle: "不支援手機",
+    overlayCopy:
+      "本遊戲需要鍵盤、滑鼠與 Pointer Lock，手機或平板無法提供完整操作，因此已停止啟動。請改用桌上型或筆記型電腦。",
+    overlayNote: "未建立 Three.js 場景，也未啟動遊戲計時器。"
+  },
+
   track: {
-    playerCollisionRadius: 0.65,
+    playerCollisionRadius: 0.55,
     wallMargin: 0.35,
     sectionOverlapMin: 0.5,
     sectionOverlapMax: 1.0,
@@ -165,9 +183,9 @@ export const GAME_CONFIG = deepFreeze({
   playerModel: {
     profileSamples: 20,
     radialSegments: 48,
-    outerRadius: 1.2,
-    centerHalfThickness: 0.16,
-    rimRise: 0.34,
+    outerRadius: 1.02,
+    centerHalfThickness: 0.14,
+    rimRise: 0.29,
     profilePower: 1.35,
     bodyRotationXRadians: Math.PI / 2,
     bodyRoughness: 0.34,
@@ -181,10 +199,10 @@ export const GAME_CONFIG = deepFreeze({
       pixelScale: 8,
       foregroundRgba: [255, 242, 232, 255],
       backgroundRgba: [0, 0, 0, 0],
-      planeWidth: 1.08,
-      planeHeight: 0.36,
+      planeWidth: 0.62,
+      planeHeight: 0.32,
       bodyPosition: [0, 0, -0.38],
-      cockpitPosition: [0, -0.96, -1.66],
+      cockpitPosition: [0, -0.82, -1.8],
       renderOrder: 12
     },
     cockpit: {
@@ -192,11 +210,11 @@ export const GAME_CONFIG = deepFreeze({
       widthSegments: 48,
       heightSegments: 24,
       nosePosition: [0, -1.38, -2.5],
-      noseScale: [2.25, 0.62, 1.08],
+      noseScale: [1.92, 0.53, 0.92],
       noseRoughness: 0.3,
       noseMetalness: 0.12,
-      trimRadius: 0.68,
-      trimTubeRadius: 0.045,
+      trimRadius: 0.58,
+      trimTubeRadius: 0.038,
       trimRadialSegments: 12,
       trimTubularSegments: 48,
       trimPosition: [0, -1.14, -1.78],
@@ -205,7 +223,7 @@ export const GAME_CONFIG = deepFreeze({
     hood: {
       pivotPosition: [0, -1.08, -2.24],
       meshPosition: [0, 0, -0.18],
-      meshScale: [1.28, 0.24, 0.78],
+      meshScale: [1.08, 0.2, 0.66],
       hingeOffset: [0, -0.04, 0.64],
       closedAngleRadians: 0,
       renderOrder: 11

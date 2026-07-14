@@ -10,12 +10,12 @@ import {
   SRGBColorSpace,
   WebGLRenderer
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase04-entities";
+import { GAME_CONFIG } from "../config.js?v=phase04-rbc-mobile";
 import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase04-entities";
 import { CameraController } from "../input/CameraController.js";
 import { InputController } from "../input/InputController.js";
 import { PointerLockController } from "../input/PointerLockController.js";
-import { PlayerRBC } from "../player/PlayerRBC.js?v=phase04-entities";
+import { PlayerRBC } from "../player/PlayerRBC.js?v=phase04-rbc-mobile";
 import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase04-entities";
 import { EntityManager } from "../systems/EntityManager.js?v=phase04-entities";
 import { HUDManager } from "../ui/HUDManager.js?v=phase04-entities";
@@ -172,6 +172,18 @@ export class Game {
     this.#root.dataset.independentHood = String(
       this.player.hoodController.group.parent ===
         this.player.cockpitGroup
+    );
+    this.#root.dataset.playerVisualRadius = String(
+      GAME_CONFIG.playerModel.outerRadius
+    );
+    this.#root.dataset.playerCollisionRadius = String(
+      this.player.state.collisionRadius
+    );
+    this.#root.dataset.rbcLabelWidth = String(
+      GAME_CONFIG.playerModel.label.planeWidth
+    );
+    this.#root.dataset.rbcLabelHeight = String(
+      GAME_CONFIG.playerModel.label.planeHeight
     );
     this.#root.dataset.phase = "04";
     this.#root.dataset.proceduralAssets = "true";

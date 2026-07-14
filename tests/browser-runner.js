@@ -1,4 +1,4 @@
-import { createPhase04TestHarness } from "./unit/suites.js?v=phase04-entities";
+import { createPhase04TestHarness } from "./unit/suites.js?v=phase04-rbc-mobile";
 
 const resultList = document.querySelector("#test-results");
 const summaryElement = document.querySelector("#test-summary");

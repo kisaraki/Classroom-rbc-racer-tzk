@@ -1,4 +1,4 @@
-import { createPhase04TestHarness } from "./unit/suites.js?v=phase04-entities";
+import { createPhase04TestHarness } from "./unit/suites.js?v=phase04-rbc-mobile";
 
 const harness = createPhase04TestHarness();
 const summary = await harness.run();

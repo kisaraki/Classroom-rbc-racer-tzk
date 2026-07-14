@@ -12,8 +12,8 @@ import {
   Vector2,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase04-entities";
-import { createPlayerState } from "../data/schemas.js?v=phase04-entities";
+import { GAME_CONFIG } from "../config.js?v=phase04-rbc-mobile";
+import { createPlayerState } from "../data/schemas.js?v=phase04-rbc-mobile";
 import {
   getSpeedForBloodPressure,
   updateBloodPressure
@@ -22,7 +22,7 @@ import { clampLateralOffset } from "../world/TrackMath.js";
 import {
   createRbcLabelTexture,
   HoodController
-} from "./HoodController.js?v=phase04-entities";
+} from "./HoodController.js?v=phase04-rbc-mobile";
 
 function createBiconcaveGeometry(modelConfig) {
   const profile = [];

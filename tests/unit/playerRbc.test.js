@@ -1,7 +1,10 @@
-import { Vector3 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase04-entities";
+import {
+  PerspectiveCamera,
+  Vector3
+} from "../../vendor/three.module.js";
+import { GAME_CONFIG } from "../../js/config.js?v=phase04-rbc-mobile";
 import { InputController } from "../../js/input/InputController.js";
-import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase04-entities";
+import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase04-rbc-mobile";
 import {
   assert,
   assertApproximately,
@@ -52,6 +55,10 @@ export function registerPlayerRbcTests(harness) {
     const player = new PlayerRBC();
     const input = new InputController({ target: null });
     const track = createStraightTrack();
+    const maximumLateralOffset =
+      GAME_CONFIG.track.radii.greatVessel -
+      GAME_CONFIG.track.playerCollisionRadius -
+      GAME_CONFIG.track.wallMargin;
     input.setPressed("KeyZ", true);
     input.setPressed("ArrowRight", true);
 
@@ -71,8 +78,84 @@ export function registerPlayerRbcTests(harness) {
       11.8,
       Number.EPSILON
     );
-    assertApproximately(player.state.lateralX, 4.5, Number.EPSILON);
+    assertApproximately(
+      player.state.lateralX,
+      maximumLateralOffset,
+      Number.EPSILON
+    );
     assertEqual(player.hitWall, true);
+    player.dispose();
+  });
+
+  harness.test("smaller RBC leaves more avoidance room in capillaries", () => {
+    const player = new PlayerRBC();
+    const capillaryRadius =
+      GAME_CONFIG.track.radii.systemicCapillary;
+    const visualRadiusRatio =
+      GAME_CONFIG.playerModel.outerRadius / capillaryRadius;
+    const lateralCenterLimit =
+      capillaryRadius -
+      player.state.collisionRadius -
+      GAME_CONFIG.track.wallMargin;
+
+    assertEqual(
+      player.state.collisionRadius,
+      GAME_CONFIG.track.playerCollisionRadius
+    );
+    assert(
+      visualRadiusRatio < 0.33,
+      "RBC visual radius must stay below one third of a capillary radius."
+    );
+    assertApproximately(lateralCenterLimit, 2.3, 0.000000000001);
+    assert(
+      player.noseMesh.scale.x < 2,
+      "First-person RBC nose must use the compact scale."
+    );
+    player.dispose();
+  });
+
+  harness.test("RBC label keeps its texture ratio and fits the camera", () => {
+    const player = new PlayerRBC();
+    const label = player.cockpitGroup.getObjectByName(
+      "rbc-cockpit-label"
+    );
+    const textureAspect =
+      player.labelTexture.image.width /
+      player.labelTexture.image.height;
+    const planeAspect =
+      label.geometry.parameters.width /
+      label.geometry.parameters.height;
+    const camera = new PerspectiveCamera(
+      GAME_CONFIG.camera.fieldOfViewDegrees,
+      GAME_CONFIG.renderer.referenceWidth /
+        GAME_CONFIG.renderer.referenceHeight,
+      GAME_CONFIG.camera.nearClip,
+      GAME_CONFIG.camera.farClip
+    );
+    const halfWidth = label.geometry.parameters.width / 2;
+    const halfHeight = label.geometry.parameters.height / 2;
+    const corners = [
+      [-halfWidth, -halfHeight],
+      [-halfWidth, halfHeight],
+      [halfWidth, -halfHeight],
+      [halfWidth, halfHeight]
+    ];
+
+    assertApproximately(planeAspect, textureAspect, 0.02);
+    camera.updateProjectionMatrix();
+    camera.updateMatrixWorld(true);
+    corners.forEach(([offsetX, offsetY]) => {
+      const projected = new Vector3(
+        label.position.x + offsetX,
+        label.position.y + offsetY,
+        label.position.z
+      ).project(camera);
+
+      assert(
+        Math.abs(projected.x) <= 1 && Math.abs(projected.y) <= 1,
+        "Every RBC label corner must remain inside the viewport."
+      );
+    });
     player.dispose();
   });
 

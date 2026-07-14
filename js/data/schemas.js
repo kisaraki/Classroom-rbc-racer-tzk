@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase03-heart-map";
+import { GAME_CONFIG } from "../config.js?v=phase04-rbc-mobile";
 
 export const GAS_EXCHANGE_STATUS = Object.freeze({
   PENDING: "PENDING",
