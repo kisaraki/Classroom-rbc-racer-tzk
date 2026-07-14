@@ -1,8 +1,8 @@
-import { createPhase01TestHarness } from "./unit/suites.js?v=phase01-real-clock";
+import { createPhase02TestHarness } from "./unit/suites.js?v=phase02-level-one";
 
 const resultList = document.querySelector("#test-results");
 const summaryElement = document.querySelector("#test-summary");
-const harness = createPhase01TestHarness();
+const harness = createPhase02TestHarness();
 const summary = await harness.run();
 
 summary.results.forEach((result) => {
@@ -31,4 +31,4 @@ summaryElement.textContent =
   " total.";
 summaryElement.dataset.status = summary.status;
 document.documentElement.dataset.testStatus = summary.status;
-globalThis.__PHASE_01_TEST_RESULT__ = summary;
+globalThis.__PHASE_02_TEST_RESULT__ = summary;

@@ -6,36 +6,38 @@ build. It has no runtime backend, database, framework, CDN, or external media.
 
 ## Current Phase
 
-Phase 01 implements the single-vessel first-person driving prototype on top of
-the Phase 00 contracts.
+Phase 02 replaces the prototype vessel with the data-driven first level:
+the 3000-unit lower-body systemic circulation route.
 
 Included:
 
-- Three.js scene, renderer, perspective camera, lighting, resize, and fog.
-- One prototype Catmull-Rom vessel built from six overlapping TubeGeometry
-  sections and a shared parallel-transport frame cache.
-- Procedural vessel flow texture, biconcave PlayerRBC model, pixel RBC label,
-  first-person nose, and independently controlled hood model.
-- Local cross-section arrow-key movement and circular wall clamping.
-- Config-driven Z/X blood-pressure adjustment and BP-to-speed mapping.
-- Pointer Lock mouse yaw/pitch with vertical clamping and no vehicle effects.
-- Basic HP, BP, Score, Location, distance, speed, and absolute-clock HUD.
-- A RAF loop where world simulation stops in PAUSED while GameClock and HUD
-  continue.
-- A shared 51-test Node and browser suite, including deterministic Pointer Lock
-  session and browser-event coverage.
+- One generic LevelManager and one registered playable level. Levels 2 through
+  4 remain unbuilt.
+- A 3000-unit, 19-control-point Catmull-Rom route from the left ventricle to the
+  right ventricle.
+- Eight data-driven TrackSection instances with exact distances, Location
+  labels, radii, arterial-to-venous vertex-color gradients, and overlap seams.
+- Shared parallel-transport frames for geometry, the player, the camera, and
+  local cross-section movement.
+- Explicit route start/end contracts, gas-exchange trigger positions, and
+  continuous SVG path progress data for the Phase 03 minimap.
+- A procedural flow texture, biconcave PlayerRBC cockpit, Pointer Lock driving,
+  dynamic Location HUD, and absolute clock retained from Phase 01.
+- A shared 60-test Node and browser suite, including an unobstructed 300-second
+  traversal of the complete first level.
+- A 0.75 internal Three.js render scale that preserves the 1920 x 1080 layout
+  while meeting the desktop performance requirement.
 
 Intentionally excluded until later phases:
 
-- Formal level routes, LevelManager, level completion, and minimap data.
+- Levels 2 through 4, level completion, and the rendered SVG minimap.
 - General entities, spawning, collision effects, and object pools.
 - QTE, low-BP stasis, alcohol, malaria, and Wound gameplay.
 - Cutscenes, game-over, retry, ending, and victory flows.
 
-Phase 01 is PASS. Desktop Pointer Lock, driving, mouse look, Esc release, and
-the corrected `T+` Real Clock have been manually confirmed. Gameplay deadlines
-remain absolute and continue through PAUSED. Phase 02 is now authorized but has
-not started. See reports/phase-01-report.md for exact evidence.
+Phase 02 implementation and local acceptance are complete. The stage remains
+BLOCKED only until the new build passes GitHub Pages deployment and live-site
+verification. See reports/phase-02-report.md for exact evidence.
 
 ## Controls
 
@@ -84,7 +86,7 @@ require an HTTP server.
 
 ## Automated Tests
 
-Run the shared Phase 01 suite with either command:
+Run the shared Phase 02 suite with either command:
 
 ~~~powershell
 npm test
@@ -94,10 +96,11 @@ npm test
 node ./tests/run-tests.mjs
 ~~~
 
-The browser page and Node runner import the same 51 tests from tests/unit.
-They include all Phase 00 regressions plus BP driving, input isolation, paused
-RAF behavior, segmented vessel geometry, parallel-transport frames, PlayerRBC,
-the independent hood, camera-only mouse look, and Pointer Lock session flow.
+The browser page and Node runner import the same 60 tests from tests/unit.
+They include every Phase 01 regression plus first-level assembly, LevelManager
+boundaries, Location changes, minimap progress, gas-trigger placement, route
+start/end behavior, full baseline traversal, segmented vessel geometry, and
+procedural vertex-color gradients.
 
 ## Three.js Vendor Record
 

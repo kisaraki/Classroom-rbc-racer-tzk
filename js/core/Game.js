@@ -10,15 +10,16 @@ import {
   SRGBColorSpace,
   WebGLRenderer
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js";
+import { GAME_CONFIG } from "../config.js?v=phase02-level-one";
 import { CameraController } from "../input/CameraController.js";
 import { InputController } from "../input/InputController.js";
 import { PointerLockController } from "../input/PointerLockController.js";
 import { PlayerRBC } from "../player/PlayerRBC.js";
-import { HUDManager } from "../ui/HUDManager.js?v=phase01-real-clock";
-import { VesselTrack } from "../world/VesselTrack.js";
+import { HUDManager } from "../ui/HUDManager.js?v=phase02-level-one";
+import { VesselTrack } from "../world/VesselTrack.js?v=phase02-level-one";
 import { GameLoop } from "./GameLoop.js";
 import { GameSession } from "./GameSession.js?v=phase01-real-clock";
+import { LevelManager } from "./LevelManager.js?v=phase02-level-one";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);
@@ -59,8 +60,10 @@ export class Game {
     this.#window = windowRef;
     this.#root = requireElement(documentRef, "#game-root");
     this.#canvas = requireElement(documentRef, "#game-canvas");
+    this.levelManager = new LevelManager();
+    this.level = this.levelManager.currentLevel;
     this.#session = new GameSession({
-      durationSeconds: GAME_CONFIG.timing.prototypeDeadlineSeconds
+      durationSeconds: this.level.targetDriveSeconds
     });
     this.hud = new HUDManager(documentRef);
 
@@ -70,7 +73,7 @@ export class Game {
     );
     this.scene.fog = new FogExp2(
       GAME_CONFIG.palette.prototypeFog,
-      GAME_CONFIG.prototype.fogDensity
+      GAME_CONFIG.vessel.fogDensity
     );
     this.camera = new PerspectiveCamera(
       GAME_CONFIG.camera.fieldOfViewDegrees,
@@ -87,8 +90,11 @@ export class Game {
     this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = GAME_CONFIG.renderer.exposure;
 
-    this.track = new VesselTrack();
-    this.player = new PlayerRBC();
+    this.track = new VesselTrack({ level: this.level });
+    this.player = new PlayerRBC({
+      config: GAME_CONFIG,
+      stateOverrides: { currentLevel: this.level.id }
+    });
     this.input = new InputController({ target: windowRef });
     this.cameraController = new CameraController({
       targetElement: this.#canvas,
@@ -131,6 +137,11 @@ export class Game {
     });
 
     this.#root.dataset.threeRevision = REVISION;
+    this.#root.dataset.currentLevel = String(this.level.id);
+    this.#root.dataset.levelName = this.level.name;
+    this.#root.dataset.minimapPathId = this.level.minimapPathId;
+    this.#root.dataset.trackStart = String(this.level.start.distance);
+    this.#root.dataset.trackEnd = String(this.level.end.distance);
     this.#root.dataset.trackSections = String(this.track.sections.length);
     this.#root.dataset.cachedFrames = String(
       this.track.cachedFrameCount
@@ -195,13 +206,13 @@ export class Game {
   }
 
   #createLighting() {
-    const lighting = GAME_CONFIG.prototype.lighting;
+    const lighting = GAME_CONFIG.vessel.lighting;
     const hemisphere = new HemisphereLight(
       GAME_CONFIG.palette.hemisphereSky,
       GAME_CONFIG.palette.hemisphereGround,
       lighting.hemisphereIntensity
     );
-    hemisphere.name = "prototype-hemisphere-light";
+    hemisphere.name = "vessel-hemisphere-light";
     this.scene.add(hemisphere);
 
     const headlight = new SpotLight(
@@ -245,13 +256,19 @@ export class Game {
     const timerRemainingSeconds = this.#session.remainingSeconds;
     const realClockElapsedSeconds = this.#session.elapsedSeconds;
     const pointerLocked = this.#pointerLock.isLocked;
+    const distanceAlongTrack = this.player.state.distanceAlongTrack;
+    const currentSection = this.levelManager.getSectionAtDistance(
+      distanceAlongTrack
+    );
 
     this.hud.update({
       hp: this.player.state.hp,
       maxHp: this.player.state.maxHp,
       bp: this.player.state.bp,
       score: this.player.state.score,
-      location: GAME_CONFIG.prototype.locationLabel,
+      location: this.levelManager.getLocationAtDistance(
+        distanceAlongTrack
+      ),
       speed: this.player.speed,
       distance: this.player.state.distanceAlongTrack,
       trackLength: this.track.trackLength,
@@ -263,7 +280,8 @@ export class Game {
     this.#publishDiagnostics(
       timerRemainingSeconds,
       realClockElapsedSeconds,
-      pointerLocked
+      pointerLocked,
+      currentSection
     );
   }
 
@@ -285,13 +303,29 @@ export class Game {
   #publishDiagnostics(
     timerRemainingSeconds,
     realClockElapsedSeconds,
-    pointerLocked
+    pointerLocked,
+    currentSection
   ) {
     const state = this.player.state;
     this.#root.dataset.gameState = this.#session.state;
     this.#root.dataset.pointerLocked = String(pointerLocked);
     this.#root.dataset.pointerLockErrorName = this.#pointerLockErrorName;
     this.#root.dataset.pointerLockErrorMessage = this.#pointerLockErrorMessage;
+    this.#root.dataset.levelSection = currentSection.id;
+    this.#root.dataset.location =
+      this.levelManager.getLocationAtDistance(state.distanceAlongTrack);
+    this.#root.dataset.minimapSegmentId =
+      currentSection.minimapSegmentId;
+    this.#root.dataset.minimapProgress =
+      this.levelManager
+        .getMinimapProgressAtDistance(state.distanceAlongTrack)
+        .toFixed(GAME_CONFIG.hud.minimapProgressPrecision);
+    this.#root.dataset.atLevelStart = String(
+      this.levelManager.isAtStart(state.distanceAlongTrack)
+    );
+    this.#root.dataset.atLevelEnd = String(
+      this.levelManager.isAtEnd(state.distanceAlongTrack)
+    );
     this.#root.dataset.distance = state.distanceAlongTrack.toFixed(
       GAME_CONFIG.hud.distancePrecision
     );
@@ -391,7 +425,7 @@ export class Game {
       Math.min(
         this.#window.devicePixelRatio,
         GAME_CONFIG.renderer.maximumPixelRatio
-      )
+      ) * GAME_CONFIG.renderer.renderResolutionScale
     );
     this.renderer.setSize(width, height, false);
   };

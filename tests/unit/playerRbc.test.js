@@ -10,7 +10,7 @@ import {
 
 function createStraightTrack() {
   return {
-    trackLength: GAME_CONFIG.prototype.trackLength,
+    trackLength: GAME_CONFIG.levels[1].trackLength,
     getRadiusAtDistance: () => GAME_CONFIG.track.radii.greatVessel,
     getFrameAtDistance: (distance) => ({
       point: new Vector3(0, 0, -distance),

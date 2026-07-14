@@ -1,5 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js";
-import { assembleLevel, LEVELS } from "../../js/data/levels.js";
+import { GAME_CONFIG } from "../../js/config.js?v=phase02-level-one";
+import {
+  assembleLevel,
+  LEVELS
+} from "../../js/data/levels.js?v=phase02-level-one";
 import {
   createEntityState,
   createLevelCheckpoint,
@@ -8,7 +11,7 @@ import {
   isLevelCheckpoint,
   isLevelData,
   isPlayerState
-} from "../../js/data/schemas.js";
+} from "../../js/data/schemas.js?v=phase02-level-one";
 import {
   assert,
   assertApproximately,
@@ -49,13 +52,16 @@ export function registerSchemaTests(harness) {
     const tuning = GAME_CONFIG.levels[1];
     const sections = tuning.sectionRatios.map((ratio, index) => ({
       id: "test-section-" + index,
-      locationLabel: "Test section"
+      locationLabel: "Test section",
+      minimapSegmentId: "test-segment-" + index
     }));
     const level = assembleLevel(1, {
       name: "Test level",
       circulationType: "SYSTEMIC",
       minimapPathId: "test-path",
       gasExchangeType: "UNSPECIFIED",
+      startLocationLabel: "Test start",
+      endLocationLabel: "Test end",
       sections
     });
 
@@ -64,8 +70,13 @@ export function registerSchemaTests(harness) {
     assertEqual(level.sections.length, tuning.sectionRatios.length);
   });
 
-  harness.test("Phase 00 does not prebuild playable levels", () => {
-    assertEqual(LEVELS.length, 0);
+  harness.test("Phase 02 registers only the playable first level", () => {
+    assertEqual(LEVELS.length, 1);
+    assertEqual(LEVELS[0].id, 1);
+    assertEqual(LEVELS[0].sections.length, 8);
+    assertEqual(GAME_CONFIG.levels[2].controlPoints.length, 0);
+    assertEqual(GAME_CONFIG.levels[3].controlPoints.length, 0);
+    assertEqual(GAME_CONFIG.levels[4].controlPoints.length, 0);
   });
 
   harness.test("configured level ratios and baseline times are consistent", () => {

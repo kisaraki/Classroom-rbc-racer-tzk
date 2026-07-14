@@ -118,10 +118,10 @@ export class HUDManager {
   showReady() {
     this.#elements.overlay.hidden = false;
     this.#elements.overlay.dataset.mode = "READY";
-    this.#elements.overlayKicker.textContent = "Phase 01 / Driving prototype";
-    this.#elements.overlayTitle.textContent = "進入血流";
+    this.#elements.overlayKicker.textContent = "Phase 02 / Level one route";
+    this.#elements.overlayTitle.textContent = "下半身體循環";
     this.#elements.overlayCopy.textContent =
-      "本原型用於驗證紅血球駕駛與血液循環介面，不構成醫療建議。方向鍵在血管截面移動，Z／X 調整血壓；滑鼠只改變視角。";
+      "從左心室出發，依序通過動脈、組織微血管與靜脈，抵達右心室。方向鍵在血管截面移動，Z／X 調整血壓；滑鼠只改變視角。";
     this.#elements.overlayAction.textContent =
       "開始遊戲並鎖定滑鼠視角";
     this.#elements.overlayAction.disabled = false;

@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="RBC Racer Phase 01 first-person red blood cell driving prototype"
+      content="RBC Racer Phase 02 lower-body systemic circulation route"
     >
-    <title>RBC Racer | Phase 01 Driving Prototype</title>
-    <link rel="stylesheet" href="./css/main.css?v=phase01-real-clock">
-    <link rel="stylesheet" href="./css/hud.css?v=phase01-real-clock">
-    <link rel="stylesheet" href="./css/menu.css?v=phase01-real-clock">
+    <title>RBC Racer | Phase 02 Level One Route</title>
+    <link rel="stylesheet" href="./css/main.css?v=phase02-level-one">
+    <link rel="stylesheet" href="./css/hud.css?v=phase02-level-one">
+    <link rel="stylesheet" href="./css/menu.css?v=phase02-level-one">
   </head>
   <body>
     <main id="game-root" class="game-root" data-game-state="BOOT">
       <canvas
         id="game-canvas"
-        aria-label="RBC Racer 第一人稱測試血管"
+        aria-label="RBC Racer 第一關下半身體循環血管"
         tabindex="0"
       ></canvas>
       <div class="screen-vignette" aria-hidden="true"></div>
@@ -24,7 +24,7 @@
 
       <section id="game-hud" class="game-hud" aria-label="遊戲狀態">
         <header class="hud-brand">
-          <span class="hud-brand__phase">P01</span>
+          <span class="hud-brand__phase">P02</span>
           <span class="hud-brand__name">RBC / RACER</span>
           <span class="hud-brand__status">
             <i aria-hidden="true"></i>
@@ -62,14 +62,14 @@
           </article>
         </section>
 
-        <section class="mission-strip" aria-label="原型資訊">
+        <section class="mission-strip" aria-label="第一關資訊">
           <div>
             <span>Location</span>
-            <strong id="location-value">Phase 01 測試血管</strong>
+            <strong id="location-value">左心室</strong>
           </div>
           <div>
             <span>Distance</span>
-            <strong id="distance-value">0.0 / 720.0</strong>
+            <strong id="distance-value">0.0 / 3000.0</strong>
           </div>
           <div>
             <span>Velocity</span>
@@ -115,14 +115,14 @@
         data-mode="READY"
         aria-labelledby="overlay-title"
       >
-        <div class="overlay-index" aria-hidden="true">01</div>
+        <div class="overlay-index" aria-hidden="true">02</div>
         <div class="overlay-panel">
           <p id="overlay-kicker" class="overlay-kicker">
-            Phase 01 / Driving prototype
+            Phase 02 / Level one route
           </p>
-          <h1 id="overlay-title">進入血流</h1>
+          <h1 id="overlay-title">下半身體循環</h1>
           <p id="overlay-copy" class="overlay-copy">
-            本原型用於驗證紅血球駕駛與血液循環介面，不構成醫療建議。方向鍵在血管截面移動，Z／X 調整血壓；滑鼠只改變視角。
+            從左心室出發，依序通過動脈、組織微血管與靜脈，抵達右心室。方向鍵在血管截面移動，Z／X 調整血壓；滑鼠只改變視角。
           </p>
           <div class="overlay-controls" aria-label="核心操作">
             <span><b>↑↓←→</b> STRAFE</span>
@@ -143,6 +143,6 @@
       </noscript>
     </main>
 
-    <script type="module" src="./js/main.js?v=phase01-real-clock"></script>
+    <script type="module" src="./js/main.js?v=phase02-level-one"></script>
   </body>
 </html>

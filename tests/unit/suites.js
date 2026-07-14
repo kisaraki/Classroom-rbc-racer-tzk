@@ -4,17 +4,18 @@ import { TestHarness } from "./TestHarness.js";
 import { registerEventBusTests } from "./eventBus.test.js";
 import { registerGameStateTests } from "./gameState.test.js";
 import { registerInputTests } from "./input.test.js";
+import { registerLevelManagerTests } from "./levelManager.test.js?v=phase02-level-one";
 import { registerPlayerRbcTests } from "./playerRbc.test.js";
 import { registerPointerLockTests } from "./pointerLock.test.js?v=phase01-real-clock";
-import { registerSchemaTests } from "./schemas.test.js";
+import { registerSchemaTests } from "./schemas.test.js?v=phase02-level-one";
 import { registerSeededRandomTests } from "./seededRandom.test.js";
 import { registerTimingTests } from "./timing.test.js?v=phase01-real-clock";
 import { registerTrackMathTests } from "./trackMath.test.js";
 import { registerVendorTests } from "./vendor.test.js";
-import { registerVesselTrackTests } from "./vesselTrack.test.js";
+import { registerVesselTrackTests } from "./vesselTrack.test.js?v=phase02-level-one";
 import { registerWoundChanceTests } from "./woundChance.test.js";
 
-export function createPhase01TestHarness() {
+export function createPhase02TestHarness() {
   const harness = new TestHarness();
 
   registerTrackMathTests(harness);
@@ -23,6 +24,7 @@ export function createPhase01TestHarness() {
   registerSeededRandomTests(harness);
   registerEventBusTests(harness);
   registerSchemaTests(harness);
+  registerLevelManagerTests(harness);
   registerVendorTests(harness);
   registerBloodPressureDrivingTests(harness);
   registerInputTests(harness);

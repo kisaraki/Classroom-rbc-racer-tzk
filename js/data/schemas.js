@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js";
+import { GAME_CONFIG } from "../config.js?v=phase02-level-one";
 
 export const GAS_EXCHANGE_STATUS = Object.freeze({
   PENDING: "PENDING",
@@ -38,12 +38,31 @@ export const ENTITY_STATE_SCHEMA = Object.freeze({
 export const LEVEL_DATA_SCHEMA = Object.freeze({
   id: "configured level id",
   name: "string",
+  circulationType: "string",
   targetDriveSeconds: "positive finite number",
   trackLength: "positive finite number",
   seed: "integer",
+  controlPoints: "array of three-number arrays",
   minimapPathId: "string",
+  start: "route endpoint",
+  end: "route endpoint",
   sections: "array",
   multipliers: "object"
+});
+
+export const LEVEL_SECTION_SCHEMA = Object.freeze({
+  id: "string",
+  locationLabel: "string",
+  startDistance: "finite number",
+  endDistance: "finite number",
+  startRatio: "normalized progress",
+  endRatio: "normalized progress",
+  radius: "positive finite number",
+  colorStart: "string",
+  colorEnd: "string",
+  minimapSegmentId: "string",
+  minimapStartProgress: "normalized progress",
+  minimapEndProgress: "normalized progress"
 });
 
 export const LEVEL_CHECKPOINT_SCHEMA = Object.freeze({
@@ -67,6 +86,40 @@ function isNonNegativeInteger(value) {
 
 function isConfiguredLevelId(levelId) {
   return Object.hasOwn(GAME_CONFIG.levels, levelId);
+}
+
+function isNormalizedProgress(value) {
+  return isFiniteNumber(value) && value >= 0 && value <= 1;
+}
+
+function isRouteEndpoint(value) {
+  return (
+    isObject(value) &&
+    isFiniteNumber(value.distance) &&
+    typeof value.locationLabel === "string"
+  );
+}
+
+export function isLevelSection(value) {
+  return (
+    isObject(value) &&
+    typeof value.id === "string" &&
+    typeof value.locationLabel === "string" &&
+    isFiniteNumber(value.startDistance) &&
+    isFiniteNumber(value.endDistance) &&
+    value.endDistance > value.startDistance &&
+    isNormalizedProgress(value.startRatio) &&
+    isNormalizedProgress(value.endRatio) &&
+    value.endRatio > value.startRatio &&
+    isFiniteNumber(value.radius) &&
+    value.radius > 0 &&
+    typeof value.colorStart === "string" &&
+    typeof value.colorEnd === "string" &&
+    typeof value.minimapSegmentId === "string" &&
+    isNormalizedProgress(value.minimapStartProgress) &&
+    isNormalizedProgress(value.minimapEndProgress) &&
+    value.minimapEndProgress > value.minimapStartProgress
+  );
 }
 
 export function isPlayerState(value) {
@@ -166,13 +219,28 @@ export function isLevelData(value) {
     isObject(value) &&
     isConfiguredLevelId(value.id) &&
     typeof value.name === "string" &&
+    typeof value.circulationType === "string" &&
     isFiniteNumber(value.targetDriveSeconds) &&
     value.targetDriveSeconds > 0 &&
     isFiniteNumber(value.trackLength) &&
     value.trackLength > 0 &&
     Number.isInteger(value.seed) &&
+    Array.isArray(value.controlPoints) &&
+    value.controlPoints.length >= 2 &&
+    value.controlPoints.every(
+      (point) =>
+        Array.isArray(point) &&
+        point.length === 3 &&
+        point.every(isFiniteNumber)
+    ) &&
     typeof value.minimapPathId === "string" &&
+    isRouteEndpoint(value.start) &&
+    value.start.distance === 0 &&
+    isRouteEndpoint(value.end) &&
+    value.end.distance === value.trackLength &&
     Array.isArray(value.sections) &&
+    value.sections.length > 0 &&
+    value.sections.every(isLevelSection) &&
     isObject(value.multipliers)
   );
 }

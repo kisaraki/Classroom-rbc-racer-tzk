@@ -1,6 +1,8 @@
 import {
   BackSide,
+  Color,
   Curve,
+  Float32BufferAttribute,
   Mesh,
   MeshStandardMaterial,
   TubeGeometry,
@@ -30,7 +32,11 @@ export class ParallelTransportTubeGeometry extends TubeGeometry {
     tubularSegments,
     radius,
     radialSegments,
-    getFrameAtRatio
+    getFrameAtRatio,
+    logicalStartRatio,
+    logicalEndRatio,
+    colorStart,
+    colorEnd
   }) {
     const curveWindow = new CurveWindow(curve, startRatio, endRatio);
     super(
@@ -43,8 +49,13 @@ export class ParallelTransportTubeGeometry extends TubeGeometry {
 
     const position = this.getAttribute("position");
     const normal = this.getAttribute("normal");
+    const colors = new Float32Array(position.count * 3);
+    const startColor = new Color(colorStart);
+    const endColor = new Color(colorEnd);
+    const vertexColor = new Color();
     const radialDirection = new Vector3();
     let vertexIndex = 0;
+    let colorIndex = 0;
 
     for (
       let tubularIndex = 0;
@@ -55,6 +66,15 @@ export class ParallelTransportTubeGeometry extends TubeGeometry {
       const curveRatio =
         startRatio + (endRatio - startRatio) * sectionRatio;
       const frame = getFrameAtRatio(curveRatio);
+      const colorProgress = Math.min(
+        1,
+        Math.max(
+          0,
+          (curveRatio - logicalStartRatio) /
+            (logicalEndRatio - logicalStartRatio)
+        )
+      );
+      vertexColor.copy(startColor).lerp(endColor, colorProgress);
 
       for (
         let radialIndex = 0;
@@ -81,10 +101,15 @@ export class ParallelTransportTubeGeometry extends TubeGeometry {
           radialDirection.y,
           radialDirection.z
         );
+        colors[colorIndex] = vertexColor.r;
+        colors[colorIndex + 1] = vertexColor.g;
+        colors[colorIndex + 2] = vertexColor.b;
         vertexIndex += 1;
+        colorIndex += 3;
       }
     }
 
+    this.setAttribute("color", new Float32BufferAttribute(colors, 3));
     position.needsUpdate = true;
     normal.needsUpdate = true;
     this.computeBoundingBox();
@@ -103,15 +128,24 @@ export class TrackSection {
     tubularSegmentsPerWorldUnit,
     minimumTubularSegments,
     materialConfig,
-    color,
     emissiveColor,
     flowTexture,
-    getFrameAtRatio
+    getFrameAtRatio,
+    colorStart,
+    colorEnd
   }) {
     this.id = definition.id;
+    this.locationLabel = definition.locationLabel;
+    this.startDistance = definition.startDistance;
+    this.endDistance = definition.endDistance;
     this.startRatio = definition.startRatio;
     this.endRatio = definition.endRatio;
     this.radius = definition.radius;
+    this.colorStart = colorStart;
+    this.colorEnd = colorEnd;
+    this.minimapSegmentId = definition.minimapSegmentId;
+    this.minimapStartProgress = definition.minimapStartProgress;
+    this.minimapEndProgress = definition.minimapEndProgress;
 
     const sectionWorldLength =
       (renderEndRatio - renderStartRatio) * trackLength;
@@ -127,20 +161,27 @@ export class TrackSection {
       tubularSegments,
       radius: this.radius,
       radialSegments,
-      getFrameAtRatio
+      getFrameAtRatio,
+      logicalStartRatio: definition.startRatio,
+      logicalEndRatio: definition.endRatio,
+      colorStart,
+      colorEnd
     });
     this.material = new MeshStandardMaterial({
-      color,
       emissive: emissiveColor,
       emissiveIntensity: materialConfig.emissiveIntensity,
       roughness: materialConfig.roughness,
       metalness: materialConfig.metalness,
       map: flowTexture,
+      vertexColors: true,
       side: BackSide
     });
     this.mesh = new Mesh(this.geometry, this.material);
-    this.mesh.name = "prototype-track-section-" + this.id;
+    this.mesh.name = "level-track-section-" + this.id;
     this.mesh.userData.trackSectionId = this.id;
+    this.mesh.userData.locationLabel = this.locationLabel;
+    this.mesh.userData.startDistance = this.startDistance;
+    this.mesh.userData.endDistance = this.endDistance;
     this.mesh.userData.radius = this.radius;
     this.mesh.userData.usesParallelTransportFrames = true;
   }
@@ -149,6 +190,13 @@ export class TrackSection {
     return (
       ratio >= this.startRatio &&
       (ratio < this.endRatio || this.endRatio === 1)
+    );
+  }
+
+  containsDistance(distanceAlongTrack) {
+    return (
+      distanceAlongTrack >= this.startDistance &&
+      (distanceAlongTrack < this.endDistance || this.endRatio === 1)
     );
   }
 

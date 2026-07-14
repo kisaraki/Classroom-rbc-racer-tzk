@@ -9,9 +9,10 @@ import {
   UnsignedByteType,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js";
+import { GAME_CONFIG } from "../config.js?v=phase02-level-one";
+import { isLevelData } from "../data/schemas.js?v=phase02-level-one";
 import { distanceToNormalizedProgress } from "./TrackMath.js";
-import { TrackSection } from "./TrackSection.js";
+import { TrackSection } from "./TrackSection.js?v=phase02-level-one";
 
 function clampUnit(value) {
   return Math.min(1, Math.max(0, value));
@@ -77,33 +78,35 @@ function createFlowTexture(textureConfig) {
   texture.magFilter = LinearFilter;
   texture.colorSpace = SRGBColorSpace;
   texture.needsUpdate = true;
-  texture.name = "prototype-vessel-flow-texture";
+  texture.name = "vessel-flow-texture";
   return texture;
 }
 
-function validateSections(sectionDefinitions) {
-  if (!Array.isArray(sectionDefinitions) || sectionDefinitions.length === 0) {
-    throw new TypeError("Prototype track requires section definitions.");
+function validateLevelRoute(level) {
+  if (!isLevelData(level)) {
+    throw new TypeError("VesselTrack requires valid level data.");
   }
 
+  let expectedStartDistance = level.start.distance;
   let expectedStartRatio = 0;
 
-  sectionDefinitions.forEach((section) => {
+  level.sections.forEach((section) => {
     if (
-      section.startRatio !== expectedStartRatio ||
-      section.endRatio <= section.startRatio ||
-      section.radius <= 0
+      section.startDistance !== expectedStartDistance ||
+      section.startRatio !== expectedStartRatio
     ) {
-      throw new RangeError(
-        "Prototype track sections must be contiguous and positive."
-      );
+      throw new RangeError("Level track sections must be contiguous.");
     }
 
+    expectedStartDistance = section.endDistance;
     expectedStartRatio = section.endRatio;
   });
 
-  if (expectedStartRatio !== 1) {
-    throw new RangeError("Prototype track sections must end at ratio 1.");
+  if (
+    expectedStartDistance !== level.end.distance ||
+    expectedStartRatio !== 1
+  ) {
+    throw new RangeError("Level track sections must span the full route.");
   }
 }
 
@@ -113,16 +116,28 @@ export class VesselTrack {
   #flowTexture;
 
   constructor({
-    config = GAME_CONFIG.prototype,
+    level,
+    config = GAME_CONFIG.vessel,
     palette = GAME_CONFIG.palette
   } = {}) {
-    validateSections(config.sections);
+    validateLevelRoute(level);
+
+    if (
+      config.sectionOverlap < GAME_CONFIG.track.sectionOverlapMin ||
+      config.sectionOverlap > GAME_CONFIG.track.sectionOverlapMax
+    ) {
+      throw new RangeError("Track overlap is outside the configured range.");
+    }
+
+    this.level = level;
     this.#config = config;
-    this.trackLength = config.trackLength;
+    this.trackLength = level.trackLength;
+    this.startDistance = level.start.distance;
+    this.endDistance = level.end.distance;
     this.group = new Group();
-    this.group.name = "phase-01-prototype-vessel";
+    this.group.name = "level-" + level.id + "-vessel";
     this.curve = new CatmullRomCurve3(
-      config.controlPoints.map(
+      level.controlPoints.map(
         ([x, y, z]) => new Vector3(x, y, z)
       ),
       false,
@@ -132,22 +147,22 @@ export class VesselTrack {
     this.#frames = this.#buildParallelTransportFrames();
     this.#flowTexture = createFlowTexture(config.flowTexture);
 
-    const overlapRatio = config.sectionOverlap / config.trackLength;
+    const overlapRatio = config.sectionOverlap / level.trackLength;
 
-    this.sections = config.sections.map((definition, index) => {
+    this.sections = level.sections.map((definition, index) => {
       const renderStartRatio = Math.max(
         0,
         definition.startRatio - (index === 0 ? 0 : overlapRatio)
       );
       const renderEndRatio = Math.min(
         1,
-        definition.endRatio -
-          (index === config.sections.length - 1 ? 0 : -overlapRatio)
+        definition.endRatio +
+          (index === level.sections.length - 1 ? 0 : overlapRatio)
       );
       const section = new TrackSection({
         definition,
         curve: this.curve,
-        trackLength: config.trackLength,
+        trackLength: level.trackLength,
         renderStartRatio,
         renderEndRatio,
         radialSegments: config.radialSegments,
@@ -155,10 +170,11 @@ export class VesselTrack {
           config.tubularSegmentsPerWorldUnit,
         minimumTubularSegments: config.minimumTubularSegments,
         materialConfig: config.material,
-        color: palette[definition.colorKey],
         emissiveColor: palette.vesselEmissive,
         flowTexture: this.#flowTexture,
-        getFrameAtRatio: (ratio) => this.getFrameAtRatio(ratio)
+        getFrameAtRatio: (ratio) => this.getFrameAtRatio(ratio),
+        colorStart: definition.colorStart,
+        colorEnd: definition.colorEnd
       });
 
       this.group.add(section.mesh);
@@ -172,6 +188,10 @@ export class VesselTrack {
 
   get flowTexture() {
     return this.#flowTexture;
+  }
+
+  get curveLength() {
+    return this.curve.getLength();
   }
 
   getFrameAtDistance(distanceAlongTrack) {
@@ -213,13 +233,16 @@ export class VesselTrack {
   }
 
   getSectionAtDistance(distanceAlongTrack) {
-    const ratio = distanceToNormalizedProgress(
-      distanceAlongTrack,
-      this.trackLength
-    );
+    const clampedDistance =
+      distanceToNormalizedProgress(
+        distanceAlongTrack,
+        this.trackLength
+      ) * this.trackLength;
+
     return (
-      this.sections.find((section) => section.containsRatio(ratio)) ??
-      this.sections[this.sections.length - 1]
+      this.sections.find((section) =>
+        section.containsDistance(clampedDistance)
+      ) ?? this.sections[this.sections.length - 1]
     );
   }
 

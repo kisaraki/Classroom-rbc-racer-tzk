@@ -1,24 +1,40 @@
 import {
   CatmullRomCurve3,
+  Color,
   TubeGeometry
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js";
-import { VesselTrack } from "../../js/world/VesselTrack.js";
+import { GAME_CONFIG } from "../../js/config.js?v=phase02-level-one";
+import { LEVELS } from "../../js/data/levels.js?v=phase02-level-one";
+import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase02-level-one";
 import {
   assert,
   assertApproximately,
   assertEqual
 } from "./TestHarness.js";
 
+function createFirstLevelTrack() {
+  return new VesselTrack({ level: LEVELS[0] });
+}
+
+function assertAttributeColor(attribute, index, expectedHex) {
+  const expected = new Color(expectedHex);
+
+  assertApproximately(attribute.getX(index), expected.r, 0.000001);
+  assertApproximately(attribute.getY(index), expected.g, 0.000001);
+  assertApproximately(attribute.getZ(index), expected.b, 0.000001);
+}
+
 export function registerVesselTrackTests(harness) {
-  harness.test("prototype vessel uses CatmullRom and segmented tubes", () => {
-    const track = new VesselTrack();
+  harness.test("level one vessel uses CatmullRom and eight tube sections", () => {
+    const track = createFirstLevelTrack();
 
     assert(track.curve instanceof CatmullRomCurve3);
-    assertEqual(track.sections.length, GAME_CONFIG.prototype.sections.length);
+    assertEqual(track.trackLength, GAME_CONFIG.levels[1].trackLength);
+    assertEqual(track.sections.length, LEVELS[0].sections.length);
     assertEqual(track.group.children.length, track.sections.length);
     track.sections.forEach((section) => {
       assert(section.geometry instanceof TubeGeometry);
+      assertEqual(section.material.vertexColors, true);
       assertEqual(
         section.mesh.userData.usesParallelTransportFrames,
         true
@@ -28,13 +44,28 @@ export function registerVesselTrackTests(harness) {
     track.dispose();
   });
 
+  harness.test("level one visual curve length stays close to canonical distance", () => {
+    const track = createFirstLevelTrack();
+    const tolerance = track.trackLength * 0.1;
+
+    assertApproximately(track.curveLength, track.trackLength, tolerance);
+    track.dispose();
+  });
+
   harness.test("cached parallel-transport frames stay orthonormal", () => {
-    const track = new VesselTrack();
-    const sampleDistances = [0, 180, 360, 540, 720];
+    const track = createFirstLevelTrack();
+    const quarter = track.trackLength / 4;
+    const sampleDistances = [
+      track.startDistance,
+      quarter,
+      quarter * 2,
+      quarter * 3,
+      track.endDistance
+    ];
 
     assertEqual(
       track.cachedFrameCount,
-      GAME_CONFIG.prototype.frameSampleCount + 1
+      GAME_CONFIG.vessel.frameSampleCount + 1
     );
     sampleDistances.forEach((distance) => {
       const frame = track.getFrameAtDistance(distance);
@@ -55,8 +86,8 @@ export function registerVesselTrackTests(harness) {
   });
 
   harness.test("track offsets use the cached local frame", () => {
-    const track = new VesselTrack();
-    const distance = 240;
+    const track = createFirstLevelTrack();
+    const distance = track.trackLength * 0.4;
     const frame = track.getFrameAtDistance(distance);
     const worldPosition = track.getWorldPosition(distance, 2, -1);
     const expected = frame.point
@@ -68,14 +99,37 @@ export function registerVesselTrackTests(harness) {
     track.dispose();
   });
 
+  harness.test("section vertex colors follow configured arterial-venous gradients", () => {
+    const track = createFirstLevelTrack();
+    const descendingAorta = track.sections[2];
+    const colorAttribute = descendingAorta.geometry.getAttribute("color");
+
+    assert(colorAttribute !== undefined);
+    assertEqual(
+      colorAttribute.count,
+      descendingAorta.geometry.getAttribute("position").count
+    );
+    assertAttributeColor(
+      colorAttribute,
+      0,
+      LEVELS[0].sections[2].colorStart
+    );
+    assertAttributeColor(
+      colorAttribute,
+      colorAttribute.count - 1,
+      LEVELS[0].sections[2].colorEnd
+    );
+    track.dispose();
+  });
+
   harness.test("flow texture advances only when the track is updated", () => {
-    const track = new VesselTrack();
+    const track = createFirstLevelTrack();
     const initialOffset = track.flowTexture.offset.x;
 
     track.update(2);
     assertApproximately(
       track.flowTexture.offset.x,
-      initialOffset - GAME_CONFIG.prototype.flowTexture.offsetSpeed * 2,
+      initialOffset - GAME_CONFIG.vessel.flowTexture.offsetSpeed * 2,
       Number.EPSILON
     );
     track.dispose();
