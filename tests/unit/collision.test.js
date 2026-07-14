@@ -1,18 +1,18 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
 import {
   ENTITY_TRIGGERS,
   getEntityType
-} from "../../js/data/entityTypes.js?v=phase05-bp-reflection";
+} from "../../js/data/entityTypes.js?v=phase06-qte";
 import {
   createEntityState,
   createPlayerState
-} from "../../js/data/schemas.js?v=phase05-bp-reflection";
+} from "../../js/data/schemas.js?v=phase06-qte";
 import {
   CollisionSystem,
   isCrossSectionHit,
   isSweptLongitudinalHit
-} from "../../js/systems/CollisionSystem.js?v=phase05-bp-reflection";
-import { applyEntityScoreEffect } from "../../js/systems/ScoreSystem.js?v=phase05-bp-reflection";
+} from "../../js/systems/CollisionSystem.js?v=phase06-qte";
+import { applyEntityScoreEffect } from "../../js/systems/ScoreSystem.js?v=phase06-qte";
 import {
   assertEqual,
   assertThrows

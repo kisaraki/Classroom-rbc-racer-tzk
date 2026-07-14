@@ -2,7 +2,7 @@ import { GameClock } from "./GameClock.js?v=phase01-real-clock";
 import {
   GAME_STATES,
   GameStateMachine
-} from "./GameStateMachine.js?v=phase05-bp-reflection";
+} from "./GameStateMachine.js?v=phase06-qte";
 
 function assertDurationSeconds(value) {
   if (!Number.isFinite(value)) {
@@ -38,6 +38,10 @@ export class GameSession {
 
   get isWorldRunning() {
     return this.#stateMachine.isWorldRunning;
+  }
+
+  get pausedFromState() {
+    return this.#stateMachine.pausedFromState;
   }
 
   get deadlineMs() {
@@ -101,5 +105,25 @@ export class GameSession {
 
   completeLowBloodPressureStasis() {
     return this.#stateMachine.completeLowBloodPressureStasis();
+  }
+
+  enterQte() {
+    return this.#stateMachine.enterQte();
+  }
+
+  completeQte() {
+    return this.#stateMachine.completeQte();
+  }
+
+  enterTransferCutscene() {
+    return this.#stateMachine.enterTransferCutscene();
+  }
+
+  completeTransferCutscene() {
+    return this.#stateMachine.completeTransferCutscene();
+  }
+
+  enterGameOver(gameOverState) {
+    return this.#stateMachine.enterGameOver(gameOverState);
   }
 }

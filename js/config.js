@@ -585,6 +585,11 @@ export const GAME_CONFIG = deepFreeze({
       backgroundColorKey: "entityLabelPanel",
       textColorKey: "entityLabelInk"
     },
+    gasToken: {
+      id: "gas-token",
+      label: "O₂ / CO₂",
+      modelKey: "gasToken"
+    },
     models: {
       vitaminC: {
         accentColorKey: "vitaminC",
@@ -892,6 +897,87 @@ export const GAME_CONFIG = deepFreeze({
             roughness: 0.38,
             metalness: 0.18,
             emissiveIntensity: 0.06
+          }
+        ]
+      },
+      gasToken: {
+        accentColorKey: "entityOxygen",
+        worldScale: 1,
+        spinRadiansPerSecond: 0.9,
+        pulseFrequencyRadiansPerSecond: 3.2,
+        pulseAmplitude: 0.08,
+        parts: [
+          {
+            geometry: "torus",
+            args: [1.18, 0.12, 10, 36],
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "entityOxygen",
+            emissiveColorKey: "oxygenatedRed",
+            roughness: 0.24,
+            metalness: 0.2,
+            emissiveIntensity: 0.42
+          },
+          {
+            geometry: "torus",
+            args: [0.76, 0.08, 8, 28],
+            position: [0, 0, 0.08],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "deoxygenatedBlue",
+            emissiveColorKey: "deoxygenatedBlue",
+            roughness: 0.28,
+            metalness: 0.16,
+            emissiveIntensity: 0.38
+          },
+          {
+            geometry: "sphere",
+            args: [0.22, 12, 8],
+            position: [0.82, 0, 0.12],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "entityOxygen",
+            emissiveColorKey: "oxygenatedRed",
+            roughness: 0.3,
+            metalness: 0.08,
+            emissiveIntensity: 0.32
+          },
+          {
+            geometry: "sphere",
+            args: [0.22, 12, 8],
+            position: [-0.82, 0, 0.12],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "entityOxygen",
+            emissiveColorKey: "oxygenatedRed",
+            roughness: 0.3,
+            metalness: 0.08,
+            emissiveIntensity: 0.32
+          },
+          {
+            geometry: "sphere",
+            args: [0.2, 12, 8],
+            position: [0, 0.82, -0.12],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "deoxygenatedBlue",
+            emissiveColorKey: "deoxygenatedBlue",
+            roughness: 0.32,
+            metalness: 0.08,
+            emissiveIntensity: 0.3
+          },
+          {
+            geometry: "sphere",
+            args: [0.2, 12, 8],
+            position: [0, -0.82, -0.12],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            colorKey: "deoxygenatedBlue",
+            emissiveColorKey: "deoxygenatedBlue",
+            roughness: 0.32,
+            metalness: 0.08,
+            emissiveIntensity: 0.3
           }
         ]
       },

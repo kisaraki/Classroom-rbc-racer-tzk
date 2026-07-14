@@ -1,13 +1,13 @@
 import { Group, Vector3 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
-import { getEntityType } from "../../js/data/entityTypes.js?v=phase05-bp-reflection";
-import { LEVELS } from "../../js/data/levels.js?v=phase05-bp-reflection";
-import { createPlayerState } from "../../js/data/schemas.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
+import { getEntityType } from "../../js/data/entityTypes.js?v=phase06-qte";
+import { LEVELS } from "../../js/data/levels.js?v=phase06-qte";
+import { createPlayerState } from "../../js/data/schemas.js?v=phase06-qte";
 import {
   EntityManager,
   buildEntityWeightTable,
   sampleEntityOffset
-} from "../../js/systems/EntityManager.js?v=phase05-bp-reflection";
+} from "../../js/systems/EntityManager.js?v=phase06-qte";
 import {
   assert,
   assertApproximately,

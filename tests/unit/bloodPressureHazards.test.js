@@ -1,9 +1,9 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
 import {
   BloodPressureHazardSystem,
   getLowBloodPressureChancePerSecond,
   getWoundChancePerSecond
-} from "../../js/systems/BloodPressureSystem.js?v=phase05-bp-reflection";
+} from "../../js/systems/BloodPressureSystem.js?v=phase06-qte";
 import {
   assert,
   assertApproximately,

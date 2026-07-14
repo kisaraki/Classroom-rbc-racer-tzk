@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "./config.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "./config.js?v=phase06-qte";
 import {
   getDeviceSupport,
   showUnsupportedMobileDevice
-} from "./core/DeviceSupport.js?v=phase05-bp-reflection";
+} from "./core/DeviceSupport.js?v=phase06-qte";
 
 const gameRoot = document.querySelector("#game-root");
 const deviceSupport = getDeviceSupport(window.navigator);
@@ -17,7 +17,7 @@ if (!deviceSupport.supported) {
 
   try {
     const { Game } = await import(
-      "./core/Game.js?v=phase05-bp-reflection-r2"
+      "./core/Game.js?v=phase06-qte"
     );
     const game = new Game();
     game.start();

@@ -12,6 +12,7 @@ const CONTROL_CODES = new Set([
 export class InputController {
   #target;
   #pressedCodes = new Set();
+  #qteActions = [];
   #attached = false;
 
   constructor({ target = globalThis.window } = {}) {
@@ -63,6 +64,7 @@ export class InputController {
 
   reset() {
     this.#pressedCodes.clear();
+    this.#qteActions.length = 0;
   }
 
   getLateralAxes() {
@@ -91,13 +93,29 @@ export class InputController {
     return Number(this.isPressed("KeyZ"));
   }
 
+  consumeQteActions() {
+    return this.#qteActions.splice(0);
+  }
+
   #handleKeyDown = (event) => {
     if (!CONTROL_CODES.has(event.code)) {
       return;
     }
 
     event.preventDefault();
+
+    if (
+      (event.code === "KeyO" || event.code === "KeyC") &&
+      event.repeat
+    ) {
+      return;
+    }
+
     this.setPressed(event.code, true);
+
+    if (event.code === "KeyO" || event.code === "KeyC") {
+      this.#qteActions.push(event.code);
+    }
   };
 
   #handleKeyUp = (event) => {

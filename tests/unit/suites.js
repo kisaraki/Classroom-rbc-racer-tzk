@@ -1,29 +1,30 @@
 import { registerBloodPressureDrivingTests } from "./bloodPressureDriving.test.js";
-import { registerBloodPressureHazardTests } from "./bloodPressureHazards.test.js?v=phase05-bp-reflection";
+import { registerBloodPressureHazardTests } from "./bloodPressureHazards.test.js?v=phase06-qte";
 import { registerCameraTests } from "./camera.test.js";
-import { registerCollisionTests } from "./collision.test.js?v=phase05-bp-reflection";
-import { registerDeviceSupportTests } from "./deviceSupport.test.js?v=phase05-bp-reflection";
-import { registerEntityManagerTests } from "./entityManager.test.js?v=phase05-bp-reflection";
-import { registerEntityTypeTests } from "./entityTypes.test.js?v=phase05-bp-reflection";
+import { registerCollisionTests } from "./collision.test.js?v=phase06-qte";
+import { registerDeviceSupportTests } from "./deviceSupport.test.js?v=phase06-qte";
+import { registerEntityManagerTests } from "./entityManager.test.js?v=phase06-qte";
+import { registerEntityTypeTests } from "./entityTypes.test.js?v=phase06-qte";
 import { TestHarness } from "./TestHarness.js";
 import { registerEventBusTests } from "./eventBus.test.js";
-import { registerGameStateTests } from "./gameState.test.js?v=phase05-bp-reflection";
-import { registerInputTests } from "./input.test.js?v=phase05-bp-reflection-r2";
-import { registerHudTests } from "./hud.test.js?v=phase05-bp-reflection";
-import { registerLevelManagerTests } from "./levelManager.test.js?v=phase05-bp-reflection";
-import { registerMinimapTests } from "./minimap.test.js?v=phase05-bp-reflection";
-import { registerPlayerRbcTests } from "./playerRbc.test.js?v=phase05-bp-reflection";
-import { registerPointerLockTests } from "./pointerLock.test.js?v=phase05-bp-reflection";
-import { registerProceduralAssetTests } from "./proceduralAssets.test.js?v=phase05-bp-reflection";
-import { registerSchemaTests } from "./schemas.test.js?v=phase05-bp-reflection";
+import { registerGameStateTests } from "./gameState.test.js?v=phase06-qte";
+import { registerInputTests } from "./input.test.js?v=phase06-qte";
+import { registerHudTests } from "./hud.test.js?v=phase06-qte";
+import { registerLevelManagerTests } from "./levelManager.test.js?v=phase06-qte";
+import { registerMinimapTests } from "./minimap.test.js?v=phase06-qte";
+import { registerPlayerRbcTests } from "./playerRbc.test.js?v=phase06-qte";
+import { registerPointerLockTests } from "./pointerLock.test.js?v=phase06-qte";
+import { registerProceduralAssetTests } from "./proceduralAssets.test.js?v=phase06-qte";
+import { registerQteTests } from "./qte.test.js?v=phase06-qte";
+import { registerSchemaTests } from "./schemas.test.js?v=phase06-qte";
 import { registerSeededRandomTests } from "./seededRandom.test.js";
 import { registerTimingTests } from "./timing.test.js?v=phase01-real-clock";
 import { registerTrackMathTests } from "./trackMath.test.js";
 import { registerVendorTests } from "./vendor.test.js";
-import { registerVesselTrackTests } from "./vesselTrack.test.js?v=phase05-bp-reflection";
-import { registerWoundChanceTests } from "./woundChance.test.js?v=phase05-bp-reflection";
+import { registerVesselTrackTests } from "./vesselTrack.test.js?v=phase06-qte";
+import { registerWoundChanceTests } from "./woundChance.test.js?v=phase06-qte";
 
-export function createPhase05TestHarness() {
+export function createPhase06TestHarness() {
   const harness = new TestHarness();
 
   registerTrackMathTests(harness);
@@ -39,6 +40,7 @@ export function createPhase05TestHarness() {
   registerVendorTests(harness);
   registerBloodPressureDrivingTests(harness);
   registerInputTests(harness);
+  registerQteTests(harness);
   registerGameStateTests(harness);
   registerPointerLockTests(harness);
   registerVesselTrackTests(harness);

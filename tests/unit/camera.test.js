@@ -110,4 +110,17 @@ export function registerCameraTests(harness) {
     camera.getWorldDirection(rotatedDirection);
     assert(rotatedDirection.distanceTo(initialDirection) > 0);
   });
+
+  harness.test("camera reset restores the forward view", () => {
+    const controller = new CameraController({
+      targetElement: {},
+      documentRef: null
+    });
+    controller.applyMouseDelta(120, -80);
+
+    controller.reset();
+
+    assertEqual(controller.yaw, 0);
+    assertEqual(controller.pitch, 0);
+  });
 }

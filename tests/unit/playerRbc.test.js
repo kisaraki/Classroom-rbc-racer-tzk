@@ -3,9 +3,10 @@ import {
   PerspectiveCamera,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
+import { createLevelCheckpoint } from "../../js/data/schemas.js?v=phase06-qte";
 import { InputController } from "../../js/input/InputController.js";
-import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase05-bp-reflection";
+import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase06-qte";
 import {
   assert,
   assertApproximately,
@@ -259,6 +260,46 @@ export function registerPlayerRbcTests(harness) {
     assertEqual(hood.update(6000), true);
     assertEqual(hood.update(8000), false);
     assertThrows(() => hood.update(Number.NaN), TypeError);
+    player.dispose();
+  });
+
+  harness.test("QTE hides the hood without stopping its absolute deadline", () => {
+    const player = new PlayerRBC();
+    const hood = player.hoodController;
+    hood.triggerBasicObstruction(1000);
+
+    assertEqual(hood.setQteMode(true), true);
+    assertEqual(hood.group.visible, false);
+    assertEqual(hood.update(6000), false);
+    assertEqual(hood.setQteMode(false), false);
+    assertEqual(hood.group.visible, true);
+    assertThrows(() => hood.setQteMode("yes"), TypeError);
+    player.dispose();
+  });
+
+  harness.test("checkpoint retry restores canonical Level 1 player state", () => {
+    const player = new PlayerRBC();
+    const checkpoint = createLevelCheckpoint(
+      player.state,
+      GAME_CONFIG.levels[1].seed
+    );
+    player.state.hp = 0;
+    player.state.bp = GAME_CONFIG.bp.max;
+    player.state.score = 99;
+    player.state.distanceAlongTrack = 850;
+    player.state.gasExchangeAttempts = 2;
+    player.hoodController.triggerBasicObstruction(1000);
+
+    const state = player.resetForCheckpoint(checkpoint);
+
+    assertEqual(state.hp, GAME_CONFIG.hp.initial);
+    assertEqual(state.bp, GAME_CONFIG.bp.initial);
+    assertEqual(state.score, GAME_CONFIG.score.initial);
+    assertEqual(state.distanceAlongTrack, 0);
+    assertEqual(state.gasExchangeAttempts, 0);
+    assertEqual(player.hoodController.isBasicObstructionActive, false);
+    assertEqual(player.hoodController.group.visible, true);
+    assertThrows(() => player.resetForCheckpoint({}), TypeError);
     player.dispose();
   });
 }

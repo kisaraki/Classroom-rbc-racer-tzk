@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="RBC Racer Phase 05 blood-pressure hazards and vessel-color reflection"
+      content="RBC Racer Phase 06 gas-exchange QTE and first-level completion"
     >
-    <title>RBC Racer | Phase 05 Blood Pressure</title>
-    <link rel="stylesheet" href="./css/main.css?v=phase05-bp-reflection">
-    <link rel="stylesheet" href="./css/hud.css?v=phase05-bp-reflection">
-    <link rel="stylesheet" href="./css/menu.css?v=phase05-bp-reflection">
+    <title>RBC Racer | Phase 06 Gas Exchange</title>
+    <link rel="stylesheet" href="./css/main.css?v=phase06-qte">
+    <link rel="stylesheet" href="./css/hud.css?v=phase06-qte">
+    <link rel="stylesheet" href="./css/menu.css?v=phase06-qte">
   </head>
   <body>
     <main id="game-root" class="game-root" data-game-state="BOOT">
@@ -24,7 +24,7 @@
 
       <section id="game-hud" class="game-hud" aria-label="遊戲狀態">
         <header class="hud-brand">
-          <span class="hud-brand__phase">P05</span>
+          <span class="hud-brand__phase">P06</span>
           <span class="hud-brand__name">RBC / RACER</span>
           <span class="hud-brand__status">
             <i aria-hidden="true"></i>
@@ -113,6 +113,19 @@
           </header>
           <p id="status-empty">NO ACTIVE CONDITIONS</p>
           <div id="status-list" class="status-list" data-count="0"></div>
+          <section class="status-toolkit" aria-labelledby="toolkit-title">
+            <div class="status-toolkit__brand">
+              <span>KOSMOS TOOLKIT</span>
+              <strong id="toolkit-title">探真拓知酷</strong>
+            </div>
+            <div class="status-toolkit__controls">
+              <div><kbd>↑ ↓ ← →</kbd><span>紅血球橫向閃避</span></div>
+              <div><kbd>Z / X</kbd><span>提高／降低血壓</span></div>
+              <div><kbd>O / C</kbd><span>氣體交換 QTE</span></div>
+              <div><kbd>MOUSE</kbd><span>環視血管，不控制車身</span></div>
+              <div><kbd>ESC</kbd><span>解除滑鼠鎖定並暫停</span></div>
+            </div>
+          </section>
         </aside>
 
         <aside class="clock-card" data-active="false" aria-label="絕對計時器">
@@ -135,6 +148,46 @@
         </div>
 
         <section
+          id="qte-panel"
+          class="qte-panel"
+          data-phase="IDLE"
+          data-outcome=""
+          aria-labelledby="qte-title"
+          role="status"
+          aria-live="polite"
+          hidden
+        >
+          <header class="qte-panel__header">
+            <div>
+              <span>Gas exchange protocol</span>
+              <strong id="qte-title">氣體交換</strong>
+            </div>
+            <b id="qte-attempt">ATTEMPT --</b>
+          </header>
+          <p id="qte-instruction" class="qte-panel__instruction">
+            倒數結束前分別按滿 O 與 C，不必交替。
+          </p>
+          <div class="qte-panel__actions">
+            <article id="qte-oxygen-card" data-complete="false">
+              <kbd>O</kbd>
+              <div><span>OXYGEN / 氧氣</span><output id="qte-oxygen-count">0 / --</output></div>
+            </article>
+            <article id="qte-carbon-card" data-complete="false">
+              <kbd>C</kbd>
+              <div><span>CARBON DIOXIDE / 二氧化碳</span><output id="qte-carbon-count">0 / --</output></div>
+            </article>
+          </div>
+          <div class="qte-panel__deadline">
+            <span id="qte-timer">--.-- s</span>
+            <i><b id="qte-progress"></b></i>
+          </div>
+          <div id="qte-result" class="qte-panel__result" hidden>
+            <strong id="qte-result-title">交換完成</strong>
+            <span id="qte-result-copy">血液已完成氣體交換。</span>
+          </div>
+        </section>
+
+        <section
           id="central-message"
           class="central-message"
           data-tone="INFO"
@@ -151,6 +204,7 @@
           <span><kbd>↑ ↓ ← →</kbd> 局部截面</span>
           <span><kbd>Z</kbd> BP +</span>
           <span><kbd>X</kbd> BP −</span>
+          <span><kbd>O / C</kbd> QTE</span>
           <span><kbd>MOUSE</kbd> 只調整視角</span>
           <span><kbd>ESC</kbd> 暫停</span>
         </footer>
@@ -162,14 +216,14 @@
         data-mode="READY"
         aria-labelledby="overlay-title"
       >
-        <div class="overlay-index" aria-hidden="true">05</div>
+        <div class="overlay-index" aria-hidden="true">06</div>
         <div class="overlay-panel">
           <p id="overlay-kicker" class="overlay-kicker">
-            Phase 05 / Blood pressure hazards
+            Phase 06 / Gas exchange protocol
           </p>
-          <h1 id="overlay-title">血壓風險上線</h1>
+          <h1 id="overlay-title">氣體交換上線</h1>
           <p id="overlay-copy" class="overlay-copy">
-            高血壓會依每秒公式形成 Wound；低於 80 BP 可能停滯五秒，請按 Z 恢復血壓。RBC 車身也會隨所在血管的程序化色彩產生細微反光。
+            穿越組織微血管的 Gas Token 後，請在絕對倒數內分別按滿 O 與 C。第一次失敗可重試；第二次失敗仍允許通過。
           </p>
           <div class="overlay-controls" aria-label="核心操作">
             <span><b>↑↓←→</b> STRAFE</span>
@@ -190,6 +244,6 @@
       </noscript>
     </main>
 
-    <script type="module" src="./js/main.js?v=phase05-bp-reflection-r2"></script>
+    <script type="module" src="./js/main.js?v=phase06-qte"></script>
   </body>
 </html>

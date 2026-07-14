@@ -1,5 +1,5 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
-import { getWoundChancePerSecond } from "../../js/systems/BloodPressureSystem.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
+import { getWoundChancePerSecond } from "../../js/systems/BloodPressureSystem.js?v=phase06-qte";
 import {
   assertApproximately,
   assertEqual

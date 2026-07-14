@@ -3,9 +3,10 @@ import {
   Color,
   TubeGeometry
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
-import { LEVELS } from "../../js/data/levels.js?v=phase05-bp-reflection";
-import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
+import { LEVELS } from "../../js/data/levels.js?v=phase06-qte";
+import { GAS_EXCHANGE_STATUS } from "../../js/data/schemas.js?v=phase06-qte";
+import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase06-qte";
 import {
   assert,
   assertApproximately,
@@ -124,6 +125,7 @@ export function registerVesselTrackTests(harness) {
 
   harness.test("track samples the local vessel gradient for RBC reflection", () => {
     const track = createFirstLevelTrack();
+    track.setGasExchangeStatus(GAS_EXCHANGE_STATUS.SUCCESS);
     const section = track.sections[4];
     const midpoint =
       (section.startDistance + section.endDistance) / 2;
@@ -149,6 +151,41 @@ export function registerVesselTrackTests(harness) {
     track.dispose();
   });
 
+  harness.test("gas exchange gates downstream vessel colors", () => {
+    const track = createFirstLevelTrack();
+    const gasSection = track.sections.find(
+      (section) => section.gasExchangeZone !== null
+    );
+    const downstreamSection = track.sections.at(-1);
+    const beforeExchangeColor = new Color(gasSection.initialColorStart);
+
+    assertEqual(track.gasExchangeStatus, GAS_EXCHANGE_STATUS.PENDING);
+    assertEqual(
+      gasSection.getColorAtDistance(gasSection.endDistance).getHex(),
+      beforeExchangeColor.getHex()
+    );
+    assertEqual(
+      downstreamSection
+        .getColorAtDistance(downstreamSection.endDistance)
+        .getHex(),
+      beforeExchangeColor.getHex()
+    );
+
+    track.setGasExchangeStatus(GAS_EXCHANGE_STATUS.SUCCESS);
+    assertEqual(
+      gasSection.getColorAtDistance(gasSection.endDistance).getHex(),
+      new Color(gasSection.colorEnd).getHex()
+    );
+    track.setGasExchangeStatus(GAS_EXCHANGE_STATUS.FAILED);
+    assertEqual(
+      downstreamSection
+        .getColorAtDistance(downstreamSection.endDistance)
+        .getHex(),
+      beforeExchangeColor.getHex()
+    );
+    track.dispose();
+  });
+
   harness.test("flow texture advances only when the track is updated", () => {
     const track = createFirstLevelTrack();
     const initialOffset = track.flowTexture.offset.x;
@@ -161,5 +198,19 @@ export function registerVesselTrackTests(harness) {
     );
     track.dispose();
     assertEqual(track.group.children.length, 0);
+  });
+
+  harness.test("retry resets flow and gas exchange colors", () => {
+    const track = createFirstLevelTrack();
+    track.setGasExchangeStatus(GAS_EXCHANGE_STATUS.SUCCESS);
+    track.update(1);
+    assert(track.flowTexture.offset.x !== 0);
+
+    track.resetForRetry();
+
+    assertEqual(track.flowTexture.offset.x, 0);
+    assertEqual(track.flowTexture.offset.y, 0);
+    assertEqual(track.gasExchangeStatus, GAS_EXCHANGE_STATUS.PENDING);
+    track.dispose();
   });
 }

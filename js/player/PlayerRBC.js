@@ -13,8 +13,11 @@ import {
   Vector2,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
-import { createPlayerState } from "../data/schemas.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../config.js?v=phase06-qte";
+import {
+  createPlayerState,
+  isLevelCheckpoint
+} from "../data/schemas.js?v=phase06-qte";
 import {
   getSpeedForBloodPressure,
   updateBloodPressure
@@ -23,7 +26,7 @@ import { clampLateralOffset } from "../world/TrackMath.js";
 import {
   createRbcLabelTexture,
   HoodController
-} from "./HoodController.js?v=phase05-bp-reflection";
+} from "./HoodController.js?v=phase06-qte";
 
 function createBiconcaveGeometry(modelConfig) {
   const profile = [];
@@ -307,6 +310,32 @@ export class PlayerRBC {
     this.worldGroup.quaternion.setFromRotationMatrix(
       this.#orientationMatrix
     );
+  }
+
+  resetForCheckpoint(checkpoint) {
+    if (!isLevelCheckpoint(checkpoint)) {
+      throw new TypeError("Player reset requires a valid level checkpoint.");
+    }
+
+    const retryHp = Math.min(
+      this.config.hp.max,
+      Math.max(checkpoint.hp, this.config.checkpoint.retryMinimumHp)
+    );
+    this.state = createPlayerState({
+      hp: retryHp,
+      score: checkpoint.score,
+      currentLevel: checkpoint.levelId
+    });
+    this.speed = getSpeedForBloodPressure(this.state.bp, this.config);
+    this.hitWall = false;
+    this.hoodController.reset();
+    this.bodyMaterial.color.copy(this.#baseBodyColor);
+    this.bodyMaterial.emissive.set(this.config.palette.cockpitShadow);
+    this.noseMaterial.color.copy(this.#baseBodyColor);
+    this.noseMaterial.emissive.copy(this.#baseCockpitEmissive);
+    this.#environmentColor.set(this.config.palette.rbcBody);
+    this.#reflectionInitialized = false;
+    return this.state;
   }
 
   dispose() {

@@ -13,6 +13,7 @@
 .status-panel,
 .clock-card,
 .system-card,
+.qte-panel,
 .central-message,
 .control-ribbon {
   position: absolute;
@@ -423,6 +424,70 @@
   margin-top: 0.48rem;
 }
 
+.status-toolkit {
+  margin-top: 0.7rem;
+  padding-top: 0.68rem;
+  border-top: 1px solid rgba(169, 217, 239, 0.22);
+}
+
+.status-toolkit__brand {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 0.7rem;
+  margin-bottom: 0.55rem;
+}
+
+.status-toolkit__brand span,
+.status-toolkit__brand strong {
+  font-family: var(--mono-font);
+  letter-spacing: 0.08em;
+}
+
+.status-toolkit__brand span {
+  color: var(--oxygen);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.status-toolkit__brand strong {
+  color: var(--plasma);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.status-toolkit__controls {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.status-toolkit__controls div {
+  display: grid;
+  grid-template-columns: 5.35rem 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 1.7rem;
+  padding: 0.28rem 0.4rem;
+  border-left: 0.12rem solid rgba(169, 217, 239, 0.52);
+  background: rgba(169, 217, 239, 0.045);
+}
+
+.status-toolkit__controls kbd {
+  color: var(--ink);
+  font-family: var(--mono-font);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.status-toolkit__controls span {
+  color: rgba(255, 236, 226, 0.82);
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
 .status-item {
   display: flex;
   align-items: baseline;
@@ -533,6 +598,192 @@
   position: absolute;
   background: var(--plasma);
   content: "";
+}
+
+.game-hud[data-state="QTE"] .reticle {
+  opacity: 0;
+}
+
+.qte-panel {
+  --qte-tone: var(--oxygen);
+  z-index: 7;
+  top: 50%;
+  left: 50%;
+  width: min(39rem, calc(100vw - 38rem));
+  min-width: 31rem;
+  padding: 1rem 1.05rem 1.05rem;
+  border: 1px solid rgba(169, 217, 239, 0.34);
+  border-top: 0.2rem solid var(--qte-tone);
+  background:
+    linear-gradient(rgba(169, 217, 239, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(169, 217, 239, 0.035) 1px, transparent 1px),
+    linear-gradient(145deg, rgba(8, 18, 25, 0.96), rgba(17, 2, 6, 0.94));
+  background-size: 1.1rem 1.1rem, 1.1rem 1.1rem, auto;
+  box-shadow: 0 1.4rem 5rem rgba(0, 0, 0, 0.5), 0 0 2.5rem rgba(74, 210, 255, 0.12);
+  clip-path: polygon(0 0, calc(100% - 1.25rem) 0, 100% 1.25rem, 100% 100%, 1.25rem 100%, 0 calc(100% - 1.25rem));
+  translate: -50% -50%;
+  backdrop-filter: blur(0.8rem);
+  animation: qte-enter 220ms ease-out both;
+}
+
+.qte-panel[data-phase="RESULT"][data-outcome="SUCCESS"] {
+  --qte-tone: #68efbd;
+}
+
+.qte-panel[data-phase="RESULT"][data-outcome="FAILURE"] {
+  --qte-tone: var(--bp-high);
+}
+
+.qte-panel__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid rgba(169, 217, 239, 0.2);
+}
+
+.qte-panel__header span,
+.qte-panel__header strong,
+.qte-panel__header b {
+  display: block;
+  font-family: var(--mono-font);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.qte-panel__header span {
+  margin-bottom: 0.18rem;
+  color: var(--ink-soft);
+  font-size: 0.52rem;
+}
+
+.qte-panel__header strong {
+  color: var(--qte-tone);
+  font-size: 1.35rem;
+}
+
+.qte-panel__header b {
+  color: var(--ink);
+  font-size: 0.62rem;
+}
+
+.qte-panel__instruction {
+  margin: 0.7rem 0;
+  color: rgba(255, 245, 238, 0.9);
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.qte-panel__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.qte-panel__actions article {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.72rem;
+  border: 1px solid rgba(169, 217, 239, 0.22);
+  background: rgba(169, 217, 239, 0.055);
+}
+
+.qte-panel__actions article[data-complete="true"] {
+  border-color: #68efbd;
+  background: rgba(104, 239, 189, 0.1);
+}
+
+.qte-panel__actions kbd {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  aspect-ratio: 1;
+  border: 1px solid var(--qte-tone);
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 -0.3rem rgba(0, 0, 0, 0.2), 0 0 1.2rem rgba(169, 217, 239, 0.12);
+  font-family: var(--mono-font);
+  font-size: 1.65rem;
+  font-weight: 900;
+}
+
+.qte-panel__actions span,
+.qte-panel__actions output {
+  display: block;
+  font-family: var(--mono-font);
+}
+
+.qte-panel__actions span {
+  color: var(--ink-soft);
+  font-size: 0.48rem;
+  letter-spacing: 0.06em;
+}
+
+.qte-panel__actions output {
+  margin-top: 0.22rem;
+  color: var(--ink);
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.qte-panel__deadline {
+  display: grid;
+  grid-template-columns: 4.3rem 1fr;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.72rem;
+}
+
+.qte-panel__deadline > span {
+  color: var(--qte-tone);
+  font-family: var(--mono-font);
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.qte-panel__deadline > i {
+  display: block;
+  height: 0.28rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.qte-panel__deadline b {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--qte-tone);
+  box-shadow: 0 0 1rem var(--qte-tone);
+  transition: width 60ms linear;
+}
+
+.qte-panel__result {
+  margin-top: 0.72rem;
+  padding: 0.65rem 0.75rem;
+  border-left: 0.18rem solid var(--qte-tone);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.qte-panel__result strong,
+.qte-panel__result span {
+  display: block;
+}
+
+.qte-panel__result strong {
+  color: var(--qte-tone);
+  font-size: 0.92rem;
+}
+
+.qte-panel__result span {
+  margin-top: 0.22rem;
+  color: var(--ink-soft);
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: 0.7rem;
 }
 
 .reticle::before,
@@ -678,6 +929,18 @@
   }
 }
 
+@keyframes qte-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(0.8rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 @media (max-height: 48rem) and (min-width: 64rem) {
   .circulation-card {
     top: 4.8rem;
@@ -719,6 +982,15 @@
 
   .status-panel {
     top: 26.25rem;
+  }
+
+  .status-toolkit__controls {
+    gap: 0.22rem;
+  }
+
+  .status-toolkit__controls div {
+    min-height: 1.45rem;
+    padding-block: 0.2rem;
   }
 }
 
@@ -792,6 +1064,11 @@
 
   .status-panel[data-active="true"] {
     display: block;
+  }
+
+  .qte-panel {
+    width: calc(100vw - 2rem);
+    min-width: 0;
   }
 }
 

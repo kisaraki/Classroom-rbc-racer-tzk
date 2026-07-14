@@ -1,4 +1,4 @@
-import { InputController } from "../../js/input/InputController.js?v=phase05-bp-reflection-r2";
+import { InputController } from "../../js/input/InputController.js?v=phase06-qte";
 import {
   assert,
   assertApproximately,
@@ -88,6 +88,28 @@ export function registerInputTests(harness) {
 
     target.emit("blur");
     assertEqual(input.getLateralAxes().x, 0);
+    input.detach();
+  });
+
+  harness.test("QTE input queues O and C once while rejecting key repeat", () => {
+    const target = new FakeEventTarget();
+    const input = new InputController({ target });
+    let preventedCount = 0;
+    const emit = (code, repeat = false) => target.emit("keydown", {
+      code,
+      repeat,
+      preventDefault: () => {
+        preventedCount += 1;
+      }
+    });
+
+    input.attach();
+    emit("KeyO");
+    emit("KeyO", true);
+    emit("KeyC");
+    assertEqual(preventedCount, 3);
+    assertEqual(input.consumeQteActions().join(" "), "KeyO KeyC");
+    assertEqual(input.consumeQteActions().length, 0);
     input.detach();
   });
 }

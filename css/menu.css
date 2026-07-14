@@ -175,6 +175,34 @@
   color: var(--bp-high);
 }
 
+.game-overlay[data-mode="TRANSFER"] .overlay-panel::before,
+.game-overlay[data-mode="COMPLETE"] .overlay-panel::before {
+  height: 100%;
+  background: var(--oxygen);
+  box-shadow: 0 0 2rem rgba(169, 217, 239, 0.5);
+}
+
+.game-overlay[data-mode="TRANSFER"] .overlay-kicker,
+.game-overlay[data-mode="COMPLETE"] .overlay-kicker {
+  color: var(--oxygen);
+}
+
+.game-overlay[data-mode="COMPLETE"] #overlay-action {
+  background: var(--oxygen);
+}
+
+.game-overlay[data-mode="GAME_OVER_FALL"] .overlay-panel::before,
+.game-overlay[data-mode="GAME_OVER_RECYCLE"] .overlay-panel::before {
+  height: 100%;
+  background: var(--bp-high);
+  box-shadow: 0 0 2rem rgba(255, 154, 77, 0.52);
+}
+
+.game-overlay[data-mode="GAME_OVER_FALL"] .overlay-kicker,
+.game-overlay[data-mode="GAME_OVER_RECYCLE"] .overlay-kicker {
+  color: var(--bp-high);
+}
+
 @keyframes overlay-enter {
   from {
     opacity: 0;
@@ -182,6 +210,29 @@
 
   to {
     opacity: 1;
+  }
+}
+
+@media (max-height: 48rem) and (min-width: 59rem) {
+  .overlay-panel {
+    padding-block: 2rem;
+  }
+
+  .overlay-panel h1 {
+    font-size: clamp(3.2rem, 6.4vw, 5.2rem);
+  }
+
+  .overlay-copy {
+    margin-block: 1rem;
+    line-height: 1.55;
+  }
+
+  .overlay-controls {
+    margin-bottom: 1rem;
+  }
+
+  .overlay-note {
+    margin-top: 0.55rem;
   }
 }
 

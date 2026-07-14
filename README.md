@@ -6,53 +6,51 @@ build. It has no runtime backend, database, framework, CDN, or external media.
 
 ## Current Phase
 
-Phase 05 adds deterministic blood-pressure hazards and subtle vessel-color
-reflection to the data-driven first level while retaining all Phase 04 entity,
-collision, circulation HUD, compact RBC, and desktop-only startup behavior.
+Phase 06 completes the first playable vertical slice with a procedural gas
+exchange QTE, first-level completion, terminal failures, and deterministic
+checkpoint retry while retaining every Phase 00-05 behavior.
 
 Included:
 
-- One deterministic blood-pressure check per real-clock second while PLAYING;
-  paused and stasis time never backfills missed world-hazard checks.
-- Levels 1-3 produce Wound only above BP 130. Level 4 uses the configured
-  exponential formula from BP 80 through 130, then applies its x3 multiplier
-  above 130, with the configured 45% per-second cap.
-- BP-triggered Wounds appear 35-70 units ahead, respect gas/end/entity
-  reservations, maintain a 45-unit Wound gap, and share the existing two-Wound
-  cap, pooling, dodge, collision, and fatal-effect contracts.
-- BP below 80 uses `min(35%, (80 - BP) * 2.5%)` once per second. A successful
-  roll creates five seconds of `LOW_BP_STASIS`, followed by a ten-second
-  absolute cooldown.
-- During stasis, track flow, distance, lateral movement, entity generation,
-  animation, and collision are frozen. Rendering, HUD updates, the real clock,
-  and Z-only BP recovery continue; X is ignored even when held with Z.
-- Stasis and cooldown deadlines continue while paused, and stasis expiry while
-  paused safely changes the eventual resume target back to PLAYING.
-- The procedural RBC body and cockpit sample the current vessel-section color
-  gradient every render frame. Configured low-strength color/emissive blending
-  and exponential response produce a smooth, subtle arterial/venous reflection
-  without external textures or environment maps.
-- HUD warnings, status countdowns, and `data-*` diagnostics expose probabilities,
-  checks, trigger counts, deadlines, Wound counts, and reflected colors.
-- All earlier procedural entities, collision rules, compact RBC/label,
-  circulation map, desktop-only startup gate, Pointer Lock controls, and
-  continuously running real clock remain intact.
-- A shared 125-test Node/browser suite plus 1280 x 720, 1920 x 1080, and
+- A programmatic `O₂ / CO₂` Gas Token appears at the Level 1 tissue-capillary
+  trigger. Crossing is longitudinal and unavoidable regardless of lateral
+  position, with a configured fallback before the route end.
+- QTE enters a world-frozen state while rendering, HUD, the real clock, and all
+  absolute deadlines continue. Only non-repeating O and C input is accepted.
+- Each attempt lasts 1.5 seconds and requires three O plus three C presses in
+  any order. Success adds 10; each failure subtracts 3; the result remains
+  visible for 0.8 seconds.
+- The first failure preserves `PENDING` and exposes one retry token. A second
+  failure records `FAILED` but still permits completion, as required.
+- Successful exchange reveals the configured tissue-to-venous vessel gradient;
+  pending or failed exchange retains the pre-exchange color. RBC environment
+  reflection continues sampling the live vessel color.
+- Level 1 now reaches `TRANSFER_CUTSCENE` and `LEVEL_COMPLETE`. Wound enters
+  `GAME_OVER_FALL`; HP depletion enters `GAME_OVER_RECYCLE`.
+- Level completion and both game-over screens can rebuild Level 1 from its
+  checkpoint with at least the configured retry HP, initial BP, cleared input
+  and statuses, and the same deterministic entity seed.
+- The right status area now contains the always-available `KOSMOS TOOLKIT` /
+  `探真拓知酷` keyboard and mouse guide, while active condition countdowns remain
+  above it.
+- All earlier BP hazards, low-BP stasis, procedural entities, collisions,
+  compact RBC, circulation map, desktop-only startup gate, and continuously
+  running timers remain intact.
+- A shared 144-test Node/browser suite plus 1280 x 720, 1920 x 1080, and
   390 x 844 layout acceptance.
 
 Intentionally excluded until later phases:
 
-- Gas-exchange QTE, failed-pass handling, and level completion (Phase 06).
 - Full alcohol intoxication steering and continuous malaria hood flutter
   animation (Phase 07). Their existing base Score/HP effects remain unchanged.
-- Playable Levels 2 through 4, cutscenes, game-over, retry, endings, and victory
-  flows. Level 4 blood-pressure math is implemented and tested as a data-driven
-  contract, but the level is not yet registered for play.
+- Playable Levels 2 through 4, inter-level cinematic content, endings, and
+  victory flows. Level 4 blood-pressure math remains tested as a data-driven
+  contract but is not registered for play.
+- Phase 10 long-duration performance and cross-browser acceptance.
 
-Phase 05 is PASS. Local Node/browser acceptance, GitHub Actions, GitHub Pages,
-and the live 125-test suite all passed. See `reports/phase-05-report.md` for the
-complete evidence and `tests/phase-05-manual-test-checklist.md` for the
-acceptance checklist.
+Phase 06 local acceptance is PASS. Deployment evidence is recorded after the
+implementation push in `reports/phase-06-report.md`; the matching acceptance
+checklist is `tests/phase-06-manual-test-checklist.md`.
 
 ## Controls
 
@@ -61,6 +59,8 @@ acceptance checklist.
 | Arrow keys | Move in the vessel's local cross-section |
 | Z | Raise BP and increase speed; remains active during low-BP stasis |
 | X | Lower BP and decrease speed; ignored during low-BP stasis |
+| O | Add oxygen during an active gas-exchange QTE |
+| C | Remove carbon dioxide during an active gas-exchange QTE |
 | Mouse | Change yaw and pitch only |
 | Esc | Release Pointer Lock and pause world simulation |
 
@@ -102,7 +102,7 @@ require an HTTP server.
 
 ## Automated Tests
 
-Run the shared Phase 05 suite with either command:
+Run the shared Phase 06 suite with either command:
 
 ~~~powershell
 npm test
@@ -112,13 +112,13 @@ npm test
 node ./tests/run-tests.mjs
 ~~~
 
-The browser page and Node runner import the same 125 tests from `tests/unit`.
-They include every earlier regression plus high/low-BP formula boundaries,
-once-per-second scheduling, pause behavior, absolute stasis/cooldown deadlines,
-Z-only recovery, Level 4 multipliers, safe Wound placement, and smooth
-arterial/venous RBC reflection. Earlier entity, collision, compact RBC/label,
-circulation map, desktop/mobile detection, and refusal-screen contracts remain
-covered by the same suite.
+The browser page and Node runner import the same 144 tests from `tests/unit`.
+They include every earlier regression plus longitudinal/fallback gas triggers,
+O/C thresholds, first-failure retry, second-failure pass, absolute QTE result
+deadlines, state transitions, checkpoint reset, exchange-gated vessel colors,
+the procedural Gas Token, and QTE hood behavior. Earlier BP, entity, collision,
+compact RBC, circulation map, desktop/mobile detection, and refusal-screen
+contracts remain covered by the same suite.
 
 ## Three.js Vendor Record
 

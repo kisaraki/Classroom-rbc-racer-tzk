@@ -22,7 +22,7 @@ import {
   TorusKnotGeometry,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../config.js?v=phase06-qte";
 
 const LOCAL_Z_AXIS = new Vector3(0, 0, 1);
 
@@ -368,12 +368,92 @@ export class ProceduralEntityBatch {
   }
 }
 
+export class ProceduralGasToken {
+  #batch;
+  #track;
+  #entity;
+  #visible = false;
+
+  constructor({ batch, track }) {
+    if (!batch?.sync || !track?.getFrameAtDistance) {
+      throw new TypeError("Gas Token requires a procedural batch and track.");
+    }
+
+    this.#batch = batch;
+    this.#track = track;
+    this.#entity = {
+      id: "gas-token",
+      distanceAlongTrack: 0,
+      lateralX: 0,
+      lateralY: 0,
+      animationSeconds: 0,
+      animationPhase: 0
+    };
+    this.group = batch.group;
+    this.group.name = "procedural-gas-token";
+    this.group.userData.gasToken = true;
+  }
+
+  get visible() {
+    return this.#visible;
+  }
+
+  get distanceAlongTrack() {
+    return this.#entity.distanceAlongTrack;
+  }
+
+  get partCount() {
+    return this.#batch.partCount;
+  }
+
+  get labelTexture() {
+    return this.#batch.labelTexture;
+  }
+
+  showAtDistance(distanceAlongTrack) {
+    if (!Number.isFinite(distanceAlongTrack)) {
+      throw new TypeError("Gas Token distance must be finite.");
+    }
+
+    this.#entity.distanceAlongTrack = distanceAlongTrack;
+    this.#visible = true;
+    this.#sync();
+  }
+
+  hide() {
+    this.#visible = false;
+    this.#sync();
+  }
+
+  update(simulationDeltaSeconds) {
+    if (
+      !Number.isFinite(simulationDeltaSeconds) ||
+      simulationDeltaSeconds < 0
+    ) {
+      throw new RangeError("Gas Token update time must be non-negative.");
+    }
+
+    if (!this.#visible) {
+      return false;
+    }
+
+    this.#entity.animationSeconds += simulationDeltaSeconds;
+    this.#sync();
+    return true;
+  }
+
+  #sync() {
+    this.#batch.sync(this.#visible ? [this.#entity] : [], this.#track);
+  }
+}
+
 export class ProceduralAssetFactory {
   #config;
   #palette;
   #documentRef;
   #canvasFactory;
   #batches = new Set();
+  #gasTokens = new Set();
 
   constructor({
     config = GAME_CONFIG.entityVisuals,
@@ -418,7 +498,16 @@ export class ProceduralAssetFactory {
     return batch;
   }
 
+  createGasToken(track) {
+    const batch = this.createBatch(this.#config.gasToken, 1);
+    const token = new ProceduralGasToken({ batch, track });
+    this.#gasTokens.add(token);
+    return token;
+  }
+
   dispose() {
+    this.#gasTokens.forEach((token) => token.hide());
+    this.#gasTokens.clear();
     this.#batches.forEach((batch) => batch.dispose());
     this.#batches.clear();
   }

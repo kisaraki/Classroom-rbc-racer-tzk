@@ -1,9 +1,9 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
-import { getStatusRemainingSeconds } from "../../js/ui/HUDManager.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
+import { getStatusRemainingSeconds } from "../../js/ui/HUDManager.js?v=phase06-qte";
 import {
   getMessageRemainingSeconds,
   MessageOverlay
-} from "../../js/ui/MessageOverlay.js?v=phase05-bp-reflection";
+} from "../../js/ui/MessageOverlay.js?v=phase06-qte";
 import {
   assertEqual,
   assertThrows

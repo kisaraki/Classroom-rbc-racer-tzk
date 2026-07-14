@@ -9,7 +9,7 @@ import {
   UnsignedByteType,
   Group
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../config.js?v=phase06-qte";
 
 const RBC_GLYPHS = Object.freeze({
   R: [
@@ -136,6 +136,7 @@ export class HoodController {
     this.malariaConfig = malariaConfig;
     this.timingConfig = timingConfig;
     this.obstructionExpiresAtMs = null;
+    this.qteModeActive = false;
 
     this.group = new Group();
     this.group.name = "independent-rbc-hood";
@@ -200,8 +201,23 @@ export class HoodController {
     this.group.rotation.x = this.closedAngleRadians;
   }
 
-  dispose() {
+  setQteMode(active) {
+    if (typeof active !== "boolean") {
+      throw new TypeError("QTE hood mode requires a boolean.");
+    }
+
+    this.qteModeActive = active;
+    this.group.visible = !active;
+    return this.qteModeActive;
+  }
+
+  reset() {
     this.clearBasicObstruction();
+    this.setQteMode(false);
+  }
+
+  dispose() {
+    this.reset();
     this.geometry.dispose();
     this.material.dispose();
     this.group.clear();

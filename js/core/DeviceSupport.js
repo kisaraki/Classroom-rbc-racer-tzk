@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../config.js?v=phase06-qte";
 
 function requireElement(root, selector) {
   const element = root?.querySelector?.(selector);

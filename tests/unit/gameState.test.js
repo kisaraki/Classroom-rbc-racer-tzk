@@ -1,11 +1,11 @@
 import {
   GameLoop,
   getSimulationDeltaSeconds
-} from "../../js/core/GameLoop.js?v=phase05-bp-reflection";
+} from "../../js/core/GameLoop.js?v=phase06-qte";
 import {
   GAME_STATES,
   GameStateMachine
-} from "../../js/core/GameStateMachine.js?v=phase05-bp-reflection";
+} from "../../js/core/GameStateMachine.js?v=phase06-qte";
 import {
   assertEqual,
   assertThrows
@@ -72,6 +72,46 @@ export function registerGameStateTests(harness) {
     );
     assertEqual(stateMachine.resume(), true);
     assertEqual(stateMachine.state, GAME_STATES.PLAYING);
+  });
+
+  harness.test("QTE freezes the world and safely expires while paused", () => {
+    const stateMachine = new GameStateMachine();
+    stateMachine.start();
+    assertEqual(stateMachine.enterQte(), true);
+    assertEqual(stateMachine.state, GAME_STATES.QTE);
+    assertEqual(stateMachine.isWorldRunning, false);
+    stateMachine.pause();
+    assertEqual(stateMachine.completeQte(), true);
+    assertEqual(stateMachine.state, GAME_STATES.PAUSED);
+    assertEqual(stateMachine.pausedFromState, GAME_STATES.PLAYING);
+  });
+
+  harness.test("transfer reaches LEVEL_COMPLETE when its deadline expires paused", () => {
+    const stateMachine = new GameStateMachine();
+    stateMachine.start();
+    assertEqual(stateMachine.enterTransferCutscene(), true);
+    stateMachine.pause();
+    assertEqual(stateMachine.completeTransferCutscene(), true);
+    assertEqual(stateMachine.state, GAME_STATES.LEVEL_COMPLETE);
+    assertEqual(stateMachine.pausedFromState, null);
+  });
+
+  harness.test("first-level terminal failures stop simulation", () => {
+    const woundState = new GameStateMachine();
+    woundState.start();
+    assertEqual(
+      woundState.enterGameOver(GAME_STATES.GAME_OVER_FALL),
+      true
+    );
+    assertEqual(woundState.isWorldRunning, false);
+
+    const depletedState = new GameStateMachine();
+    depletedState.start();
+    assertEqual(
+      depletedState.enterGameOver(GAME_STATES.GAME_OVER_RECYCLE),
+      true
+    );
+    assertEqual(depletedState.isWorldRunning, false);
   });
 
   harness.test("GameLoop renders while paused without world updates", () => {

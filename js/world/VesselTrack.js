@@ -10,10 +10,13 @@ import {
   UnsignedByteType,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
-import { isLevelData } from "../data/schemas.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../config.js?v=phase06-qte";
+import {
+  GAS_EXCHANGE_STATUS,
+  isLevelData
+} from "../data/schemas.js?v=phase06-qte";
 import { distanceToNormalizedProgress } from "./TrackMath.js";
-import { TrackSection } from "./TrackSection.js?v=phase05-bp-reflection";
+import { TrackSection } from "./TrackSection.js?v=phase06-qte";
 
 function clampUnit(value) {
   return Math.min(1, Math.max(0, value));
@@ -181,6 +184,7 @@ export class VesselTrack {
       this.group.add(section.mesh);
       return section;
     });
+    this.setGasExchangeStatus(GAS_EXCHANGE_STATUS.PENDING);
   }
 
   get cachedFrameCount() {
@@ -257,6 +261,37 @@ export class VesselTrack {
     ).getColorAtDistance(distanceAlongTrack, target);
   }
 
+  setGasExchangeStatus(status) {
+    if (!Object.values(GAS_EXCHANGE_STATUS).includes(status)) {
+      throw new RangeError("Unknown gas exchange status: " + status);
+    }
+
+    const gasSectionIndex = this.sections.findIndex(
+      (section) => section.gasExchangeZone !== null
+    );
+
+    if (gasSectionIndex < 0) {
+      throw new Error("The level has no configured gas exchange section.");
+    }
+
+    this.sections.forEach((section) => section.resetDisplayColors());
+
+    if (status !== GAS_EXCHANGE_STATUS.SUCCESS) {
+      const beforeExchangeColor =
+        this.sections[gasSectionIndex].initialColorStart;
+
+      this.sections.slice(gasSectionIndex).forEach((section) => {
+        section.setDisplayColors(
+          beforeExchangeColor,
+          beforeExchangeColor
+        );
+      });
+    }
+
+    this.gasExchangeStatus = status;
+    return status;
+  }
+
   getWorldPosition(distanceAlongTrack, lateralX, lateralY) {
     const frame = this.getFrameAtDistance(distanceAlongTrack);
     return frame.point
@@ -268,6 +303,11 @@ export class VesselTrack {
   update(simulationDeltaSeconds) {
     this.#flowTexture.offset.x -=
       this.#config.flowTexture.offsetSpeed * simulationDeltaSeconds;
+  }
+
+  resetForRetry() {
+    this.#flowTexture.offset.set(0, 0);
+    this.setGasExchangeStatus(GAS_EXCHANGE_STATUS.PENDING);
   }
 
   dispose() {

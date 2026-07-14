@@ -50,6 +50,7 @@ export class ParallelTransportTubeGeometry extends TubeGeometry {
     const position = this.getAttribute("position");
     const normal = this.getAttribute("normal");
     const colors = new Float32Array(position.count * 3);
+    const colorProgresses = new Float32Array(position.count);
     const startColor = new Color(colorStart);
     const endColor = new Color(colorEnd);
     const vertexColor = new Color();
@@ -104,22 +105,42 @@ export class ParallelTransportTubeGeometry extends TubeGeometry {
         colors[colorIndex] = vertexColor.r;
         colors[colorIndex + 1] = vertexColor.g;
         colors[colorIndex + 2] = vertexColor.b;
+        colorProgresses[vertexIndex] = colorProgress;
         vertexIndex += 1;
         colorIndex += 3;
       }
     }
 
     this.setAttribute("color", new Float32BufferAttribute(colors, 3));
+    this.colorProgresses = colorProgresses;
     position.needsUpdate = true;
     normal.needsUpdate = true;
     this.computeBoundingBox();
     this.computeBoundingSphere();
+  }
+
+  setColorGradient(colorStart, colorEnd) {
+    const startColor = new Color(colorStart);
+    const endColor = new Color(colorEnd);
+    const vertexColor = new Color();
+    const colors = this.getAttribute("color");
+
+    for (let index = 0; index < colors.count; index += 1) {
+      vertexColor
+        .copy(startColor)
+        .lerp(endColor, this.colorProgresses[index]);
+      colors.setXYZ(index, vertexColor.r, vertexColor.g, vertexColor.b);
+    }
+
+    colors.needsUpdate = true;
   }
 }
 
 export class TrackSection {
   #startColorValue;
   #endColorValue;
+  #initialStartColorValue;
+  #initialEndColorValue;
 
   constructor({
     definition,
@@ -148,6 +169,11 @@ export class TrackSection {
     this.colorEnd = colorEnd;
     this.#startColorValue = new Color(colorStart);
     this.#endColorValue = new Color(colorEnd);
+    this.#initialStartColorValue = new Color(colorStart);
+    this.#initialEndColorValue = new Color(colorEnd);
+    this.displayColorStart = colorStart;
+    this.displayColorEnd = colorEnd;
+    this.gasExchangeZone = definition.gasExchangeZone ?? null;
     this.minimapSegmentId = definition.minimapSegmentId;
     this.minimapStartProgress = definition.minimapStartProgress;
     this.minimapEndProgress = definition.minimapEndProgress;
@@ -223,6 +249,28 @@ export class TrackSection {
     return target
       .copy(this.#startColorValue)
       .lerp(this.#endColorValue, progress);
+  }
+
+  get initialColorStart() {
+    return "#" + this.#initialStartColorValue.getHexString();
+  }
+
+  setDisplayColors(colorStart, colorEnd) {
+    this.#startColorValue.set(colorStart);
+    this.#endColorValue.set(colorEnd);
+    this.displayColorStart = "#" + this.#startColorValue.getHexString();
+    this.displayColorEnd = "#" + this.#endColorValue.getHexString();
+    this.geometry.setColorGradient(
+      this.#startColorValue,
+      this.#endColorValue
+    );
+  }
+
+  resetDisplayColors() {
+    this.setDisplayColors(
+      this.#initialStartColorValue,
+      this.#initialEndColorValue
+    );
   }
 
   dispose() {

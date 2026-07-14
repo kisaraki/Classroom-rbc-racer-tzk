@@ -10,23 +10,33 @@ import {
   SRGBColorSpace,
   WebGLRenderer
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
-import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase05-bp-reflection";
-import { CameraController } from "../input/CameraController.js";
-import { InputController } from "../input/InputController.js?v=phase05-bp-reflection-r2";
+import { GAME_CONFIG } from "../config.js?v=phase06-qte";
+import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase06-qte";
+import {
+  createLevelCheckpoint
+} from "../data/schemas.js?v=phase06-qte";
+import { CameraController } from "../input/CameraController.js?v=phase06-qte";
+import { InputController } from "../input/InputController.js?v=phase06-qte";
 import { PointerLockController } from "../input/PointerLockController.js";
-import { PlayerRBC } from "../player/PlayerRBC.js?v=phase05-bp-reflection";
-import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=phase05-bp-reflection";
-import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase05-bp-reflection";
-import { EntityManager } from "../systems/EntityManager.js?v=phase05-bp-reflection";
-import { HUDManager } from "../ui/HUDManager.js?v=phase05-bp-reflection";
+import { PlayerRBC } from "../player/PlayerRBC.js?v=phase06-qte";
+import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=phase06-qte";
+import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase06-qte";
+import { EntityManager } from "../systems/EntityManager.js?v=phase06-qte";
+import {
+  canCompleteLevel,
+  QTE_EVENTS,
+  QTE_OUTCOMES,
+  QTE_PHASES,
+  QTESystem
+} from "../systems/QTESystem.js?v=phase06-qte";
+import { HUDManager } from "../ui/HUDManager.js?v=phase06-qte";
 import { SeededRandom } from "../utils/SeededRandom.js";
-import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase05-bp-reflection";
-import { VesselTrack } from "../world/VesselTrack.js?v=phase05-bp-reflection";
+import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase06-qte";
+import { VesselTrack } from "../world/VesselTrack.js?v=phase06-qte";
 import { GameLoop } from "./GameLoop.js";
-import { GameSession } from "./GameSession.js?v=phase05-bp-reflection";
-import { GAME_STATES } from "./GameStateMachine.js?v=phase05-bp-reflection";
-import { LevelManager } from "./LevelManager.js?v=phase05-bp-reflection";
+import { GameSession } from "./GameSession.js?v=phase06-qte";
+import { GAME_STATES } from "./GameStateMachine.js?v=phase06-qte";
+import { LevelManager } from "./LevelManager.js?v=phase06-qte";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);
@@ -44,7 +54,9 @@ export class Game {
   #root;
   #canvas;
   #session;
+  #levelCheckpoint;
   #pointerLock;
+  #transferExpiresAtMs = null;
   #pointerLockErrorName = "";
   #pointerLockErrorMessage = "";
   #renderFrameCount = 0;
@@ -108,12 +120,18 @@ export class Game {
       config: GAME_CONFIG,
       stateOverrides: { currentLevel: this.level.id }
     });
+    this.#levelCheckpoint = createLevelCheckpoint(
+      this.player.state,
+      this.level.seed
+    );
+    this.qteSystem = new QTESystem({ level: this.level });
     this.assetFactory = new ProceduralAssetFactory({ documentRef });
     this.entityManager = new EntityManager({
       track: this.track,
       level: this.level,
       assetFactory: this.assetFactory
     });
+    this.gasToken = this.assetFactory.createGasToken(this.track);
     this.bloodPressureHazards = new BloodPressureHazardSystem({
       levelId: this.level.id,
       random: new SeededRandom(
@@ -137,6 +155,7 @@ export class Game {
 
     this.scene.add(this.track.group);
     this.scene.add(this.entityManager.group);
+    this.scene.add(this.gasToken.group);
     this.scene.add(this.player.worldGroup);
     this.camera.add(this.player.cockpitGroup);
     this.scene.add(this.camera);
@@ -146,6 +165,7 @@ export class Game {
       this.player.state.distanceAlongTrack
     );
     this.player.syncWorldTransform(initialFrame);
+    this.#syncGasToken();
     this.entityManager.update(this.player.state, 0);
     this.cameraController.updateCamera(
       this.camera,
@@ -198,7 +218,7 @@ export class Game {
     this.#root.dataset.rbcLabelHeight = String(
       GAME_CONFIG.playerModel.label.planeHeight
     );
-    this.#root.dataset.phase = "05";
+    this.#root.dataset.phase = "06";
     this.#root.dataset.proceduralAssets = "true";
     this.#root.dataset.entityBatchCount = String(
       this.entityManager.batchCount
@@ -213,6 +233,13 @@ export class Game {
       GAME_CONFIG.bloodPressureHazards.checkIntervalSeconds
     );
     this.#root.dataset.vesselReflection = "true";
+    this.#root.dataset.gasTokenProcedural = "true";
+    this.#root.dataset.gasTokenPartCount = String(
+      this.gasToken.partCount
+    );
+    this.#root.dataset.checkpointSeed = String(
+      this.#levelCheckpoint.seed
+    );
     this.hud.showReady();
     this.#resize();
     this.#renderFrame(0);
@@ -304,14 +331,47 @@ export class Game {
       this.player.state,
       this.entityManager.activeEntities
     );
-    this.#handleCollisionResult(collisionResult);
+    const enteredGameOver = this.#handleCollisionResult(collisionResult);
     this.entityManager.recycleConsumed();
+    this.gasToken.update(deltaSeconds);
     this.track.update(deltaSeconds);
     this.#simulationUpdateCount += 1;
+
+    if (enteredGameOver) {
+      return;
+    }
+
+    const qteStart = this.qteSystem.tryStart(
+      this.player.state.previousDistanceAlongTrack,
+      this.player.state.distanceAlongTrack,
+      this.#session.nowMs,
+      {
+        atLevelEnd: this.levelManager.isAtEnd(
+          this.player.state.distanceAlongTrack
+        )
+      }
+    );
+
+    if (qteStart && this.#session.enterQte()) {
+      this.input.reset();
+      this.gasToken.hide();
+      this.player.hoodController.setQteMode(true);
+      this.hud.hideMessage();
+      return;
+    }
+
+    if (
+      this.levelManager.isAtEnd(this.player.state.distanceAlongTrack) &&
+      canCompleteLevel(this.qteSystem.status)
+    ) {
+      this.#beginTransfer();
+    }
   }
 
   #renderFrame(rawDeltaSeconds) {
     const clockNowMs = this.#session.nowMs;
+    this.#updateQte(clockNowMs);
+    this.#updateTransfer(clockNowMs);
     this.#updateBloodPressureMechanisms(
       rawDeltaSeconds,
       clockNowMs
@@ -378,6 +438,133 @@ export class Game {
       minimapProgress,
       clockNowMs
     );
+  }
+
+  #updateQte(nowMs) {
+    const isQteState = this.#session.state === GAME_STATES.QTE;
+    const isPausedQte =
+      this.#session.state === GAME_STATES.PAUSED &&
+      this.#session.pausedFromState === GAME_STATES.QTE;
+    const actions = this.input.consumeQteActions();
+
+    if (!isQteState && !isPausedQte) {
+      if (this.qteSystem.phase === QTE_PHASES.IDLE) {
+        this.hud.hideQte();
+      }
+      return;
+    }
+
+    let event = this.qteSystem.update(nowMs);
+
+    if (event) {
+      this.#handleQteEvent(event);
+    } else if (
+      isQteState &&
+      this.qteSystem.phase === QTE_PHASES.INPUT
+    ) {
+      for (const action of actions) {
+        event = this.qteSystem.recordAction(action, nowMs);
+
+        if (event) {
+          this.#handleQteEvent(event);
+        }
+
+        if (event?.type === QTE_EVENTS.OUTCOME) {
+          break;
+        }
+      }
+    }
+
+    if (this.qteSystem.phase === QTE_PHASES.IDLE) {
+      this.hud.hideQte();
+    } else {
+      this.hud.updateQte(this.qteSystem.diagnostics, nowMs);
+    }
+  }
+
+  #handleQteEvent(event) {
+    if (event.type === QTE_EVENTS.OUTCOME) {
+      this.player.state.score += event.scoreDelta;
+      this.player.state.gasExchangeStatus = event.status;
+      this.player.state.gasExchangeAttempts = event.attempts;
+
+      if (event.outcome === QTE_OUTCOMES.SUCCESS) {
+        this.player.state.qteSuccessCount += 1;
+      }
+
+      this.track.setGasExchangeStatus(event.status);
+      this.#syncGasToken();
+      return;
+    }
+
+    if (event.type === QTE_EVENTS.RESULT_EXPIRED) {
+      this.#session.completeQte();
+      this.input.reset();
+      this.player.hoodController.setQteMode(false);
+      this.hud.hideQte();
+      this.#syncGasToken();
+
+      if (this.#session.state === GAME_STATES.PAUSED) {
+        this.hud.showPaused(this.#session.pausedFromState);
+      }
+    }
+  }
+
+  #beginTransfer() {
+    if (!this.#session.enterTransferCutscene()) {
+      return false;
+    }
+
+    this.#transferExpiresAtMs =
+      this.#session.nowMs +
+      GAME_CONFIG.cutscenes.transferDurationMinSeconds *
+        GAME_CONFIG.timing.millisecondsPerSecond;
+    this.input.reset();
+    this.gasToken.hide();
+    this.player.hoodController.setQteMode(false);
+    this.hud.hideMessage();
+    this.hud.hideQte();
+    this.hud.showTransfer(this.qteSystem.status);
+    return true;
+  }
+
+  #updateTransfer(nowMs) {
+    const isTransferState =
+      this.#session.state === GAME_STATES.TRANSFER_CUTSCENE;
+    const isPausedTransfer =
+      this.#session.state === GAME_STATES.PAUSED &&
+      this.#session.pausedFromState === GAME_STATES.TRANSFER_CUTSCENE;
+
+    if (
+      (!isTransferState && !isPausedTransfer) ||
+      this.#transferExpiresAtMs === null ||
+      nowMs < this.#transferExpiresAtMs
+    ) {
+      return;
+    }
+
+    if (this.#session.completeTransferCutscene()) {
+      this.#transferExpiresAtMs = null;
+      this.input.reset();
+      this.hud.showLevelComplete({
+        gasExchangeStatus: this.qteSystem.status,
+        score: this.player.state.score
+      });
+      this.#pointerLock.exit();
+    }
+  }
+
+  #syncGasToken() {
+    const nextDistance = this.qteSystem.nextTriggerDistance;
+
+    if (
+      this.qteSystem.phase === QTE_PHASES.IDLE &&
+      Number.isFinite(nextDistance)
+    ) {
+      this.gasToken.showAtDistance(nextDistance);
+    } else {
+      this.gasToken.hide();
+    }
   }
 
   #updateBloodPressureMechanisms(rawDeltaSeconds, nowMs) {
@@ -561,6 +748,9 @@ export class Game {
       this.player.hoodController.obstructionExpiresAtMs === null
         ? ""
         : String(this.player.hoodController.obstructionExpiresAtMs);
+    this.#root.dataset.qteHoodMode = String(
+      this.player.hoodController.qteModeActive
+    );
     const hazardDiagnostics = this.bloodPressureHazards.diagnostics;
     const reflectionDiagnostics = this.player.reflectionDiagnostics;
     this.#root.dataset.bpCheckCount = String(
@@ -612,11 +802,62 @@ export class Game {
       reflectionDiagnostics.bodyColor;
     this.#root.dataset.rbcReflectedCockpitColor =
       reflectionDiagnostics.cockpitColor;
+    const qteDiagnostics = this.qteSystem.diagnostics;
+    this.#root.dataset.qtePhase = qteDiagnostics.phase;
+    this.#root.dataset.gasExchangeStatus = qteDiagnostics.status;
+    this.#root.dataset.gasExchangeAttempts = String(
+      qteDiagnostics.attempts
+    );
+    this.#root.dataset.qteOxygenCount = String(
+      qteDiagnostics.oxygenCount
+    );
+    this.#root.dataset.qteCarbonDioxideCount = String(
+      qteDiagnostics.carbonDioxideCount
+    );
+    this.#root.dataset.qteTriggerType =
+      qteDiagnostics.activeTriggerType ?? "";
+    this.#root.dataset.qteNextTriggerType =
+      qteDiagnostics.nextTriggerType ?? "";
+    this.#root.dataset.qteNextTriggerDistance =
+      qteDiagnostics.nextTriggerDistance === null
+        ? ""
+        : String(qteDiagnostics.nextTriggerDistance);
+    this.#root.dataset.qteExpiresAt =
+      qteDiagnostics.qteExpiresAtMs === null
+        ? ""
+        : String(qteDiagnostics.qteExpiresAtMs);
+    this.#root.dataset.qteResultExpiresAt =
+      qteDiagnostics.resultExpiresAtMs === null
+        ? ""
+        : String(qteDiagnostics.resultExpiresAtMs);
+    this.#root.dataset.qteLastOutcome =
+      qteDiagnostics.lastOutcome ?? "";
+    this.#root.dataset.qteCanCompleteLevel = String(
+      qteDiagnostics.canCompleteLevel
+    );
+    this.#root.dataset.gasTokenVisible = String(
+      this.gasToken.visible
+    );
+    this.#root.dataset.gasTokenDistance = String(
+      this.gasToken.distanceAlongTrack
+    );
+    this.#root.dataset.transferExpiresAt =
+      this.#transferExpiresAtMs === null
+        ? ""
+        : String(this.#transferExpiresAtMs);
+    this.#root.dataset.transferRemaining =
+      this.#transferExpiresAtMs === null
+        ? ""
+        : Math.max(
+            0,
+            (this.#transferExpiresAtMs - clockNowMs) /
+              GAME_CONFIG.timing.millisecondsPerSecond
+          ).toFixed(GAME_CONFIG.hud.timerPrecision);
   }
 
   #handleCollisionResult(result) {
     if (result.collisionCount === 0) {
-      return;
+      return false;
     }
 
     this.#collisionCount += result.collisionCount;
@@ -625,6 +866,25 @@ export class Game {
 
     if (result.fatalTypeId) {
       this.#fatalTypeId = result.fatalTypeId;
+
+      if (
+        this.#enterGameOver(
+          GAME_STATES.GAME_OVER_FALL,
+          "FALL"
+        )
+      ) {
+        return true;
+      }
+    }
+
+    if (
+      result.playerDepleted &&
+      this.#enterGameOver(
+        GAME_STATES.GAME_OVER_RECYCLE,
+        "RECYCLE"
+      )
+    ) {
+      return true;
     }
 
     if (result.triggers.includes(ENTITY_TRIGGERS.MALARIA_HOOD)) {
@@ -654,6 +914,22 @@ export class Game {
       tone: primaryEvent.category === "BUFF" ? "INFO" : "CAUTION",
       nowMs: this.#session.nowMs
     });
+    return false;
+  }
+
+  #enterGameOver(gameOverState, mode) {
+    if (!this.#session.enterGameOver(gameOverState)) {
+      return false;
+    }
+
+    this.input.reset();
+    this.gasToken.hide();
+    this.player.hoodController.setQteMode(false);
+    this.hud.hideMessage();
+    this.hud.hideQte();
+    this.hud.showGameOver(mode);
+    this.#pointerLock.exit();
+    return true;
   }
 
   #getStatuses(nowMs) {
@@ -703,7 +979,84 @@ export class Game {
     return value > 0 ? "+" + value : String(value);
   }
 
+  #resetLevel() {
+    this.scene.remove(this.entityManager.group);
+    this.scene.remove(this.gasToken.group);
+    this.entityManager.dispose();
+
+    this.qteSystem.reset();
+    this.track.resetForRetry();
+    this.player.resetForCheckpoint(this.#levelCheckpoint);
+    this.cameraController.reset();
+    this.input.reset();
+    this.#session = new GameSession({
+      durationSeconds: this.level.targetDriveSeconds
+    });
+    this.#transferExpiresAtMs = null;
+    this.#pointerLockErrorName = "";
+    this.#pointerLockErrorMessage = "";
+    this.#collisionCount = 0;
+    this.#lastCollisionTypeId = "";
+    this.#fatalTypeId = "";
+    this.#playerDepleted = false;
+    this.#woundSpawnCount = 0;
+
+    this.assetFactory = new ProceduralAssetFactory({
+      documentRef: this.#document
+    });
+    this.entityManager = new EntityManager({
+      track: this.track,
+      level: this.level,
+      assetFactory: this.assetFactory
+    });
+    this.gasToken = this.assetFactory.createGasToken(this.track);
+    this.bloodPressureHazards = new BloodPressureHazardSystem({
+      levelId: this.level.id,
+      random: new SeededRandom(
+        (this.level.seed ^
+          GAME_CONFIG.bloodPressureHazards.randomSeedSalt) >>>
+          0
+      )
+    });
+    this.scene.add(this.entityManager.group);
+    this.scene.add(this.gasToken.group);
+
+    const initialFrame = this.track.getFrameAtDistance(
+      this.player.state.distanceAlongTrack
+    );
+    this.player.syncWorldTransform(initialFrame);
+    this.#syncGasToken();
+    this.entityManager.update(this.player.state, 0);
+    this.cameraController.updateCamera(
+      this.camera,
+      initialFrame,
+      this.player.state.lateralX,
+      this.player.state.lateralY
+    );
+    this.hud.hideMessage();
+    this.hud.hideQte();
+    this.hud.showReady();
+    this.#root.dataset.entityBatchCount = String(
+      this.entityManager.batchCount
+    );
+    this.#root.dataset.entityScheduleCount = String(
+      this.entityManager.scheduleCount
+    );
+    this.#root.dataset.gasTokenPartCount = String(
+      this.gasToken.partCount
+    );
+    return true;
+  }
+
   #requestPointerLock = () => {
+    if (
+      this.#session.state === GAME_STATES.LEVEL_COMPLETE ||
+      this.#session.state === GAME_STATES.GAME_OVER_RECYCLE ||
+      this.#session.state === GAME_STATES.GAME_OVER_FALL
+    ) {
+      this.#resetLevel();
+    }
+
     this.#session.prepareForPointerLock();
     void this.#pointerLock.request();
   };
@@ -713,10 +1066,15 @@ export class Game {
       this.#session.acquirePointerLock();
       this.#pointerLockErrorName = "";
       this.#pointerLockErrorMessage = "";
-      this.hud.hideOverlay();
+      if (this.#session.state === GAME_STATES.TRANSFER_CUTSCENE) {
+        this.hud.showTransfer(this.qteSystem.status);
+      } else {
+        this.hud.hideOverlay();
+      }
+
       if (this.#session.state === GAME_STATES.LOW_BP_STASIS) {
         this.#showLowBloodPressureWarning(this.#session.nowMs);
-      } else {
+      } else if (this.#session.state === GAME_STATES.PLAYING) {
         this.hud.showMessage({
           kicker: "Navigation",
           title: "ROUTE SYNCHRONIZED",
@@ -730,7 +1088,7 @@ export class Game {
 
     if (this.#session.releasePointerLock()) {
       this.input.reset();
-      this.hud.showPaused();
+      this.hud.showPaused(this.#session.pausedFromState);
     }
   };
 
@@ -755,7 +1113,7 @@ export class Game {
 
     if (this.#session.releasePointerLock()) {
       this.input.reset();
-      this.hud.showPaused();
+      this.hud.showPaused(this.#session.pausedFromState);
     }
 
     this.#pointerLock.exit();

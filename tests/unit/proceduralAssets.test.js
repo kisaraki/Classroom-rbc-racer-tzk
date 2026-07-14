@@ -1,7 +1,7 @@
 import { Vector3 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
-import { ENTITY_TYPES } from "../../js/data/entityTypes.js?v=phase05-bp-reflection";
-import { ProceduralAssetFactory } from "../../js/world/ProceduralAssetFactory.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../../js/config.js?v=phase06-qte";
+import { ENTITY_TYPES } from "../../js/data/entityTypes.js?v=phase06-qte";
+import { ProceduralAssetFactory } from "../../js/world/ProceduralAssetFactory.js?v=phase06-qte";
 import {
   assert,
   assertEqual
@@ -120,6 +120,38 @@ export function registerProceduralAssetTests(harness) {
       model.parts.filter((part) => part.geometry === "cone").length >= 4
     );
     assertEqual(batch.labelTexture, null);
+    factory.dispose();
+  });
+
+  harness.test("Gas Token is a labeled procedural InstancedMesh batch", () => {
+    const textCalls = [];
+    const factory = new ProceduralAssetFactory({
+      canvasFactory: createCanvasFactory(textCalls)
+    });
+    const token = factory.createGasToken(createStraightTrack());
+
+    token.showAtDistance(120);
+    assertEqual(token.visible, true);
+    assertEqual(token.distanceAlongTrack, 120);
+    assertEqual(
+      token.partCount,
+      GAME_CONFIG.entityVisuals.models.gasToken.parts.length
+    );
+    assert(
+      token.group.children
+        .filter((child) => child.isInstancedMesh)
+        .every((mesh) => mesh.count === 1)
+    );
+    assertEqual(
+      token.labelTexture.userData.label,
+      GAME_CONFIG.entityVisuals.gasToken.label
+    );
+    assertEqual(
+      textCalls.includes(GAME_CONFIG.entityVisuals.gasToken.label),
+      true
+    );
+    token.hide();
+    assertEqual(token.visible, false);
     factory.dispose();
   });
 }

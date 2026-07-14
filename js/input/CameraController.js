@@ -4,7 +4,7 @@ import {
   Quaternion,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
+import { GAME_CONFIG } from "../config.js?v=phase06-qte";
 
 export class CameraController {
   #targetElement;
@@ -70,6 +70,11 @@ export class CameraController {
       GAME_CONFIG.camera.pitchLimitRadians,
       Math.max(-GAME_CONFIG.camera.pitchLimitRadians, this.#pitch)
     );
+  }
+
+  reset() {
+    this.#yaw = 0;
+    this.#pitch = 0;
   }
 
   updateCamera(camera, frame, lateralX, lateralY) {
