@@ -6,44 +6,48 @@ build. It has no runtime backend, database, framework, CDN, or external media.
 
 ## Current Phase
 
-Phase 03 adds the circulation telemetry layer to the data-driven first level:
-a procedural SVG minimap, complete HUD, status region, and central messaging.
+Phase 04 adds procedural gameplay entities and deterministic collision handling
+to the data-driven first level while retaining the Phase 03 circulation HUD.
 
 Included:
 
-- One generic LevelManager and one registered playable level. Levels 2 through
-  4 remain unbuilt.
-- A 3000-unit, 19-control-point Catmull-Rom route from the left ventricle to the
-  right ventricle.
-- Eight data-driven TrackSection instances with exact distances, Location
-  labels, radii, arterial-to-venous vertex-color gradients, and overlap seams.
-- Shared parallel-transport frames for geometry, the player, the camera, and
-  local cross-section movement.
-- A dynamically generated SVG circulation map with the left/right atria and
-  ventricles, lungs, brain, tissues, and eight connecting vessel curves.
-- A glowing, pulsing player marker sampled continuously from the active SVG
-  Path with the first level's normalized distance mapping.
-- Right-side HP, BP, Score, Location, Level, distance, speed, absolute clock,
-  and an empty-by-default special-status countdown region.
-- A central message component whose expiry is derived from an absolute
-  deadline and therefore continues while world simulation is paused.
-- A procedural flow texture, biconcave PlayerRBC cockpit, Pointer Lock driving,
-  dynamic Location HUD, and absolute clock retained from Phase 01.
-- A shared 76-test Node and browser suite, including SVG route continuity,
-  absolute UI deadlines, and an unobstructed 300-second first-level traversal.
-- A 0.75 internal Three.js render scale that preserves the 1920 x 1080 layout
-  while meeting the desktop performance requirement.
+- Seven fully procedural models: C, B12, Fe²⁺, CO, malaria, C₂H₅OH, and
+  Wound. No image, model, video, font, or network asset is loaded.
+- CanvasTexture/Sprite labels with exact Unicode text; malaria intentionally
+  uses an irregular core, loops, and spikes without a text label.
+- One InstancedMesh batch per entity type, pooled entity state objects, a
+  24-general-entity cap, and a separate two-Wound cap.
+- A deterministic level-seeded schedule with configured 8-16 unit spacing,
+  weighted empty slots, uniform-area cross-section placement, reserved gas/QTE
+  distances, and no more than two identical consecutive debuffs.
+- Activation 35-70 units ahead and recycling 20 units behind the player.
+- Swept longitudinal collision over the previous/current frame plus circular
+  cross-section tests, preventing high-speed tunnelling.
+- Stable same-frame priority: Wound, debuffs, HP depletion, then buffs. Wound
+  applies Score -200 and reports fatal without subtracting HP first.
+- Working Score/HP effects for nutrients, CO, malaria, and alcohol; alcohol
+  also increments the canonical player counter.
+- A basic five-second malaria hood obstruction driven by an absolute deadline,
+  so it expires while world simulation is paused.
+- The Phase 03 3000-unit lower systemic route, SVG circulation map, HUD,
+  Pointer Lock controls, and continuously running real clock remain intact.
+- A shared 101-test Node/browser suite plus 1280 x 720, 1920 x 1080, and
+  390 x 844 browser layout acceptance.
 
 Intentionally excluded until later phases:
 
-- Levels 2 through 4 and level completion.
-- General entities, spawning, collision effects, and object pools.
-- QTE, low-BP stasis, alcohol, malaria, and Wound gameplay.
-- Cutscenes, game-over, retry, ending, and victory flows.
+- Automatic Wound probability/spawning and BP-dependent Wound frequency
+  (Phase 05). The model, pool lane, dodge counter, and fatal collision contract
+  are ready but the first level does not generate Wound yet.
+- Gas-exchange QTE, failed-pass handling, and level completion (Phase 06).
+- Full alcohol intoxication steering and continuous malaria hood flutter
+  animation (Phase 07). Phase 04 applies their base Score/HP effects only.
+- Levels 2 through 4, cutscenes, low-BP stasis, game-over, retry, endings, and
+  victory flows.
 
-Phase 03 is PASS. Local browser acceptance, GitHub Actions, GitHub Pages, and
-the shared live browser suite all passed. Phase 04 is authorized but has not
-started. See reports/phase-03-report.md for exact evidence.
+Phase 04 is PASS. Local Node/browser acceptance, GitHub Actions, GitHub Pages,
+and the live 101-test suite all passed. See `reports/phase-04-report.md` for
+exact evidence.
 
 ## Controls
 
@@ -92,7 +96,7 @@ require an HTTP server.
 
 ## Automated Tests
 
-Run the shared Phase 03 suite with either command:
+Run the shared Phase 04 suite with either command:
 
 ~~~powershell
 npm test
@@ -102,11 +106,12 @@ npm test
 node ./tests/run-tests.mjs
 ~~~
 
-The browser page and Node runner import the same 76 tests from tests/unit.
-They include every earlier regression plus first-level assembly, LevelManager
-boundaries, Location changes, minimap progress, SVG node/vessel validation,
-continuous path sampling, absolute message and status deadlines, full baseline
-traversal, segmented vessel geometry, and procedural vertex-color gradients.
+The browser page and Node runner import the same 101 tests from `tests/unit`.
+They include every earlier regression plus all seven procedural models, exact
+labels, InstancedMesh batching, deterministic schedules, fairness and spacing,
+reserved slots, object pooling/caps, swept collision, collision priority,
+Score/HP clamping, alcohol counting, Wound fatal semantics, and absolute
+malaria-hood deadlines.
 
 ## Three.js Vendor Record
 
