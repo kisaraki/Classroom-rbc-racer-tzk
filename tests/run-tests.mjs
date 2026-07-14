@@ -1,9 +1,9 @@
-import { createPhase02TestHarness } from "./unit/suites.js?v=phase02-level-one";
+import { createPhase03TestHarness } from "./unit/suites.js?v=phase03-hud-map";
 
-const harness = createPhase02TestHarness();
+const harness = createPhase03TestHarness();
 const summary = await harness.run();
 
-console.log("RBC Racer Phase 02 unit tests");
+console.log("RBC Racer Phase 03 unit tests");
 
 summary.results.forEach((result) => {
   const duration = result.durationMs.toFixed(2);

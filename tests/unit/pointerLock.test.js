@@ -1,5 +1,5 @@
 import { GameClock } from "../../js/core/GameClock.js?v=phase01-real-clock";
-import { GameSession } from "../../js/core/GameSession.js?v=phase01-real-clock";
+import { GameSession } from "../../js/core/GameSession.js?v=phase03-hud-map";
 import { GAME_STATES } from "../../js/core/GameStateMachine.js";
 import { PointerLockController } from "../../js/input/PointerLockController.js";
 import {
@@ -58,11 +58,13 @@ export function registerPointerLockTests(harness) {
       assertEqual(session.state, GAME_STATES.PAUSED);
       assertEqual(session.isWorldRunning, false);
       assertEqual(session.deadlineMs, 31000);
+      assertEqual(session.nowMs, 1000);
       assertEqual(session.remainingSeconds, 30);
       assertEqual(session.elapsedSeconds, 0);
 
       nowMs = 6000;
       session.rejectPointerLock();
+      assertEqual(session.nowMs, 6000);
       assertEqual(session.state, GAME_STATES.PAUSED);
       assertEqual(session.remainingSeconds, 25);
       assertEqual(session.elapsedSeconds, 5);

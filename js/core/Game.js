@@ -10,16 +10,18 @@ import {
   SRGBColorSpace,
   WebGLRenderer
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase02-level-one";
+import { GAME_CONFIG } from "../config.js?v=phase03-hud-map";
 import { CameraController } from "../input/CameraController.js";
 import { InputController } from "../input/InputController.js";
 import { PointerLockController } from "../input/PointerLockController.js";
 import { PlayerRBC } from "../player/PlayerRBC.js";
-import { HUDManager } from "../ui/HUDManager.js?v=phase02-level-one";
-import { VesselTrack } from "../world/VesselTrack.js?v=phase02-level-one";
+import { HUDManager } from "../ui/HUDManager.js?v=phase03-hud-map";
+import { VesselTrack } from "../world/VesselTrack.js?v=phase03-hud-map";
 import { GameLoop } from "./GameLoop.js";
-import { GameSession } from "./GameSession.js?v=phase01-real-clock";
-import { LevelManager } from "./LevelManager.js?v=phase02-level-one";
+import { GameSession } from "./GameSession.js?v=phase03-hud-map";
+import { LevelManager } from "./LevelManager.js?v=phase03-hud-map";
+
+const EMPTY_STATUSES = Object.freeze([]);
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);
@@ -140,6 +142,12 @@ export class Game {
     this.#root.dataset.currentLevel = String(this.level.id);
     this.#root.dataset.levelName = this.level.name;
     this.#root.dataset.minimapPathId = this.level.minimapPathId;
+    this.#root.dataset.minimapNodeCount = String(
+      this.hud.minimapDiagnostics.nodeCount
+    );
+    this.#root.dataset.minimapVesselCount = String(
+      this.hud.minimapDiagnostics.vesselCount
+    );
     this.#root.dataset.trackStart = String(this.level.start.distance);
     this.#root.dataset.trackEnd = String(this.level.end.distance);
     this.#root.dataset.trackSections = String(this.track.sections.length);
@@ -260,12 +268,17 @@ export class Game {
     const currentSection = this.levelManager.getSectionAtDistance(
       distanceAlongTrack
     );
+    const minimapProgress =
+      this.levelManager.getMinimapProgressAtDistance(distanceAlongTrack);
+    const clockNowMs = this.#session.nowMs;
 
     this.hud.update({
       hp: this.player.state.hp,
       maxHp: this.player.state.maxHp,
       bp: this.player.state.bp,
       score: this.player.state.score,
+      level: this.level.id,
+      levelCount: GAME_CONFIG.game.totalLevelCount,
       location: this.levelManager.getLocationAtDistance(
         distanceAlongTrack
       ),
@@ -275,13 +288,18 @@ export class Game {
       realClockElapsedSeconds,
       state: this.#session.state,
       fps: this.#fps,
-      pointerLocked
+      pointerLocked,
+      minimapPathId: this.level.minimapPathId,
+      minimapProgress,
+      clockNowMs,
+      statuses: EMPTY_STATUSES
     });
     this.#publishDiagnostics(
       timerRemainingSeconds,
       realClockElapsedSeconds,
       pointerLocked,
-      currentSection
+      currentSection,
+      minimapProgress
     );
   }
 
@@ -304,7 +322,8 @@ export class Game {
     timerRemainingSeconds,
     realClockElapsedSeconds,
     pointerLocked,
-    currentSection
+    currentSection,
+    minimapProgress
   ) {
     const state = this.player.state;
     this.#root.dataset.gameState = this.#session.state;
@@ -316,10 +335,9 @@ export class Game {
       this.levelManager.getLocationAtDistance(state.distanceAlongTrack);
     this.#root.dataset.minimapSegmentId =
       currentSection.minimapSegmentId;
-    this.#root.dataset.minimapProgress =
-      this.levelManager
-        .getMinimapProgressAtDistance(state.distanceAlongTrack)
-        .toFixed(GAME_CONFIG.hud.minimapProgressPrecision);
+    this.#root.dataset.minimapProgress = minimapProgress.toFixed(
+      GAME_CONFIG.hud.minimapProgressPrecision
+    );
     this.#root.dataset.atLevelStart = String(
       this.levelManager.isAtStart(state.distanceAlongTrack)
     );
@@ -380,6 +398,13 @@ export class Game {
       this.#pointerLockErrorName = "";
       this.#pointerLockErrorMessage = "";
       this.hud.hideOverlay();
+      this.hud.showMessage({
+        kicker: "Navigation",
+        title: "ROUTE SYNCHRONIZED",
+        copy: "循環圖已與紅血球位置同步。",
+        tone: "INFO",
+        nowMs: this.#session.nowMs
+      });
       return;
     }
 

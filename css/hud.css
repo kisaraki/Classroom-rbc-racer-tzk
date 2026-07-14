@@ -7,10 +7,13 @@
 }
 
 .hud-brand,
+.circulation-card,
 .vital-stack,
 .mission-strip,
+.status-panel,
 .clock-card,
 .system-card,
+.central-message,
 .control-ribbon {
   position: absolute;
 }
@@ -63,18 +66,182 @@
   box-shadow: 0 0 0.8rem var(--oxygen);
 }
 
-.vital-stack {
-  top: 5.4rem;
+.circulation-card {
+  top: 5.35rem;
   left: clamp(1rem, 2vw, 2rem);
+  width: clamp(18rem, 20vw, 22rem);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-top-color: rgba(169, 217, 239, 0.62);
+  background:
+    linear-gradient(rgba(169, 217, 239, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(169, 217, 239, 0.028) 1px, transparent 1px),
+    linear-gradient(145deg, rgba(8, 18, 25, 0.88), rgba(11, 1, 4, 0.82));
+  background-size: 1.3rem 1.3rem, 1.3rem 1.3rem, auto;
+  clip-path: polygon(0 0, calc(100% - var(--panel-cut)) 0, 100% var(--panel-cut), 100% 100%, var(--panel-cut) 100%, 0 calc(100% - var(--panel-cut)));
+  box-shadow: 0 1.2rem 4rem rgba(0, 0, 0, 0.24);
+}
+
+.circulation-card__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.9rem 0.55rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.circulation-card__header span,
+.circulation-card__header b,
+.circulation-card__legend span,
+.status-panel header span,
+.status-panel header strong,
+.status-panel > p,
+.status-item {
+  font-family: var(--mono-font);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.circulation-card__header span {
+  display: block;
+  margin-bottom: 0.16rem;
+  color: var(--ink-soft);
+  font-size: 0.5rem;
+}
+
+.circulation-card__header strong {
+  display: block;
+  color: var(--oxygen);
+  font-family: var(--mono-font);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.circulation-card__header b {
+  color: var(--blood-hot);
+  font-size: 0.52rem;
+}
+
+.circulation-map {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 6 / 5;
+}
+
+.circulation-map::before,
+.circulation-map::after {
+  position: absolute;
+  z-index: -1;
+  border: 1px solid rgba(169, 217, 239, 0.07);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+
+.circulation-map::before {
+  inset: 18% 24%;
+}
+
+.circulation-map::after {
+  inset: 30% 36%;
+}
+
+.circulation-map__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.circulation-vessel {
+  opacity: 0.38;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: opacity 180ms ease, filter 180ms ease;
+}
+
+.circulation-vessel[data-active-route="true"] {
+  opacity: 0.94;
+}
+
+.circulation-route-path {
+  pointer-events: none;
+}
+
+.circulation-node text {
+  fill: var(--ink);
+  stroke: rgba(9, 1, 4, 0.9);
+  stroke-width: 3px;
+  paint-order: stroke fill;
+  dominant-baseline: middle;
+  font-family: var(--mono-font);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.minimap-player-marker {
+  stroke: rgba(255, 255, 255, 0.32);
+}
+
+.minimap-player-marker__halo {
+  opacity: 0.32;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: minimap-player-pulse var(--minimap-pulse-duration) ease-out infinite;
+}
+
+.minimap-player-marker__core {
+  stroke: var(--blood-black);
+  stroke-width: 1.5px;
+}
+
+.circulation-card__legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem 0.62rem;
+  border-top: 1px solid var(--line);
+}
+
+.circulation-card__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  color: var(--ink-soft);
+  font-size: 0.42rem;
+}
+
+.circulation-card__legend i {
+  width: 0.38rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--blood-hot);
+  box-shadow: 0 0 0.5rem currentColor;
+}
+
+.circulation-card__legend i[data-tone="venous"] {
+  color: var(--bp-low);
+  background: var(--bp-low);
+}
+
+.circulation-card__legend i[data-tone="player"] {
+  color: var(--ink);
+  background: var(--ink);
+}
+
+.vital-stack {
+  top: 7rem;
+  right: clamp(1rem, 2vw, 2rem);
   display: grid;
   gap: 0.6rem;
-  width: min(18rem, calc(100vw - 2rem));
+  width: clamp(16.5rem, 18vw, 18.5rem);
 }
 
 .vital-card {
   --meter-color: var(--blood-hot);
   position: relative;
-  padding: 0.9rem 1rem 0.85rem;
+  padding: 0.7rem 0.85rem 0.68rem;
   border-left: 0.18rem solid var(--meter-color);
   background: linear-gradient(100deg, var(--glass-strong), rgba(24, 3, 9, 0.45));
   clip-path: polygon(0 0, calc(100% - var(--panel-cut)) 0, 100% var(--panel-cut), 100% 100%, 0 100%);
@@ -107,7 +274,7 @@
   display: block;
   margin-bottom: 0.48rem;
   font-family: var(--mono-font);
-  font-size: clamp(1.15rem, 2vw, 1.55rem);
+  font-size: clamp(1.05rem, 1.5vw, 1.4rem);
   font-weight: 800;
   letter-spacing: -0.04em;
 }
@@ -156,20 +323,26 @@
 }
 
 .mission-strip {
-  bottom: clamp(3.8rem, 7vh, 5.6rem);
-  left: clamp(1rem, 2vw, 2rem);
+  top: 19rem;
+  right: clamp(1rem, 2vw, 2rem);
   display: grid;
-  grid-template-columns: minmax(10rem, 1.6fr) repeat(3, minmax(6rem, 0.8fr));
-  width: min(47rem, calc(100vw - 4rem));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: clamp(16.5rem, 18vw, 18.5rem);
   border-top: 1px solid var(--line-hot);
-  background: linear-gradient(90deg, var(--glass-strong), rgba(9, 1, 4, 0.36));
+  border-left: 1px solid var(--line);
+  background: linear-gradient(120deg, var(--glass-strong), rgba(9, 1, 4, 0.48));
   backdrop-filter: blur(0.55rem);
 }
 
 .mission-strip div {
   min-width: 0;
-  padding: 0.72rem 0.85rem;
+  padding: 0.55rem 0.7rem;
   border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.mission-strip__location {
+  grid-column: 1 / -1;
 }
 
 .mission-strip span,
@@ -191,6 +364,70 @@
   font-family: var(--mono-font);
   font-size: 0.74rem;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-panel {
+  top: 28.5rem;
+  right: clamp(1rem, 2vw, 2rem);
+  width: clamp(16.5rem, 18vw, 18.5rem);
+  min-height: 5rem;
+  padding: 0.7rem 0.8rem 0.75rem;
+  border: 1px solid var(--line);
+  border-left: 0.16rem solid rgba(169, 217, 239, 0.48);
+  background: linear-gradient(120deg, rgba(8, 18, 25, 0.86), rgba(11, 1, 4, 0.72));
+  clip-path: polygon(0 0, calc(100% - 0.8rem) 0, 100% 0.8rem, 100% 100%, 0 100%);
+}
+
+.status-panel[data-active="true"] {
+  border-left-color: var(--bp-high);
+}
+
+.status-panel header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.status-panel header span,
+.status-panel header strong {
+  color: var(--ink-soft);
+  font-size: 0.5rem;
+}
+
+.status-panel header strong {
+  color: var(--oxygen);
+}
+
+.status-panel > p {
+  margin: 0.62rem 0 0;
+  color: rgba(169, 217, 239, 0.46);
+  font-size: 0.48rem;
+}
+
+.status-list {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.48rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.42rem 0.5rem;
+  border-left: 0.12rem solid var(--bp-high);
+  color: var(--ink-soft);
+  background: rgba(255, 154, 77, 0.08);
+  font-size: 0.52rem;
+}
+
+.status-item strong {
+  color: var(--bp-high);
   white-space: nowrap;
 }
 
@@ -239,11 +476,11 @@
 }
 
 .system-card {
-  top: 7rem;
-  right: clamp(1rem, 2vw, 2rem);
-  display: grid;
+  top: clamp(1.85rem, 2.4vw, 2.5rem);
+  right: clamp(15rem, 16vw, 19rem);
+  display: flex;
   justify-items: end;
-  gap: 0.35rem;
+  gap: 0.7rem;
 }
 
 .system-card strong {
@@ -297,6 +534,54 @@
   box-shadow: 0 0 0.6rem var(--plasma);
 }
 
+.central-message {
+  z-index: 6;
+  top: calc(50% + 4.2rem);
+  left: 50%;
+  width: min(28rem, calc(100vw - 4rem));
+  padding: 0.72rem 1rem 0.8rem 1.15rem;
+  border-top: 1px solid var(--oxygen);
+  border-left: 0.18rem solid var(--oxygen);
+  background: linear-gradient(100deg, rgba(8, 18, 25, 0.9), rgba(11, 1, 4, 0.68));
+  clip-path: polygon(0 0, calc(100% - 0.85rem) 0, 100% 0.85rem, 100% 100%, 0 100%);
+  translate: -50% -50%;
+  text-align: left;
+  backdrop-filter: blur(0.65rem);
+  animation: central-message-enter 260ms ease-out both;
+}
+
+.central-message[data-tone="CAUTION"] {
+  border-color: var(--bp-high);
+}
+
+.central-message p,
+.central-message strong {
+  display: block;
+  margin: 0;
+  font-family: var(--mono-font);
+}
+
+.central-message p:first-child {
+  margin-bottom: 0.22rem;
+  color: var(--oxygen);
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.central-message strong {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+}
+
+.central-message p:last-child {
+  margin-top: 0.3rem;
+  color: var(--ink-soft);
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: 0.72rem;
+}
+
 .control-ribbon {
   right: clamp(1rem, 2vw, 2rem);
   bottom: clamp(1rem, 2vw, 2rem);
@@ -337,6 +622,74 @@
   }
 }
 
+@keyframes minimap-player-pulse {
+  from {
+    opacity: 0.48;
+    transform: scale(0.55);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+@keyframes central-message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.8rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-height: 48rem) and (min-width: 64rem) {
+  .circulation-card {
+    top: 4.8rem;
+    width: 18rem;
+  }
+
+  .circulation-card__header {
+    padding-block: 0.55rem 0.42rem;
+  }
+
+  .circulation-card__legend {
+    padding-block: 0.35rem 0.45rem;
+  }
+
+  .vital-stack {
+    top: 7rem;
+    gap: 0.42rem;
+  }
+
+  .vital-card {
+    padding-block: 0.52rem;
+  }
+
+  .vital-card output {
+    margin-bottom: 0.35rem;
+  }
+
+  .vital-card small {
+    margin-top: 0.3rem;
+  }
+
+  .mission-strip {
+    top: 17.5rem;
+  }
+
+  .mission-strip div {
+    padding-block: 0.44rem;
+  }
+
+  .status-panel {
+    top: 26.25rem;
+  }
+}
+
 @media (max-width: 48rem) {
   .hud-brand__name,
   .hud-brand__status {
@@ -349,7 +702,9 @@
 
   .vital-stack {
     top: 4.6rem;
-    width: 12.5rem;
+    right: 0.75rem;
+    left: auto;
+    width: min(11.5rem, 46vw);
   }
 
   .vital-card {
@@ -358,9 +713,24 @@
 
   .system-card,
   .control-ribbon,
-  .mission-strip div:nth-child(2),
-  .mission-strip div:nth-child(3) {
+  .mission-strip div:nth-child(4),
+  .mission-strip div:nth-child(5) {
     display: none;
+  }
+
+  .circulation-card {
+    top: 4.6rem;
+    left: 0.75rem;
+    width: min(13rem, 48vw);
+  }
+
+  .circulation-card__header b,
+  .circulation-card__legend {
+    display: none;
+  }
+
+  .circulation-card__header {
+    padding: 0.5rem 0.6rem 0.4rem;
   }
 
   .clock-card {
@@ -368,7 +738,46 @@
   }
 
   .mission-strip {
-    grid-template-columns: 1fr 0.5fr;
-    width: calc(100vw - 2rem);
+    top: auto;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    grid-template-columns: 1.4fr 0.55fr 0.55fr;
+    width: auto;
+  }
+
+  .mission-strip__location {
+    grid-column: auto;
+  }
+
+  .status-panel {
+    right: 0.75rem;
+    bottom: 5rem;
+    top: auto;
+    display: none;
+    width: calc(100vw - 1.5rem);
+  }
+
+  .status-panel[data-active="true"] {
+    display: block;
+  }
+}
+
+@media (max-width: 30rem) {
+  .circulation-card {
+    width: min(10.5rem, 48vw);
+  }
+
+  .vital-stack {
+    width: min(9.75rem, 44vw);
+  }
+
+  .vital-card__heading span,
+  .vital-card small {
+    display: none;
+  }
+
+  .mission-strip div {
+    padding-inline: 0.45rem;
   }
 }

@@ -44,6 +44,10 @@ export class GameSession {
     return this.#deadlineMs;
   }
 
+  get nowMs() {
+    return this.#clock.nowMs;
+  }
+
   get elapsedSeconds() {
     return this.#startedAtMs === null
       ? null

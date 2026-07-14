@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase02-level-one";
+import { GAME_CONFIG } from "../config.js?v=phase03-hud-map";
 
 export const GAS_EXCHANGE_STATUS = Object.freeze({
   PENDING: "PENDING",

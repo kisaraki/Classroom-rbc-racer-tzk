@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="RBC Racer Phase 02 lower-body systemic circulation route"
+      content="RBC Racer Phase 03 procedural circulation HUD and SVG minimap"
     >
-    <title>RBC Racer | Phase 02 Level One Route</title>
-    <link rel="stylesheet" href="./css/main.css?v=phase02-level-one">
-    <link rel="stylesheet" href="./css/hud.css?v=phase02-level-one">
-    <link rel="stylesheet" href="./css/menu.css?v=phase02-level-one">
+    <title>RBC Racer | Phase 03 Circulation HUD</title>
+    <link rel="stylesheet" href="./css/main.css?v=phase03-hud-map">
+    <link rel="stylesheet" href="./css/hud.css?v=phase03-hud-map">
+    <link rel="stylesheet" href="./css/menu.css?v=phase03-hud-map">
   </head>
   <body>
     <main id="game-root" class="game-root" data-game-state="BOOT">
@@ -24,13 +24,29 @@
 
       <section id="game-hud" class="game-hud" aria-label="遊戲狀態">
         <header class="hud-brand">
-          <span class="hud-brand__phase">P02</span>
+          <span class="hud-brand__phase">P03</span>
           <span class="hud-brand__name">RBC / RACER</span>
           <span class="hud-brand__status">
             <i aria-hidden="true"></i>
             <span id="state-value">READY</span>
           </span>
         </header>
+
+        <section class="circulation-card" aria-labelledby="circulation-title">
+          <header class="circulation-card__header">
+            <div>
+              <span>Circulation map</span>
+              <strong id="circulation-title">SYSTEMIC / LOWER</strong>
+            </div>
+            <b>ROUTE 01</b>
+          </header>
+          <div id="circulation-map" class="circulation-map"></div>
+          <footer class="circulation-card__legend" aria-label="循環圖圖例">
+            <span><i data-tone="arterial"></i> OXYGENATED</span>
+            <span><i data-tone="venous"></i> DEOXYGENATED</span>
+            <span><i data-tone="player"></i> RBC</span>
+          </footer>
+        </section>
 
         <section class="vital-stack" aria-label="生命徵象">
           <article class="vital-card vital-card--hp">
@@ -63,9 +79,17 @@
         </section>
 
         <section class="mission-strip" aria-label="第一關資訊">
-          <div>
+          <div class="mission-strip__location">
             <span>Location</span>
             <strong id="location-value">左心室</strong>
+          </div>
+          <div>
+            <span>Level</span>
+            <strong id="level-value">1 / 4</strong>
+          </div>
+          <div>
+            <span>Score</span>
+            <strong id="score-value">0</strong>
           </div>
           <div>
             <span>Distance</span>
@@ -75,11 +99,21 @@
             <span>Velocity</span>
             <strong id="speed-value">10 u/s</strong>
           </div>
-          <div>
-            <span>Score</span>
-            <strong id="score-value">0</strong>
-          </div>
         </section>
+
+        <aside
+          id="status-panel"
+          class="status-panel"
+          data-active="false"
+          aria-labelledby="status-panel-title"
+        >
+          <header>
+            <span>Condition monitor</span>
+            <strong id="status-panel-title">STATUS</strong>
+          </header>
+          <p id="status-empty">NO ACTIVE CONDITIONS</p>
+          <div id="status-list" class="status-list" data-count="0"></div>
+        </aside>
 
         <aside class="clock-card" data-active="false" aria-label="絕對計時器">
           <span class="clock-card__signal" aria-hidden="true"></span>
@@ -100,6 +134,19 @@
           <span></span>
         </div>
 
+        <section
+          id="central-message"
+          class="central-message"
+          data-tone="INFO"
+          role="status"
+          aria-live="polite"
+          hidden
+        >
+          <p id="central-message-kicker">Navigation</p>
+          <strong id="central-message-title">ROUTE SYNCHRONIZED</strong>
+          <p id="central-message-copy">循環圖已與紅血球位置同步。</p>
+        </section>
+
         <footer class="control-ribbon" aria-label="操作說明">
           <span><kbd>↑ ↓ ← →</kbd> 局部截面</span>
           <span><kbd>Z</kbd> BP +</span>
@@ -115,14 +162,14 @@
         data-mode="READY"
         aria-labelledby="overlay-title"
       >
-        <div class="overlay-index" aria-hidden="true">02</div>
+        <div class="overlay-index" aria-hidden="true">03</div>
         <div class="overlay-panel">
           <p id="overlay-kicker" class="overlay-kicker">
-            Phase 02 / Level one route
+            Phase 03 / Circulation telemetry
           </p>
           <h1 id="overlay-title">下半身體循環</h1>
           <p id="overlay-copy" class="overlay-copy">
-            從左心室出發，依序通過動脈、組織微血管與靜脈，抵達右心室。方向鍵在血管截面移動，Z／X 調整血壓；滑鼠只改變視角。
+            從左心室出發，依序通過動脈、組織微血管與靜脈，抵達右心室。左側循環圖會沿 SVG Path 連續追蹤紅血球位置；方向鍵在血管截面移動，Z／X 調整血壓。
           </p>
           <div class="overlay-controls" aria-label="核心操作">
             <span><b>↑↓←→</b> STRAFE</span>
@@ -143,6 +190,6 @@
       </noscript>
     </main>
 
-    <script type="module" src="./js/main.js?v=phase02-level-one"></script>
+    <script type="module" src="./js/main.js?v=phase03-hud-map"></script>
   </body>
 </html>

@@ -1,4 +1,8 @@
-import { GAME_CONFIG } from "../config.js";
+import { GAME_CONFIG } from "../config.js?v=phase03-hud-map";
+import { MessageOverlay } from "./MessageOverlay.js?v=phase03-hud-map";
+import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase03-hud-map";
+
+const EMPTY_STATUSES = Object.freeze([]);
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);
@@ -12,6 +16,9 @@ function requireElement(root, selector) {
 
 export class HUDManager {
   #elements;
+  #minimap;
+  #messageOverlay;
+  #statusElements = new Map();
 
   constructor(root = document) {
     this.#elements = {
@@ -21,6 +28,7 @@ export class HUDManager {
       bpValue: requireElement(root, "#bp-value"),
       bpMeter: requireElement(root, "#bp-meter"),
       scoreValue: requireElement(root, "#score-value"),
+      levelValue: requireElement(root, "#level-value"),
       locationValue: requireElement(root, "#location-value"),
       speedValue: requireElement(root, "#speed-value"),
       distanceValue: requireElement(root, "#distance-value"),
@@ -30,16 +38,30 @@ export class HUDManager {
       stateValue: requireElement(root, "#state-value"),
       fpsValue: requireElement(root, "#fps-value"),
       pointerValue: requireElement(root, "#pointer-value"),
+      statusPanel: requireElement(root, "#status-panel"),
+      statusList: requireElement(root, "#status-list"),
+      statusEmpty: requireElement(root, "#status-empty"),
       overlay: requireElement(root, "#game-overlay"),
       overlayKicker: requireElement(root, "#overlay-kicker"),
       overlayTitle: requireElement(root, "#overlay-title"),
       overlayCopy: requireElement(root, "#overlay-copy"),
       overlayAction: requireElement(root, "#overlay-action")
     };
+    this.#minimap = new MiniMapRenderer(root);
+    this.#messageOverlay = new MessageOverlay(root);
   }
 
   get actionElement() {
     return this.#elements.overlayAction;
+  }
+
+  get minimapDiagnostics() {
+    return Object.freeze({
+      nodeCount: this.#minimap.nodeCount,
+      vesselCount: this.#minimap.vesselCount,
+      routeId: this.#minimap.currentRouteId,
+      progress: this.#minimap.progress
+    });
   }
 
   update({
@@ -47,6 +69,8 @@ export class HUDManager {
     maxHp,
     bp,
     score,
+    level,
+    levelCount,
     location,
     speed,
     distance,
@@ -54,7 +78,11 @@ export class HUDManager {
     realClockElapsedSeconds,
     state,
     fps,
-    pointerLocked
+    pointerLocked,
+    minimapPathId,
+    minimapProgress,
+    clockNowMs,
+    statuses = EMPTY_STATUSES
   }) {
     const valuePrecision = GAME_CONFIG.hud.valuePrecision;
     const hpRatio = Math.min(1, Math.max(0, hp / maxHp));
@@ -86,6 +114,7 @@ export class HUDManager {
           ? "HIGH"
           : "SAFE";
     this.#elements.scoreValue.textContent = score.toFixed(valuePrecision);
+    this.#elements.levelValue.textContent = level + " / " + levelCount;
     this.#elements.locationValue.textContent = location;
     this.#elements.speedValue.textContent =
       speed.toFixed(valuePrecision) + " u/s";
@@ -113,15 +142,26 @@ export class HUDManager {
       ? "LOCKED"
       : "RELEASED";
     this.#elements.hud.dataset.state = state;
+    this.#minimap.update(minimapPathId, minimapProgress);
+    this.#updateStatuses(statuses, clockNowMs);
+    this.#messageOverlay.update(clockNowMs);
+  }
+
+  showMessage(message) {
+    this.#messageOverlay.show(message);
+  }
+
+  hideMessage() {
+    this.#messageOverlay.hide();
   }
 
   showReady() {
     this.#elements.overlay.hidden = false;
     this.#elements.overlay.dataset.mode = "READY";
-    this.#elements.overlayKicker.textContent = "Phase 02 / Level one route";
+    this.#elements.overlayKicker.textContent = "Phase 03 / Circulation telemetry";
     this.#elements.overlayTitle.textContent = "下半身體循環";
     this.#elements.overlayCopy.textContent =
-      "從左心室出發，依序通過動脈、組織微血管與靜脈，抵達右心室。方向鍵在血管截面移動，Z／X 調整血壓；滑鼠只改變視角。";
+      "從左心室出發，依序通過動脈、組織微血管與靜脈，抵達右心室。左側循環圖會沿 SVG Path 連續追蹤紅血球位置；方向鍵在血管截面移動，Z／X 調整血壓。";
     this.#elements.overlayAction.textContent =
       "開始遊戲並鎖定滑鼠視角";
     this.#elements.overlayAction.disabled = false;
@@ -151,4 +191,73 @@ export class HUDManager {
     this.#elements.overlayAction.textContent = "重試滑鼠鎖定";
     this.#elements.overlayAction.disabled = false;
   }
+
+  #updateStatuses(statuses, nowMs) {
+    if (!Array.isArray(statuses) || !Number.isFinite(nowMs)) {
+      throw new TypeError("HUD statuses require an array and a finite timestamp.");
+    }
+
+    const activeIds = new Set();
+
+    statuses.forEach((status) => {
+      const remainingSeconds = getStatusRemainingSeconds(
+        status.expiresAtMs,
+        nowMs
+      );
+
+      if (remainingSeconds <= 0) {
+        return;
+      }
+
+      activeIds.add(status.id);
+      let elements = this.#statusElements.get(status.id);
+
+      if (!elements) {
+        elements = this.#createStatusElements(status.id);
+        this.#statusElements.set(status.id, elements);
+        this.#elements.statusList.append(elements.item);
+      }
+
+      elements.item.dataset.tone = status.tone ?? "CAUTION";
+      elements.label.textContent = status.label;
+      elements.remaining.textContent =
+        remainingSeconds.toFixed(GAME_CONFIG.hud.statusTimePrecision) + " s";
+    });
+
+    this.#statusElements.forEach((elements, statusId) => {
+      if (!activeIds.has(statusId)) {
+        elements.item.remove();
+        this.#statusElements.delete(statusId);
+      }
+    });
+
+    const count = this.#statusElements.size;
+    this.#elements.statusPanel.dataset.active = String(count > 0);
+    this.#elements.statusList.dataset.count = String(count);
+    this.#elements.statusEmpty.hidden = count > 0;
+  }
+
+  #createStatusElements(statusId) {
+    const documentRef = this.#elements.statusList.ownerDocument;
+    const item = documentRef.createElement("article");
+    const label = documentRef.createElement("span");
+    const remaining = documentRef.createElement("strong");
+
+    item.className = "status-item";
+    item.dataset.statusId = statusId;
+    item.append(label, remaining);
+
+    return { item, label, remaining };
+  }
+}
+
+export function getStatusRemainingSeconds(expiresAtMs, nowMs) {
+  if (!Number.isFinite(expiresAtMs) || !Number.isFinite(nowMs)) {
+    throw new TypeError("Status countdowns require finite timestamps.");
+  }
+
+  return Math.max(
+    0,
+    (expiresAtMs - nowMs) / GAME_CONFIG.timing.millisecondsPerSecond
+  );
 }

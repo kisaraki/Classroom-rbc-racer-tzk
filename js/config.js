@@ -9,7 +9,8 @@ function deepFreeze(value) {
 
 export const GAME_CONFIG = deepFreeze({
   game: {
-    initialLevelId: 1
+    initialLevelId: 1,
+    totalLevelCount: 4
   },
 
   renderer: {
@@ -205,7 +206,212 @@ export const GAME_CONFIG = deepFreeze({
     distancePrecision: 1,
     minimapProgressPrecision: 4,
     timerPrecision: 1,
-    fpsPrecision: 0
+    fpsPrecision: 0,
+    statusTimePrecision: 1,
+    messageTimePrecision: 1,
+    messageDefaultDurationSeconds: 2.8
+  },
+
+  minimap: {
+    viewBoxWidth: 360,
+    viewBoxHeight: 300,
+    vesselStrokeWidth: 4,
+    activeVesselStrokeWidth: 6,
+    routeStrokeWidth: 1,
+    nodeStrokeWidth: 2,
+    nodeFillOpacity: 0.18,
+    nodeLabelFontSize: 10,
+    nodes: [
+      {
+        id: "brain",
+        label: "腦",
+        shape: "capsule",
+        x: 180,
+        y: 34,
+        width: 56,
+        height: 24,
+        cornerRadius: 12,
+        labelX: 180,
+        labelY: 37,
+        labelAnchor: "middle",
+        colorKey: "hudGlow"
+      },
+      {
+        id: "lungs",
+        label: "肺",
+        shape: "capsule",
+        x: 180,
+        y: 102,
+        width: 56,
+        height: 28,
+        cornerRadius: 14,
+        labelX: 180,
+        labelY: 105,
+        labelAnchor: "middle",
+        colorKey: "transitionMagenta"
+      },
+      {
+        id: "right-atrium",
+        label: "右心房",
+        shape: "circle",
+        x: 118,
+        y: 164,
+        radius: 11,
+        labelX: 99,
+        labelY: 153,
+        labelAnchor: "end",
+        colorKey: "deoxygenatedBlue"
+      },
+      {
+        id: "right-ventricle",
+        label: "右心室",
+        shape: "circle",
+        x: 139,
+        y: 214,
+        radius: 12,
+        labelX: 111,
+        labelY: 229,
+        labelAnchor: "end",
+        colorKey: "venousPurple"
+      },
+      {
+        id: "left-atrium",
+        label: "左心房",
+        shape: "circle",
+        x: 242,
+        y: 164,
+        radius: 11,
+        labelX: 261,
+        labelY: 153,
+        labelAnchor: "start",
+        colorKey: "oxygenatedRed"
+      },
+      {
+        id: "left-ventricle",
+        label: "左心室",
+        shape: "circle",
+        x: 221,
+        y: 214,
+        radius: 12,
+        labelX: 249,
+        labelY: 229,
+        labelAnchor: "start",
+        colorKey: "oxygenatedRed"
+      },
+      {
+        id: "tissues",
+        label: "組織",
+        shape: "capsule",
+        x: 180,
+        y: 270,
+        width: 62,
+        height: 24,
+        cornerRadius: 12,
+        labelX: 180,
+        labelY: 273,
+        labelAnchor: "middle",
+        colorKey: "vesselCapillary"
+      }
+    ],
+    vessels: [
+      {
+        id: "left-ventricle-to-brain",
+        from: "left-ventricle",
+        to: "brain",
+        colorKey: "oxygenatedRed",
+        start: [221, 214],
+        control1: [304, 192],
+        control2: [312, 76],
+        end: [180, 34]
+      },
+      {
+        id: "brain-to-right-atrium",
+        from: "brain",
+        to: "right-atrium",
+        colorKey: "deoxygenatedBlue",
+        start: [180, 34],
+        control1: [48, 75],
+        control2: [60, 143],
+        end: [118, 164]
+      },
+      {
+        id: "left-ventricle-to-tissues",
+        from: "left-ventricle",
+        to: "tissues",
+        colorKey: "oxygenatedRed",
+        start: [221, 214],
+        control1: [278, 232],
+        control2: [253, 270],
+        end: [180, 270]
+      },
+      {
+        id: "tissues-to-right-atrium",
+        from: "tissues",
+        to: "right-atrium",
+        colorKey: "deoxygenatedBlue",
+        start: [180, 270],
+        control1: [94, 270],
+        control2: [79, 213],
+        end: [118, 164]
+      },
+      {
+        id: "right-atrium-to-right-ventricle",
+        from: "right-atrium",
+        to: "right-ventricle",
+        colorKey: "venousPurple",
+        start: [118, 164],
+        control1: [111, 184],
+        control2: [122, 206],
+        end: [139, 214]
+      },
+      {
+        id: "right-ventricle-to-lungs",
+        from: "right-ventricle",
+        to: "lungs",
+        colorKey: "deoxygenatedBlue",
+        start: [139, 214],
+        control1: [92, 180],
+        control2: [101, 118],
+        end: [180, 102]
+      },
+      {
+        id: "lungs-to-left-atrium",
+        from: "lungs",
+        to: "left-atrium",
+        colorKey: "oxygenatedRed",
+        start: [180, 102],
+        control1: [258, 115],
+        control2: [274, 148],
+        end: [242, 164]
+      },
+      {
+        id: "left-atrium-to-left-ventricle",
+        from: "left-atrium",
+        to: "left-ventricle",
+        colorKey: "oxygenatedRed",
+        start: [242, 164],
+        control1: [250, 184],
+        control2: [242, 207],
+        end: [221, 214]
+      }
+    ],
+    routes: [
+      {
+        id: "systemic-lower-circulation-path",
+        label: "體循環－下半身",
+        vesselIds: [
+          "left-ventricle-to-tissues",
+          "tissues-to-right-atrium",
+          "right-atrium-to-right-ventricle"
+        ]
+      }
+    ],
+    playerMarker: {
+      coreRadius: 4,
+      haloRadius: 10,
+      coordinatePrecision: 3,
+      pulseDurationSeconds: 1.4
+    }
   },
 
   collision: {

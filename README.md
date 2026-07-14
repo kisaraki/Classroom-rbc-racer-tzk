@@ -6,8 +6,8 @@ build. It has no runtime backend, database, framework, CDN, or external media.
 
 ## Current Phase
 
-Phase 02 replaces the prototype vessel with the data-driven first level:
-the 3000-unit lower-body systemic circulation route.
+Phase 03 adds the circulation telemetry layer to the data-driven first level:
+a procedural SVG minimap, complete HUD, status region, and central messaging.
 
 Included:
 
@@ -19,25 +19,31 @@ Included:
   labels, radii, arterial-to-venous vertex-color gradients, and overlap seams.
 - Shared parallel-transport frames for geometry, the player, the camera, and
   local cross-section movement.
-- Explicit route start/end contracts, gas-exchange trigger positions, and
-  continuous SVG path progress data for the Phase 03 minimap.
+- A dynamically generated SVG circulation map with the left/right atria and
+  ventricles, lungs, brain, tissues, and eight connecting vessel curves.
+- A glowing, pulsing player marker sampled continuously from the active SVG
+  Path with the first level's normalized distance mapping.
+- Right-side HP, BP, Score, Location, Level, distance, speed, absolute clock,
+  and an empty-by-default special-status countdown region.
+- A central message component whose expiry is derived from an absolute
+  deadline and therefore continues while world simulation is paused.
 - A procedural flow texture, biconcave PlayerRBC cockpit, Pointer Lock driving,
   dynamic Location HUD, and absolute clock retained from Phase 01.
-- A shared 60-test Node and browser suite, including an unobstructed 300-second
-  traversal of the complete first level.
+- A shared 76-test Node and browser suite, including SVG route continuity,
+  absolute UI deadlines, and an unobstructed 300-second first-level traversal.
 - A 0.75 internal Three.js render scale that preserves the 1920 x 1080 layout
   while meeting the desktop performance requirement.
 
 Intentionally excluded until later phases:
 
-- Levels 2 through 4, level completion, and the rendered SVG minimap.
+- Levels 2 through 4 and level completion.
 - General entities, spawning, collision effects, and object pools.
 - QTE, low-BP stasis, alcohol, malaria, and Wound gameplay.
 - Cutscenes, game-over, retry, ending, and victory flows.
 
-Phase 02 is PASS. Local, desktop Chrome, GitHub Actions, GitHub Pages, and the
-shared live browser suite all passed. Phase 03 is authorized but has not
-started. See reports/phase-02-report.md for exact evidence.
+Phase 03 implementation and local acceptance are complete. The stage remains
+BLOCKED only until the new build passes GitHub Pages deployment and live-site
+verification. See reports/phase-03-report.md for exact evidence.
 
 ## Controls
 
@@ -86,7 +92,7 @@ require an HTTP server.
 
 ## Automated Tests
 
-Run the shared Phase 02 suite with either command:
+Run the shared Phase 03 suite with either command:
 
 ~~~powershell
 npm test
@@ -96,11 +102,11 @@ npm test
 node ./tests/run-tests.mjs
 ~~~
 
-The browser page and Node runner import the same 60 tests from tests/unit.
-They include every Phase 01 regression plus first-level assembly, LevelManager
-boundaries, Location changes, minimap progress, gas-trigger placement, route
-start/end behavior, full baseline traversal, segmented vessel geometry, and
-procedural vertex-color gradients.
+The browser page and Node runner import the same 76 tests from tests/unit.
+They include every earlier regression plus first-level assembly, LevelManager
+boundaries, Location changes, minimap progress, SVG node/vessel validation,
+continuous path sampling, absolute message and status deadlines, full baseline
+traversal, segmented vessel geometry, and procedural vertex-color gradients.
 
 ## Three.js Vendor Record
 

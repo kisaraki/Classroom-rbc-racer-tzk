@@ -9,10 +9,10 @@ import {
   UnsignedByteType,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase02-level-one";
-import { isLevelData } from "../data/schemas.js?v=phase02-level-one";
+import { GAME_CONFIG } from "../config.js?v=phase03-hud-map";
+import { isLevelData } from "../data/schemas.js?v=phase03-hud-map";
 import { distanceToNormalizedProgress } from "./TrackMath.js";
-import { TrackSection } from "./TrackSection.js?v=phase02-level-one";
+import { TrackSection } from "./TrackSection.js?v=phase03-hud-map";
 
 function clampUnit(value) {
   return Math.min(1, Math.max(0, value));
