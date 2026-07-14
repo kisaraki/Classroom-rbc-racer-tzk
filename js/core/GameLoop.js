@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js";
+import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
 
 function assertFunction(value, label) {
   if (typeof value !== "function") {

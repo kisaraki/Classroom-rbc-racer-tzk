@@ -440,6 +440,24 @@
   white-space: nowrap;
 }
 
+.status-item[data-tone="DANGER"] {
+  border-color: var(--bp-high);
+  background: rgba(255, 82, 101, 0.14);
+}
+
+.status-item[data-tone="DANGER"] strong {
+  color: var(--plasma);
+}
+
+.status-item[data-tone="INFO"] {
+  border-color: var(--oxygen);
+  background: rgba(74, 210, 255, 0.08);
+}
+
+.status-item[data-tone="INFO"] strong {
+  color: var(--oxygen);
+}
+
 .clock-card {
   top: clamp(1rem, 2vw, 2rem);
   right: clamp(1rem, 2vw, 2rem);
@@ -561,6 +579,11 @@
 
 .central-message[data-tone="CAUTION"] {
   border-color: var(--bp-high);
+}
+
+.central-message[data-tone="DANGER"] {
+  border-color: var(--plasma);
+  box-shadow: 0 0 1.5rem rgba(255, 82, 101, 0.16);
 }
 
 .central-message p,

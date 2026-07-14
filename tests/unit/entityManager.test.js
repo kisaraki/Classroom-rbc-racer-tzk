@@ -1,13 +1,13 @@
 import { Group, Vector3 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase04-tests";
-import { getEntityType } from "../../js/data/entityTypes.js?v=phase04-tests";
-import { LEVELS } from "../../js/data/levels.js?v=phase04-tests";
-import { createPlayerState } from "../../js/data/schemas.js?v=phase04-tests";
+import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
+import { getEntityType } from "../../js/data/entityTypes.js?v=phase05-bp-reflection";
+import { LEVELS } from "../../js/data/levels.js?v=phase05-bp-reflection";
+import { createPlayerState } from "../../js/data/schemas.js?v=phase05-bp-reflection";
 import {
   EntityManager,
   buildEntityWeightTable,
   sampleEntityOffset
-} from "../../js/systems/EntityManager.js?v=phase04-tests";
+} from "../../js/systems/EntityManager.js?v=phase05-bp-reflection";
 import {
   assert,
   assertApproximately,
@@ -276,6 +276,99 @@ export function registerEntityManagerTests(harness) {
     assertEqual(player.woundDodgedCount, 1);
     manager.update(player, 0);
     assertEqual(player.woundDodgedCount, 1);
+    manager.dispose();
+  });
+
+  harness.test("BP-triggered Wound spawns ahead with safe reservations", () => {
+    const firstManager = createManager();
+    const secondManager = createManager();
+    const player = createPlayerState();
+    const firstWound = firstManager.spawnWoundAhead(player);
+    const repeatedWound = secondManager.spawnWoundAhead(player);
+
+    assert(firstWound, "A valid first-level Wound position must be found.");
+    assertEqual(firstWound.typeId, "wound");
+    assertEqual(firstManager.activeWoundCount, 1);
+    assert(
+      firstWound.distanceAlongTrack - player.distanceAlongTrack >=
+        GAME_CONFIG.entities.spawnAheadMin
+    );
+    assert(
+      firstWound.distanceAlongTrack - player.distanceAlongTrack <=
+        GAME_CONFIG.entities.spawnAheadMax
+    );
+    assertApproximately(
+      firstWound.distanceAlongTrack,
+      repeatedWound.distanceAlongTrack,
+      Number.EPSILON
+    );
+    assertApproximately(
+      firstWound.lateralX,
+      repeatedWound.lateralX,
+      Number.EPSILON
+    );
+    assertApproximately(
+      firstWound.lateralY,
+      repeatedWound.lateralY,
+      Number.EPSILON
+    );
+
+    const reservedDistances = [
+      ...Object.values(LEVELS[0].gasTriggerDistances),
+      LEVELS[0].end.distance
+    ];
+    reservedDistances.forEach((distance) => {
+      assert(
+        Math.abs(firstWound.distanceAlongTrack - distance) >
+          GAME_CONFIG.entities.reservedDistancePadding
+      );
+    });
+    firstManager.slotHistory
+      .filter((slot) => !slot.reserved && slot.typeId !== "empty")
+      .forEach((slot) => {
+        assert(
+          Math.abs(
+            firstWound.distanceAlongTrack - slot.distanceAlongTrack
+          ) > GAME_CONFIG.entities.reservedDistancePadding
+        );
+      });
+
+    const maximumOffset =
+      GAME_CONFIG.track.radii.greatVessel -
+      GAME_CONFIG.entityTypes.wound.collisionRadius -
+      GAME_CONFIG.track.wallMargin;
+    assert(
+      Math.hypot(firstWound.lateralX, firstWound.lateralY) <=
+        maximumOffset
+    );
+    firstManager.dispose();
+    secondManager.dispose();
+  });
+
+  harness.test("Wound placement rejects an unsafe gap and route end", () => {
+    const manager = createManager();
+    manager.clear();
+    manager.spawnEntity({
+      typeId: "wound",
+      distanceAlongTrack:
+        (GAME_CONFIG.entities.spawnAheadMin +
+          GAME_CONFIG.entities.spawnAheadMax) /
+        2
+    });
+
+    assertEqual(manager.spawnWoundAhead(createPlayerState()), null);
+    manager.clear();
+    const nearEndDistance =
+      LEVELS[0].end.distance - GAME_CONFIG.entities.spawnAheadMin;
+    assertEqual(
+      manager.spawnWoundAhead(
+        createPlayerState({
+          previousDistanceAlongTrack: nearEndDistance,
+          distanceAlongTrack: nearEndDistance
+        })
+      ),
+      null
+    );
     manager.dispose();
   });
 }

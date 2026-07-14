@@ -9,7 +9,7 @@ import {
   UnsignedByteType,
   Group
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase04-rbc-mobile";
+import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
 
 const RBC_GLYPHS = Object.freeze({
   R: [

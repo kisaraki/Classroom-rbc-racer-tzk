@@ -1,10 +1,11 @@
 import {
+  Color,
   PerspectiveCamera,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase04-rbc-mobile";
+import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
 import { InputController } from "../../js/input/InputController.js";
-import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase04-rbc-mobile";
+import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase05-bp-reflection";
 import {
   assert,
   assertApproximately,
@@ -23,6 +24,14 @@ function createStraightTrack() {
       up: new Vector3(0, 1, 0)
     })
   };
+}
+
+function colorDistance(first, second) {
+  return Math.hypot(
+    first.r - second.r,
+    first.g - second.g,
+    first.b - second.b
+  );
 }
 
 export function registerPlayerRbcTests(harness) {
@@ -156,6 +165,70 @@ export function registerPlayerRbcTests(harness) {
         "Every RBC label corner must remain inside the viewport."
       );
     });
+    player.dispose();
+  });
+
+  harness.test("RBC body subtly reflects the current vessel color", () => {
+    const player = new PlayerRBC();
+    const baseColor = new Color(GAME_CONFIG.palette.rbcBody);
+    const arterialColor = new Color(
+      GAME_CONFIG.palette.vesselArterial
+    );
+    const venousColor = new Color(GAME_CONFIG.palette.vesselVenous);
+
+    player.updateVesselReflection(arterialColor, 0);
+    const arterialBody = player.bodyMaterial.color.clone();
+    const arterialEmissive = player.bodyMaterial.emissive.clone();
+    const expectedTintRatio =
+      GAME_CONFIG.playerModel.environmentReflection.bodyColorMix;
+    const actualTintRatio =
+      colorDistance(baseColor, arterialBody) /
+      colorDistance(baseColor, arterialColor);
+
+    assertApproximately(
+      actualTintRatio,
+      expectedTintRatio,
+      0.000001
+    );
+    player.updateVesselReflection(venousColor, 1);
+    assert(
+      colorDistance(arterialBody, player.bodyMaterial.color) > 0.01,
+      "Arterial and venous sections must produce distinct body highlights."
+    );
+    assert(
+      colorDistance(arterialEmissive, player.bodyMaterial.emissive) > 0.01,
+      "Vessel reflection must also alter the subtle emissive highlight."
+    );
+    assertEqual(
+      player.reflectionDiagnostics.environmentColor,
+      "#" + venousColor.getHexString()
+    );
+    player.dispose();
+  });
+
+  harness.test("vessel reflection transitions smoothly between colors", () => {
+    const player = new PlayerRBC();
+    const arterialColor = new Color(
+      GAME_CONFIG.palette.vesselArterial
+    );
+    const venousColor = new Color(GAME_CONFIG.palette.vesselVenous);
+    player.updateVesselReflection(arterialColor, 0);
+    const initialBodyColor = player.bodyMaterial.color.clone();
+
+    player.updateVesselReflection(venousColor, 0);
+    assertEqual(
+      player.bodyMaterial.color.equals(initialBodyColor),
+      true
+    );
+    player.updateVesselReflection(venousColor, 0.1);
+    assert(
+      colorDistance(initialBodyColor, player.bodyMaterial.color) > 0,
+      "A positive render delta must begin the color transition."
+    );
+    assertThrows(
+      () => player.updateVesselReflection(venousColor, -1),
+      RangeError
+    );
     player.dispose();
   });
 

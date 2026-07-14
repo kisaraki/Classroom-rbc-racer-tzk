@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase04-entities";
+import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);

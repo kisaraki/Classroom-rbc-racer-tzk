@@ -191,6 +191,14 @@ export const GAME_CONFIG = deepFreeze({
     bodyRoughness: 0.34,
     bodyMetalness: 0.08,
     bodyVisibleInFirstPerson: false,
+    environmentReflection: {
+      bodyColorMix: 0.1,
+      cockpitColorMix: 0.13,
+      bodyEmissiveIntensity: 0.1,
+      cockpitEmissiveMix: 0.28,
+      cockpitEmissiveIntensity: 0.62,
+      responsePerSecond: 3.6
+    },
     label: {
       glyphWidth: 5,
       glyphHeight: 7,
@@ -236,6 +244,7 @@ export const GAME_CONFIG = deepFreeze({
     minimapProgressPrecision: 4,
     timerPrecision: 1,
     fpsPrecision: 0,
+    probabilityPrecision: 6,
     statusTimePrecision: 1,
     messageTimePrecision: 1,
     messageDefaultDurationSeconds: 2.8
@@ -1180,6 +1189,11 @@ export const GAME_CONFIG = deepFreeze({
     chancePerBpPoint: 0.025
   },
 
+  bloodPressureHazards: {
+    checkIntervalSeconds: 1,
+    randomSeedSalt: 0x42504835
+  },
+
   intoxication: {
     triggerCount: 5,
     durationSeconds: 15,
@@ -1215,7 +1229,8 @@ export const GAME_CONFIG = deepFreeze({
     safeRangeMultiplier: 1,
     maximumActive: 2,
     minimumGap: 45,
-    dodgedBehindDistance: 10
+    dodgedBehindDistance: 10,
+    placementAttempts: 16
   },
 
   checkpoint: {

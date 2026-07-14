@@ -10,20 +10,23 @@ import {
   SRGBColorSpace,
   WebGLRenderer
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase04-rbc-mobile";
-import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase04-entities";
+import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
+import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase05-bp-reflection";
 import { CameraController } from "../input/CameraController.js";
-import { InputController } from "../input/InputController.js";
+import { InputController } from "../input/InputController.js?v=phase05-bp-reflection-r2";
 import { PointerLockController } from "../input/PointerLockController.js";
-import { PlayerRBC } from "../player/PlayerRBC.js?v=phase04-rbc-mobile";
-import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase04-entities";
-import { EntityManager } from "../systems/EntityManager.js?v=phase04-entities";
-import { HUDManager } from "../ui/HUDManager.js?v=phase04-entities";
-import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase04-entities";
-import { VesselTrack } from "../world/VesselTrack.js?v=phase04-entities";
+import { PlayerRBC } from "../player/PlayerRBC.js?v=phase05-bp-reflection";
+import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=phase05-bp-reflection";
+import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase05-bp-reflection";
+import { EntityManager } from "../systems/EntityManager.js?v=phase05-bp-reflection";
+import { HUDManager } from "../ui/HUDManager.js?v=phase05-bp-reflection";
+import { SeededRandom } from "../utils/SeededRandom.js";
+import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase05-bp-reflection";
+import { VesselTrack } from "../world/VesselTrack.js?v=phase05-bp-reflection";
 import { GameLoop } from "./GameLoop.js";
-import { GameSession } from "./GameSession.js?v=phase04-entities";
-import { LevelManager } from "./LevelManager.js?v=phase04-entities";
+import { GameSession } from "./GameSession.js?v=phase05-bp-reflection";
+import { GAME_STATES } from "./GameStateMachine.js?v=phase05-bp-reflection";
+import { LevelManager } from "./LevelManager.js?v=phase05-bp-reflection";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);
@@ -53,6 +56,8 @@ export class Game {
   #lastCollisionTypeId = "";
   #fatalTypeId = "";
   #playerDepleted = false;
+  #woundSpawnCount = 0;
+  #vesselReflectionColor = new Color();
   #started = false;
   #disposed = false;
 
@@ -108,6 +113,14 @@ export class Game {
       track: this.track,
       level: this.level,
       assetFactory: this.assetFactory
+    });
+    this.bloodPressureHazards = new BloodPressureHazardSystem({
+      levelId: this.level.id,
+      random: new SeededRandom(
+        (this.level.seed ^
+          GAME_CONFIG.bloodPressureHazards.randomSeedSalt) >>>
+          0
+      )
     });
     this.collisionSystem = new CollisionSystem();
     this.input = new InputController({ target: windowRef });
@@ -185,7 +198,7 @@ export class Game {
     this.#root.dataset.rbcLabelHeight = String(
       GAME_CONFIG.playerModel.label.planeHeight
     );
-    this.#root.dataset.phase = "04";
+    this.#root.dataset.phase = "05";
     this.#root.dataset.proceduralAssets = "true";
     this.#root.dataset.entityBatchCount = String(
       this.entityManager.batchCount
@@ -196,6 +209,10 @@ export class Game {
     this.#root.dataset.collisionWindow = String(
       GAME_CONFIG.collision.window
     );
+    this.#root.dataset.bpCheckInterval = String(
+      GAME_CONFIG.bloodPressureHazards.checkIntervalSeconds
+    );
+    this.#root.dataset.vesselReflection = "true";
     this.hud.showReady();
     this.#resize();
     this.#renderFrame(0);
@@ -294,8 +311,22 @@ export class Game {
   }
 
   #renderFrame(rawDeltaSeconds) {
+    const clockNowMs = this.#session.nowMs;
+    this.#updateBloodPressureMechanisms(
+      rawDeltaSeconds,
+      clockNowMs
+    );
+    const distanceAlongTrack = this.player.state.distanceAlongTrack;
+    this.track.getColorAtDistance(
+      distanceAlongTrack,
+      this.#vesselReflectionColor
+    );
+    this.player.updateVesselReflection(
+      this.#vesselReflectionColor,
+      rawDeltaSeconds
+    );
     const frame = this.track.getFrameAtDistance(
-      this.player.state.distanceAlongTrack
+      distanceAlongTrack
     );
     this.cameraController.updateCamera(
       this.camera,
@@ -310,13 +341,11 @@ export class Game {
     const timerRemainingSeconds = this.#session.remainingSeconds;
     const realClockElapsedSeconds = this.#session.elapsedSeconds;
     const pointerLocked = this.#pointerLock.isLocked;
-    const distanceAlongTrack = this.player.state.distanceAlongTrack;
     const currentSection = this.levelManager.getSectionAtDistance(
       distanceAlongTrack
     );
     const minimapProgress =
       this.levelManager.getMinimapProgressAtDistance(distanceAlongTrack);
-    const clockNowMs = this.#session.nowMs;
     this.player.hoodController.update(clockNowMs);
 
     this.hud.update({
@@ -339,15 +368,63 @@ export class Game {
       minimapPathId: this.level.minimapPathId,
       minimapProgress,
       clockNowMs,
-      statuses: this.#getStatuses()
+      statuses: this.#getStatuses(clockNowMs)
     });
     this.#publishDiagnostics(
       timerRemainingSeconds,
       realClockElapsedSeconds,
       pointerLocked,
       currentSection,
-      minimapProgress
+      minimapProgress,
+      clockNowMs
     );
+  }
+
+  #updateBloodPressureMechanisms(rawDeltaSeconds, nowMs) {
+    const result = this.bloodPressureHazards.update({
+      bp: this.player.state.bp,
+      nowMs,
+      isPlaying: this.#session.state === GAME_STATES.PLAYING
+    });
+
+    if (result.stasisExpired) {
+      this.#session.completeLowBloodPressureStasis();
+      this.hud.hideMessage();
+    }
+
+    if (
+      result.lowBloodPressureTriggered &&
+      this.#session.enterLowBloodPressureStasis()
+    ) {
+      this.#showLowBloodPressureWarning(nowMs);
+    }
+
+    if (result.woundTriggered) {
+      const wound = this.entityManager.spawnWoundAhead(
+        this.player.state
+      );
+
+      if (wound) {
+        this.#woundSpawnCount += 1;
+        this.hud.showMessage({
+          kicker: "High blood pressure",
+          title: "高血壓警告",
+          copy: "前方形成血管破口，請立即閃避。",
+          tone: "CAUTION",
+          nowMs
+        });
+      }
+    }
+
+    if (this.#session.state === GAME_STATES.LOW_BP_STASIS) {
+      this.player.adjustBloodPressure(
+        this.input.getBloodPressureRaiseAxis(),
+        Math.min(
+          rawDeltaSeconds,
+          GAME_CONFIG.timing.maximumSimulationDeltaSeconds
+        )
+      );
+    }
   }
 
   #updateFps(rawDeltaSeconds) {
@@ -370,7 +447,8 @@ export class Game {
     realClockElapsedSeconds,
     pointerLocked,
     currentSection,
-    minimapProgress
+    minimapProgress,
+    clockNowMs
   ) {
     const state = this.player.state;
     this.#root.dataset.gameState = this.#session.state;
@@ -483,6 +561,57 @@ export class Game {
       this.player.hoodController.obstructionExpiresAtMs === null
         ? ""
         : String(this.player.hoodController.obstructionExpiresAtMs);
+    const hazardDiagnostics = this.bloodPressureHazards.diagnostics;
+    const reflectionDiagnostics = this.player.reflectionDiagnostics;
+    this.#root.dataset.bpCheckCount = String(
+      hazardDiagnostics.checkCount
+    );
+    this.#root.dataset.woundChance =
+      hazardDiagnostics.lastWoundChance.toFixed(
+        GAME_CONFIG.hud.probabilityPrecision
+      );
+    this.#root.dataset.lowBpChance =
+      hazardDiagnostics.lastLowBloodPressureChance.toFixed(
+        GAME_CONFIG.hud.probabilityPrecision
+      );
+    this.#root.dataset.lastBpHazardRoll =
+      hazardDiagnostics.lastRoll === null
+        ? ""
+        : hazardDiagnostics.lastRoll.toFixed(
+            GAME_CONFIG.hud.probabilityPrecision
+          );
+    this.#root.dataset.woundTriggerCount = String(
+      hazardDiagnostics.woundTriggerCount
+    );
+    this.#root.dataset.woundSpawnCount = String(
+      this.#woundSpawnCount
+    );
+    this.#root.dataset.activeWoundCount = String(
+      this.entityManager.activeWoundCount
+    );
+    this.#root.dataset.lowBpTriggerCount = String(
+      hazardDiagnostics.lowBloodPressureTriggerCount
+    );
+    this.#root.dataset.lowBpStasisActive = String(
+      this.bloodPressureHazards.isStasisActive(clockNowMs)
+    );
+    this.#root.dataset.lowBpStasisExpiresAt =
+      hazardDiagnostics.stasisExpiresAtMs === null
+        ? ""
+        : String(hazardDiagnostics.stasisExpiresAtMs);
+    this.#root.dataset.lowBpCooldownActive = String(
+      this.bloodPressureHazards.isCooldownActive(clockNowMs)
+    );
+    this.#root.dataset.lowBpCooldownExpiresAt =
+      hazardDiagnostics.cooldownExpiresAtMs === null
+        ? ""
+        : String(hazardDiagnostics.cooldownExpiresAtMs);
+    this.#root.dataset.vesselEnvironmentColor =
+      reflectionDiagnostics.environmentColor;
+    this.#root.dataset.rbcReflectedBodyColor =
+      reflectionDiagnostics.bodyColor;
+    this.#root.dataset.rbcReflectedCockpitColor =
+      reflectionDiagnostics.cockpitColor;
   }
 
   #handleCollisionResult(result) {
@@ -527,20 +656,47 @@ export class Game {
     });
   }
 
-  #getStatuses() {
-    if (!this.player.hoodController.isBasicObstructionActive) {
-      return [];
+  #getStatuses(nowMs) {
+    const statuses = [];
+
+    if (this.bloodPressureHazards.isStasisActive(nowMs)) {
+      statuses.push({
+        id: "low-bp-stasis",
+        label: "低血壓停滯",
+        tone: "DANGER",
+        expiresAtMs: this.bloodPressureHazards.stasisExpiresAtMs
+      });
+    } else if (this.bloodPressureHazards.isCooldownActive(nowMs)) {
+      statuses.push({
+        id: "low-bp-cooldown",
+        label: "低血壓冷卻",
+        tone: "INFO",
+        expiresAtMs: this.bloodPressureHazards.cooldownExpiresAtMs
+      });
     }
 
-    return [
-      {
+    if (this.player.hoodController.isBasicObstructionActive) {
+      statuses.push({
         id: "malaria-hood",
         label: "瘧原蟲頭罩遮蔽",
         tone: "CAUTION",
         expiresAtMs:
           this.player.hoodController.obstructionExpiresAtMs
-      }
-    ];
+      });
+    }
+
+    return statuses;
+  }
+
+  #showLowBloodPressureWarning(nowMs) {
+    this.hud.showMessage({
+      kicker: "Low blood pressure",
+      title: "低血壓警告",
+      copy: "血流速度過慢，請按 Z 提高血壓",
+      tone: "DANGER",
+      durationSeconds: null,
+      nowMs
+    });
   }
 
   #formatSigned(value) {
@@ -558,13 +714,17 @@ export class Game {
       this.#pointerLockErrorName = "";
       this.#pointerLockErrorMessage = "";
       this.hud.hideOverlay();
-      this.hud.showMessage({
-        kicker: "Navigation",
-        title: "ROUTE SYNCHRONIZED",
-        copy: "循環圖已與紅血球位置同步。",
-        tone: "INFO",
-        nowMs: this.#session.nowMs
-      });
+      if (this.#session.state === GAME_STATES.LOW_BP_STASIS) {
+        this.#showLowBloodPressureWarning(this.#session.nowMs);
+      } else {
+        this.hud.showMessage({
+          kicker: "Navigation",
+          title: "ROUTE SYNCHRONIZED",
+          copy: "循環圖已與紅血球位置同步。",
+          tone: "INFO",
+          nowMs: this.#session.nowMs
+        });
+      }
       return;
     }
 

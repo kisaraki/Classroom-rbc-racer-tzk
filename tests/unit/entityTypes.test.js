@@ -1,10 +1,10 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase04-tests";
+import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
 import {
   ENTITY_CATEGORIES,
   ENTITY_TYPES,
   GENERAL_SPAWN_TYPE_IDS,
   getEntityType
-} from "../../js/data/entityTypes.js?v=phase04-tests";
+} from "../../js/data/entityTypes.js?v=phase05-bp-reflection";
 import {
   assert,
   assertDeepEqual,

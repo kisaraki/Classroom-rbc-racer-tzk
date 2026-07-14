@@ -1,6 +1,7 @@
 export const GAME_STATES = Object.freeze({
   READY: "READY",
   PLAYING: "PLAYING",
+  LOW_BP_STASIS: "LOW_BP_STASIS",
   PAUSED: "PAUSED"
 });
 
@@ -30,7 +31,10 @@ export class GameStateMachine {
   }
 
   pause() {
-    if (this.#state !== GAME_STATES.PLAYING) {
+    if (
+      this.#state !== GAME_STATES.PLAYING &&
+      this.#state !== GAME_STATES.LOW_BP_STASIS
+    ) {
       return false;
     }
 
@@ -47,5 +51,31 @@ export class GameStateMachine {
     this.#state = this.#pausedFromState ?? GAME_STATES.PLAYING;
     this.#pausedFromState = null;
     return true;
+  }
+
+  enterLowBloodPressureStasis() {
+    if (this.#state !== GAME_STATES.PLAYING) {
+      return false;
+    }
+
+    this.#state = GAME_STATES.LOW_BP_STASIS;
+    return true;
+  }
+
+  completeLowBloodPressureStasis() {
+    if (this.#state === GAME_STATES.LOW_BP_STASIS) {
+      this.#state = GAME_STATES.PLAYING;
+      return true;
+    }
+
+    if (
+      this.#state === GAME_STATES.PAUSED &&
+      this.#pausedFromState === GAME_STATES.LOW_BP_STASIS
+    ) {
+      this.#pausedFromState = GAME_STATES.PLAYING;
+      return true;
+    }
+
+    return false;
   }
 }

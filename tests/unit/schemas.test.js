@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase03-heart-map";
+import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
 import {
   assembleLevel,
   LEVELS
-} from "../../js/data/levels.js?v=phase03-heart-map";
+} from "../../js/data/levels.js?v=phase05-bp-reflection";
 import {
   createEntityState,
   createLevelCheckpoint,
@@ -11,7 +11,7 @@ import {
   isLevelCheckpoint,
   isLevelData,
   isPlayerState
-} from "../../js/data/schemas.js?v=phase03-heart-map";
+} from "../../js/data/schemas.js?v=phase05-bp-reflection";
 import {
   assert,
   assertApproximately,

@@ -3,9 +3,9 @@ import {
   Color,
   TubeGeometry
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase03-heart-map";
-import { LEVELS } from "../../js/data/levels.js?v=phase03-heart-map";
-import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase03-heart-map";
+import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
+import { LEVELS } from "../../js/data/levels.js?v=phase05-bp-reflection";
+import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase05-bp-reflection";
 import {
   assert,
   assertApproximately,
@@ -118,6 +118,33 @@ export function registerVesselTrackTests(harness) {
       colorAttribute,
       colorAttribute.count - 1,
       LEVELS[0].sections[2].colorEnd
+    );
+    track.dispose();
+  });
+
+  harness.test("track samples the local vessel gradient for RBC reflection", () => {
+    const track = createFirstLevelTrack();
+    const section = track.sections[4];
+    const midpoint =
+      (section.startDistance + section.endDistance) / 2;
+    const target = new Color();
+    const sampled = track.getColorAtDistance(midpoint, target);
+    const expected = new Color(section.colorStart).lerp(
+      new Color(section.colorEnd),
+      0.5
+    );
+
+    assertEqual(sampled, target);
+    assertApproximately(sampled.r, expected.r, 0.000001);
+    assertApproximately(sampled.g, expected.g, 0.000001);
+    assertApproximately(sampled.b, expected.b, 0.000001);
+    assertEqual(
+      section.getColorAtDistance(section.startDistance).getHex(),
+      new Color(section.colorStart).getHex()
+    );
+    assertEqual(
+      section.getColorAtDistance(section.endDistance).getHex(),
+      new Color(section.colorEnd).getHex()
     );
     track.dispose();
   });

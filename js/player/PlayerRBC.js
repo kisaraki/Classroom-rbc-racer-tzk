@@ -1,4 +1,5 @@
 import {
+  Color,
   DoubleSide,
   Group,
   LatheGeometry,
@@ -12,8 +13,8 @@ import {
   Vector2,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase04-rbc-mobile";
-import { createPlayerState } from "../data/schemas.js?v=phase04-rbc-mobile";
+import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
+import { createPlayerState } from "../data/schemas.js?v=phase05-bp-reflection";
 import {
   getSpeedForBloodPressure,
   updateBloodPressure
@@ -22,7 +23,7 @@ import { clampLateralOffset } from "../world/TrackMath.js";
 import {
   createRbcLabelTexture,
   HoodController
-} from "./HoodController.js?v=phase04-rbc-mobile";
+} from "./HoodController.js?v=phase05-bp-reflection";
 
 function createBiconcaveGeometry(modelConfig) {
   const profile = [];
@@ -90,6 +91,11 @@ export class PlayerRBC {
   #orientationMatrix = new Matrix4();
   #backward = new Vector3();
   #disposables = [];
+  #baseBodyColor = new Color();
+  #baseCockpitEmissive = new Color();
+  #environmentColor = new Color();
+  #reflectionTarget = new Color();
+  #reflectionInitialized = false;
 
   constructor({
     config = GAME_CONFIG,
@@ -112,8 +118,13 @@ export class PlayerRBC {
     const bodyMaterial = new MeshStandardMaterial({
       color: config.palette.rbcBody,
       roughness: modelConfig.bodyRoughness,
-      metalness: modelConfig.bodyMetalness
+      metalness: modelConfig.bodyMetalness,
+      emissive: config.palette.cockpitShadow,
+      emissiveIntensity:
+        modelConfig.environmentReflection.bodyEmissiveIntensity
     });
+    this.bodyMaterial = bodyMaterial;
+    this.#baseBodyColor.copy(bodyMaterial.color);
     this.bodyMesh = new Mesh(bodyGeometry, bodyMaterial);
     this.bodyMesh.name = "biconcave-rbc-body";
     this.worldGroup.add(this.bodyMesh);
@@ -139,8 +150,12 @@ export class PlayerRBC {
       color: config.palette.rbcBody,
       roughness: cockpit.noseRoughness,
       metalness: cockpit.noseMetalness,
-      emissive: config.palette.cockpitShadow
+      emissive: config.palette.cockpitShadow,
+      emissiveIntensity:
+        modelConfig.environmentReflection.cockpitEmissiveIntensity
     });
+    this.noseMaterial = noseMaterial;
+    this.#baseCockpitEmissive.copy(noseMaterial.emissive);
     this.noseMesh = new Mesh(noseGeometry, noseMaterial);
     this.noseMesh.name = "rbc-first-person-nose";
     this.noseMesh.position.fromArray(cockpit.nosePosition);
@@ -187,13 +202,10 @@ export class PlayerRBC {
   }
 
   update(simulationDeltaSeconds, input, track) {
-    this.state.bp = updateBloodPressure(
-      this.state.bp,
+    this.adjustBloodPressure(
       input.getBloodPressureAxis(),
-      simulationDeltaSeconds,
-      this.config
+      simulationDeltaSeconds
     );
-    this.speed = getSpeedForBloodPressure(this.state.bp, this.config);
     this.state.previousDistanceAlongTrack =
       this.state.distanceAlongTrack;
     this.state.distanceAlongTrack = Math.min(
@@ -222,6 +234,63 @@ export class PlayerRBC {
     this.syncWorldTransform(track.getFrameAtDistance(
       this.state.distanceAlongTrack
     ));
+  }
+
+  adjustBloodPressure(adjustmentAxis, deltaSeconds) {
+    this.state.bp = updateBloodPressure(
+      this.state.bp,
+      adjustmentAxis,
+      deltaSeconds,
+      this.config
+    );
+    this.speed = getSpeedForBloodPressure(this.state.bp, this.config);
+    return this.state.bp;
+  }
+
+  updateVesselReflection(vesselColor, elapsedSeconds) {
+    if (!vesselColor?.isColor) {
+      throw new TypeError("Vessel reflection requires a Three.js Color.");
+    }
+
+    if (!Number.isFinite(elapsedSeconds) || elapsedSeconds < 0) {
+      throw new RangeError(
+        "Reflection elapsedSeconds must be finite and non-negative."
+      );
+    }
+
+    const reflection = this.config.playerModel.environmentReflection;
+    const response = this.#reflectionInitialized
+      ? 1 - Math.exp(-reflection.responsePerSecond * elapsedSeconds)
+      : 1;
+
+    this.#environmentColor.copy(vesselColor);
+    this.#reflectionTarget
+      .copy(this.#baseBodyColor)
+      .lerp(vesselColor, reflection.bodyColorMix);
+    this.bodyMaterial.color.lerp(this.#reflectionTarget, response);
+    this.bodyMaterial.emissive.lerp(vesselColor, response);
+
+    this.#reflectionTarget
+      .copy(this.#baseBodyColor)
+      .lerp(vesselColor, reflection.cockpitColorMix);
+    this.noseMaterial.color.lerp(this.#reflectionTarget, response);
+    this.#reflectionTarget
+      .copy(this.#baseCockpitEmissive)
+      .lerp(vesselColor, reflection.cockpitEmissiveMix);
+    this.noseMaterial.emissive.lerp(
+      this.#reflectionTarget,
+      response
+    );
+    this.#reflectionInitialized = true;
+    return this.reflectionDiagnostics;
+  }
+
+  get reflectionDiagnostics() {
+    return Object.freeze({
+      environmentColor: "#" + this.#environmentColor.getHexString(),
+      bodyColor: "#" + this.bodyMaterial.color.getHexString(),
+      cockpitColor: "#" + this.noseMaterial.color.getHexString()
+    });
   }
 
   syncWorldTransform(frame) {

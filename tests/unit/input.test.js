@@ -1,4 +1,4 @@
-import { InputController } from "../../js/input/InputController.js";
+import { InputController } from "../../js/input/InputController.js?v=phase05-bp-reflection-r2";
 import {
   assert,
   assertApproximately,
@@ -42,6 +42,16 @@ export function registerInputTests(harness) {
 
     input.setPressed("KeyX", false);
     assertEqual(input.getBloodPressureAxis(), 1);
+  });
+
+  harness.test("low-BP raise-only input ignores X without cancelling Z", () => {
+    const input = new InputController({ target: null });
+    input.setPressed("KeyZ", true);
+    input.setPressed("KeyX", true);
+
+    assertEqual(input.getBloodPressureRaiseAxis(), 1);
+    input.setPressed("KeyZ", false);
+    assertEqual(input.getBloodPressureRaiseAxis(), 0);
   });
 
   harness.test("WASD is never accepted as vehicle input", () => {

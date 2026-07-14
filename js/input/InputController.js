@@ -87,6 +87,10 @@ export class InputController {
     );
   }
 
+  getBloodPressureRaiseAxis() {
+    return Number(this.isPressed("KeyZ"));
+  }
+
   #handleKeyDown = (event) => {
     if (!CONTROL_CODES.has(event.code)) {
       return;

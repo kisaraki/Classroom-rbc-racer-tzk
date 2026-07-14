@@ -2,7 +2,7 @@ import { GameClock } from "./GameClock.js?v=phase01-real-clock";
 import {
   GAME_STATES,
   GameStateMachine
-} from "./GameStateMachine.js";
+} from "./GameStateMachine.js?v=phase05-bp-reflection";
 
 function assertDurationSeconds(value) {
   if (!Number.isFinite(value)) {
@@ -93,5 +93,13 @@ export class GameSession {
 
   releasePointerLock() {
     return this.#stateMachine.pause();
+  }
+
+  enterLowBloodPressureStasis() {
+    return this.#stateMachine.enterLowBloodPressureStasis();
+  }
+
+  completeLowBloodPressureStasis() {
+    return this.#stateMachine.completeLowBloodPressureStasis();
   }
 }

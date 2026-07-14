@@ -1,5 +1,6 @@
 import {
   CatmullRomCurve3,
+  Color,
   DataTexture,
   Group,
   LinearFilter,
@@ -9,10 +10,10 @@ import {
   UnsignedByteType,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase03-heart-map";
-import { isLevelData } from "../data/schemas.js?v=phase03-heart-map";
+import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
+import { isLevelData } from "../data/schemas.js?v=phase05-bp-reflection";
 import { distanceToNormalizedProgress } from "./TrackMath.js";
-import { TrackSection } from "./TrackSection.js?v=phase03-heart-map";
+import { TrackSection } from "./TrackSection.js?v=phase05-bp-reflection";
 
 function clampUnit(value) {
   return Math.min(1, Math.max(0, value));
@@ -248,6 +249,12 @@ export class VesselTrack {
 
   getRadiusAtDistance(distanceAlongTrack) {
     return this.getSectionAtDistance(distanceAlongTrack).radius;
+  }
+
+  getColorAtDistance(distanceAlongTrack, target = new Color()) {
+    return this.getSectionAtDistance(
+      distanceAlongTrack
+    ).getColorAtDistance(distanceAlongTrack, target);
   }
 
   getWorldPosition(distanceAlongTrack, lateralX, lateralY) {

@@ -1,5 +1,5 @@
-import { GAME_CONFIG } from "../config.js?v=phase04-collision";
-import { isPlayerState } from "../data/schemas.js?v=phase04-entities";
+import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
+import { isPlayerState } from "../data/schemas.js?v=phase05-bp-reflection";
 
 function clamp(value, minimum, maximum) {
   return Math.min(maximum, Math.max(minimum, value));

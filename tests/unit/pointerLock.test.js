@@ -1,5 +1,5 @@
 import { GameClock } from "../../js/core/GameClock.js?v=phase01-real-clock";
-import { GameSession } from "../../js/core/GameSession.js?v=phase03-heart-map";
+import { GameSession } from "../../js/core/GameSession.js?v=phase05-bp-reflection";
 import { GAME_STATES } from "../../js/core/GameStateMachine.js";
 import { PointerLockController } from "../../js/input/PointerLockController.js";
 import {

@@ -118,6 +118,9 @@ export class ParallelTransportTubeGeometry extends TubeGeometry {
 }
 
 export class TrackSection {
+  #startColorValue;
+  #endColorValue;
+
   constructor({
     definition,
     curve,
@@ -143,6 +146,8 @@ export class TrackSection {
     this.radius = definition.radius;
     this.colorStart = colorStart;
     this.colorEnd = colorEnd;
+    this.#startColorValue = new Color(colorStart);
+    this.#endColorValue = new Color(colorEnd);
     this.minimapSegmentId = definition.minimapSegmentId;
     this.minimapStartProgress = definition.minimapStartProgress;
     this.minimapEndProgress = definition.minimapEndProgress;
@@ -198,6 +203,26 @@ export class TrackSection {
       distanceAlongTrack >= this.startDistance &&
       (distanceAlongTrack < this.endDistance || this.endRatio === 1)
     );
+  }
+
+  getColorAtDistance(distanceAlongTrack, target = new Color()) {
+    if (!Number.isFinite(distanceAlongTrack) || !target?.isColor) {
+      throw new TypeError(
+        "Track color sampling requires a finite distance and Color target."
+      );
+    }
+
+    const clampedDistance = Math.min(
+      this.endDistance,
+      Math.max(this.startDistance, distanceAlongTrack)
+    );
+    const progress =
+      (clampedDistance - this.startDistance) /
+      (this.endDistance - this.startDistance);
+
+    return target
+      .copy(this.#startColorValue)
+      .lerp(this.#endColorValue, progress);
   }
 
   dispose() {

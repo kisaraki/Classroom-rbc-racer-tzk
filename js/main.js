@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "./config.js?v=phase04-rbc-mobile";
+import { GAME_CONFIG } from "./config.js?v=phase05-bp-reflection";
 import {
   getDeviceSupport,
   showUnsupportedMobileDevice
-} from "./core/DeviceSupport.js?v=phase04-rbc-mobile";
+} from "./core/DeviceSupport.js?v=phase05-bp-reflection";
 
 const gameRoot = document.querySelector("#game-root");
 const deviceSupport = getDeviceSupport(window.navigator);
@@ -17,7 +17,7 @@ if (!deviceSupport.supported) {
 
   try {
     const { Game } = await import(
-      "./core/Game.js?v=phase04-rbc-mobile"
+      "./core/Game.js?v=phase05-bp-reflection-r2"
     );
     const game = new Game();
     game.start();

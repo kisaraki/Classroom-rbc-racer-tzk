@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase04-rbc-mobile";
+import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
 
 export const GAS_EXCHANGE_STATUS = Object.freeze({
   PENDING: "PENDING",

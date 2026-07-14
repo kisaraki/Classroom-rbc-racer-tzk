@@ -1,5 +1,5 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase03-heart-map";
-import { LEVELS } from "../../js/data/levels.js?v=phase03-heart-map";
+import { GAME_CONFIG } from "../../js/config.js?v=phase05-bp-reflection";
+import { LEVELS } from "../../js/data/levels.js?v=phase05-bp-reflection";
 import {
   buildHeartOutlinePathData,
   buildRoutePathData,
@@ -7,7 +7,7 @@ import {
   calculateMarkerPoint,
   clampMinimapProgress,
   validateMinimapConfig
-} from "../../js/ui/MiniMapRenderer.js?v=phase03-heart-map";
+} from "../../js/ui/MiniMapRenderer.js?v=phase05-bp-reflection";
 import {
   assert,
   assertApproximately,

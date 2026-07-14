@@ -1,11 +1,11 @@
 import {
   GameLoop,
   getSimulationDeltaSeconds
-} from "../../js/core/GameLoop.js";
+} from "../../js/core/GameLoop.js?v=phase05-bp-reflection";
 import {
   GAME_STATES,
   GameStateMachine
-} from "../../js/core/GameStateMachine.js";
+} from "../../js/core/GameStateMachine.js?v=phase05-bp-reflection";
 import {
   assertEqual,
   assertThrows
@@ -33,6 +33,45 @@ export function registerGameStateTests(harness) {
       () => getSimulationDeltaSeconds(-0.01, true),
       RangeError
     );
+  });
+
+  harness.test("low-BP stasis freezes the world and returns to play", () => {
+    const stateMachine = new GameStateMachine();
+    stateMachine.start();
+
+    assertEqual(stateMachine.enterLowBloodPressureStasis(), true);
+    assertEqual(stateMachine.state, GAME_STATES.LOW_BP_STASIS);
+    assertEqual(stateMachine.isWorldRunning, false);
+    assertEqual(
+      stateMachine.completeLowBloodPressureStasis(),
+      true
+    );
+    assertEqual(stateMachine.state, GAME_STATES.PLAYING);
+    assertEqual(stateMachine.isWorldRunning, true);
+  });
+
+  harness.test("stasis expiry while paused updates the resume target", () => {
+    const stateMachine = new GameStateMachine();
+    stateMachine.start();
+    stateMachine.enterLowBloodPressureStasis();
+
+    assertEqual(stateMachine.pause(), true);
+    assertEqual(stateMachine.state, GAME_STATES.PAUSED);
+    assertEqual(
+      stateMachine.pausedFromState,
+      GAME_STATES.LOW_BP_STASIS
+    );
+    assertEqual(
+      stateMachine.completeLowBloodPressureStasis(),
+      true
+    );
+    assertEqual(stateMachine.state, GAME_STATES.PAUSED);
+    assertEqual(
+      stateMachine.pausedFromState,
+      GAME_STATES.PLAYING
+    );
+    assertEqual(stateMachine.resume(), true);
+    assertEqual(stateMachine.state, GAME_STATES.PLAYING);
   });
 
   harness.test("GameLoop renders while paused without world updates", () => {

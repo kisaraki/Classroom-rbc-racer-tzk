@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase03-heart-map";
+import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 

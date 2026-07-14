@@ -1,17 +1,17 @@
 import { Group } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase04-entities";
+import { GAME_CONFIG } from "../config.js?v=phase05-bp-reflection";
 import {
   ENTITY_CATEGORIES,
   ENTITY_TYPES,
   GENERAL_SPAWN_TYPE_IDS,
   getEntityType
-} from "../data/entityTypes.js?v=phase04-entities";
+} from "../data/entityTypes.js?v=phase05-bp-reflection";
 import {
   createEntityState,
   isPlayerState
-} from "../data/schemas.js?v=phase04-entities";
+} from "../data/schemas.js?v=phase05-bp-reflection";
 import { SeededRandom } from "../utils/SeededRandom.js";
-import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase04-entities";
+import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase05-bp-reflection";
 
 function requireUnitValue(value) {
   if (!Number.isFinite(value) || value < 0 || value >= 1) {
@@ -206,6 +206,14 @@ export class EntityManager {
     return this.#active.length;
   }
 
+  get activeWoundCount() {
+    return this.#active.filter(
+      (entity) =>
+        !entity.consumed &&
+        entity.category === ENTITY_CATEGORIES.FATAL
+    ).length;
+  }
+
   get pooledCount() {
     return this.#pool.length;
   }
@@ -320,6 +328,99 @@ export class EntityManager {
     const entity = this.#activateDescriptor(descriptor);
     this.#syncBatches();
     return entity;
+  }
+
+  spawnWoundAhead(playerState) {
+    if (!isPlayerState(playerState)) {
+      throw new TypeError("Wound spawning requires valid player state.");
+    }
+
+    if (this.activeWoundCount >= this.#woundConfig.maximumActive) {
+      return null;
+    }
+
+    const minimumDistance =
+      playerState.distanceAlongTrack + this.#config.spawnAheadMin;
+    const maximumDistance = Math.min(
+      playerState.distanceAlongTrack + this.#config.spawnAheadMax,
+      this.#level.end.distance - this.#config.reservedDistancePadding
+    );
+
+    if (maximumDistance <= minimumDistance) {
+      return null;
+    }
+
+    const woundType = getEntityType("wound");
+    const reservedDistances = [
+      ...Object.values(this.#level.gasTriggerDistances),
+      this.#level.end.distance
+    ];
+
+    for (
+      let attempt = 0;
+      attempt < this.#woundConfig.placementAttempts;
+      attempt += 1
+    ) {
+      const distanceAlongTrack = this.#random.range(
+        minimumDistance,
+        maximumDistance
+      );
+      const tooCloseToWound = this.#active.some(
+        (entity) =>
+          !entity.consumed &&
+          entity.category === ENTITY_CATEGORIES.FATAL &&
+          Math.abs(entity.distanceAlongTrack - distanceAlongTrack) <
+            this.#woundConfig.minimumGap
+      );
+      const overlapsReservedDistance = isReservedDistance(
+        distanceAlongTrack,
+        reservedDistances,
+        this.#config.reservedDistancePadding
+      );
+      const overlapsScheduledEntity = this.#schedule.some(
+        (descriptor) =>
+          !descriptor.reserved &&
+          descriptor.typeId !== "empty" &&
+          Math.abs(
+            descriptor.distanceAlongTrack - distanceAlongTrack
+          ) <= this.#config.reservedDistancePadding
+      );
+      const overlapsActiveEntity = this.#active.some(
+        (entity) =>
+          !entity.consumed &&
+          Math.abs(entity.distanceAlongTrack - distanceAlongTrack) <=
+            this.#config.reservedDistancePadding
+      );
+
+      if (
+        tooCloseToWound ||
+        overlapsReservedDistance ||
+        overlapsScheduledEntity ||
+        overlapsActiveEntity
+      ) {
+        continue;
+      }
+
+      const offset = sampleEntityOffset({
+        trackRadius: this.#track.getRadiusAtDistance(
+          distanceAlongTrack
+        ),
+        collisionRadius: woundType.tuning.collisionRadius,
+        radialUnit: this.#random.next(),
+        angularUnit: this.#random.next()
+      });
+
+      return this.spawnEntity({
+        typeId: "wound",
+        distanceAlongTrack,
+        lateralX: offset.lateralX,
+        lateralY: offset.lateralY,
+        animationPhase:
+          this.#random.next() * this.#config.fullRotationRadians
+      });
+    }
+
+    return null;
   }
 
   recycleConsumed() {

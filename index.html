@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="RBC Racer Phase 04 procedural entities, pooling, and swept collision"
+      content="RBC Racer Phase 05 blood-pressure hazards and vessel-color reflection"
     >
-    <title>RBC Racer | Phase 04 Entities & Collision</title>
-    <link rel="stylesheet" href="./css/main.css?v=phase04-rbc-mobile">
-    <link rel="stylesheet" href="./css/hud.css?v=phase04-rbc-mobile">
-    <link rel="stylesheet" href="./css/menu.css?v=phase04-rbc-mobile">
+    <title>RBC Racer | Phase 05 Blood Pressure</title>
+    <link rel="stylesheet" href="./css/main.css?v=phase05-bp-reflection">
+    <link rel="stylesheet" href="./css/hud.css?v=phase05-bp-reflection">
+    <link rel="stylesheet" href="./css/menu.css?v=phase05-bp-reflection">
   </head>
   <body>
     <main id="game-root" class="game-root" data-game-state="BOOT">
@@ -24,7 +24,7 @@
 
       <section id="game-hud" class="game-hud" aria-label="遊戲狀態">
         <header class="hud-brand">
-          <span class="hud-brand__phase">P04</span>
+          <span class="hud-brand__phase">P05</span>
           <span class="hud-brand__name">RBC / RACER</span>
           <span class="hud-brand__status">
             <i aria-hidden="true"></i>
@@ -162,14 +162,14 @@
         data-mode="READY"
         aria-labelledby="overlay-title"
       >
-        <div class="overlay-index" aria-hidden="true">04</div>
+        <div class="overlay-index" aria-hidden="true">05</div>
         <div class="overlay-panel">
           <p id="overlay-kicker" class="overlay-kicker">
-            Phase 04 / Entities &amp; collision
+            Phase 05 / Blood pressure hazards
           </p>
-          <h1 id="overlay-title">血流物件上線</h1>
+          <h1 id="overlay-title">血壓風險上線</h1>
           <p id="overlay-copy" class="overlay-copy">
-            收集 C、B12 與 Fe²⁺，避開 CO、瘧原蟲與 C₂H₅OH。所有物件與標示皆由程式生成，掃掠碰撞可避免高速穿透；方向鍵在血管截面移動，Z／X 調整血壓。
+            高血壓會依每秒公式形成 Wound；低於 80 BP 可能停滯五秒，請按 Z 恢復血壓。RBC 車身也會隨所在血管的程序化色彩產生細微反光。
           </p>
           <div class="overlay-controls" aria-label="核心操作">
             <span><b>↑↓←→</b> STRAFE</span>
@@ -190,6 +190,6 @@
       </noscript>
     </main>
 
-    <script type="module" src="./js/main.js?v=phase04-rbc-mobile"></script>
+    <script type="module" src="./js/main.js?v=phase05-bp-reflection-r2"></script>
   </body>
 </html>
