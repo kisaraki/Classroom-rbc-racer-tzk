@@ -32,12 +32,10 @@ Intentionally excluded until later phases:
 - QTE, low-BP stasis, alcohol, malaria, and Wound gameplay.
 - Cutscenes, game-over, retry, ending, and victory flows.
 
-Phase 01 code and automated tests are complete. Desktop Pointer Lock, driving,
-mouse look, and Esc release have been manually confirmed. Real Clock now shows
-continuous `T+` elapsed time, while gameplay deadlines remain absolute and
-continue through PAUSED. The stage report remains BLOCKED only until the
-corrected Real Clock readout receives one desktop-browser recheck. See
-reports/phase-01-report.md for exact evidence.
+Phase 01 is PASS. Desktop Pointer Lock, driving, mouse look, Esc release, and
+the corrected `T+` Real Clock have been manually confirmed. Gameplay deadlines
+remain absolute and continue through PAUSED. Phase 02 is now authorized but has
+not started. See reports/phase-01-report.md for exact evidence.
 
 ## Controls
 

@@ -31,14 +31,12 @@ In-app Browser through local HTTP servers.
   rejection deduplication, retry, and unsupported API behavior.
 - [x] A foreground desktop browser successfully enters Pointer Lock, advances
   the vessel, and accepts mouse yaw/pitch.
-- [ ] Pressing Esc after successful capture enters PAUSED, shows
-  `點擊恢復遊戲`, keeps distance fixed, decreases the absolute timer,
-  and continues Renderer/HUD frames.
+- [x] Pressing Esc after successful capture enters PAUSED, shows
+  `點擊恢復遊戲`, keeps distance fixed, increases the `T+` Real Clock,
+  decreases the internal absolute deadline, and continues Renderer/HUD frames.
 
-The user confirmed successful desktop capture and all other behavior. The
-remaining unchecked item is limited to rechecking the corrected `T+` Real
-Clock display after deployment; available automated browser backends still
-cannot perform physical mouse capture.
+The user confirmed successful desktop capture and the corrected `T+` Real
+Clock after deployment. All Phase 01 manual acceptance items are complete.
 
 ## Resolution And Deployment
 
@@ -55,5 +53,5 @@ cannot perform physical mouse capture.
 - [x] Runtime HTML, CSS, and JavaScript reference no remote image, model,
   video, font, CDN, backend, or database.
 
-Evidence and the BLOCKED conclusion are recorded in
+Evidence and the PASS conclusion are recorded in
 `reports/phase-01-report.md`.
