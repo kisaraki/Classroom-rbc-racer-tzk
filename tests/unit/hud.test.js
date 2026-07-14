@@ -1,9 +1,9 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase03-hud-map";
-import { getStatusRemainingSeconds } from "../../js/ui/HUDManager.js?v=phase03-hud-map";
+import { GAME_CONFIG } from "../../js/config.js?v=phase03-heart-map";
+import { getStatusRemainingSeconds } from "../../js/ui/HUDManager.js?v=phase03-heart-map";
 import {
   getMessageRemainingSeconds,
   MessageOverlay
-} from "../../js/ui/MessageOverlay.js?v=phase03-hud-map";
+} from "../../js/ui/MessageOverlay.js?v=phase03-heart-map";
 import {
   assertEqual,
   assertThrows

@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase03-hud-map";
+import { GAME_CONFIG } from "../config.js?v=phase03-heart-map";
 
 function deepFreeze(value) {
   if (value && typeof value === "object" && !Object.isFrozen(value)) {

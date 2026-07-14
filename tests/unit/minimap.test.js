@@ -1,12 +1,13 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase03-hud-map";
-import { LEVELS } from "../../js/data/levels.js?v=phase03-hud-map";
+import { GAME_CONFIG } from "../../js/config.js?v=phase03-heart-map";
+import { LEVELS } from "../../js/data/levels.js?v=phase03-heart-map";
 import {
+  buildHeartOutlinePathData,
   buildRoutePathData,
   buildVesselPathData,
   calculateMarkerPoint,
   clampMinimapProgress,
   validateMinimapConfig
-} from "../../js/ui/MiniMapRenderer.js?v=phase03-hud-map";
+} from "../../js/ui/MiniMapRenderer.js?v=phase03-heart-map";
 import {
   assert,
   assertApproximately,
@@ -44,6 +45,46 @@ export function registerMinimapTests(harness) {
     assertEqual(validateMinimapConfig(), true);
   });
 
+  harness.test("heart chambers preserve orientation in a compact group", () => {
+    const chambers = new Map(
+      GAME_CONFIG.minimap.nodes
+        .filter((node) =>
+          GAME_CONFIG.minimap.heartOutline.chamberNodeIds.includes(node.id)
+        )
+        .map((node) => [node.id, node])
+    );
+    const rightAtrium = chambers.get("right-atrium");
+    const rightVentricle = chambers.get("right-ventricle");
+    const leftAtrium = chambers.get("left-atrium");
+    const leftVentricle = chambers.get("left-ventricle");
+    const chamberNodes = [...chambers.values()];
+    const horizontalSpan =
+      Math.max(...chamberNodes.map((node) => node.x)) -
+      Math.min(...chamberNodes.map((node) => node.x));
+    const verticalSpan =
+      Math.max(...chamberNodes.map((node) => node.y)) -
+      Math.min(...chamberNodes.map((node) => node.y));
+
+    assertEqual(chambers.size, 4);
+    assert(rightAtrium.x < leftAtrium.x);
+    assert(rightVentricle.x < leftVentricle.x);
+    assert(rightAtrium.y < rightVentricle.y);
+    assert(leftAtrium.y < leftVentricle.y);
+    assert(horizontalSpan <= 48);
+    assert(verticalSpan <= 36);
+  });
+
+  harness.test("heart outline closes around the four chambers", () => {
+    const outline = GAME_CONFIG.minimap.heartOutline;
+    const pathData = buildHeartOutlinePathData(outline);
+
+    assertEqual(outline.chamberNodeIds.length, 4);
+    assertEqual((pathData.match(/\bM\b/g) ?? []).length, 1);
+    assertEqual((pathData.match(/\bC\b/g) ?? []).length, 6);
+    assert(pathData.startsWith("M 181 232"));
+    assert(pathData.endsWith("Z"));
+  });
+
   harness.test("level one selects the configured lower systemic SVG route", () => {
     const route = GAME_CONFIG.minimap.routes[0];
 
@@ -58,7 +99,7 @@ export function registerMinimapTests(harness) {
   harness.test("configured vessel curves generate cubic SVG path data", () => {
     const pathData = buildVesselPathData(GAME_CONFIG.minimap.vessels[0]);
 
-    assert(pathData.startsWith("M 221 214 C 304 192"));
+    assert(pathData.startsWith("M 195 207 C 294 187"));
     assert(pathData.endsWith("180 34"));
   });
 
@@ -70,8 +111,8 @@ export function registerMinimapTests(harness) {
 
     assertEqual((pathData.match(/\bM\b/g) ?? []).length, 1);
     assertEqual((pathData.match(/\bC\b/g) ?? []).length, 3);
-    assert(pathData.startsWith("M 221 214"));
-    assert(pathData.endsWith("139 214"));
+    assert(pathData.startsWith("M 195 207"));
+    assert(pathData.endsWith("169 207"));
   });
 
   harness.test("minimap progress clamps to the SVG path bounds", () => {

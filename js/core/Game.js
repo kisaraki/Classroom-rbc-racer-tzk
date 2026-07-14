@@ -10,16 +10,16 @@ import {
   SRGBColorSpace,
   WebGLRenderer
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase03-hud-map";
+import { GAME_CONFIG } from "../config.js?v=phase03-heart-map";
 import { CameraController } from "../input/CameraController.js";
 import { InputController } from "../input/InputController.js";
 import { PointerLockController } from "../input/PointerLockController.js";
 import { PlayerRBC } from "../player/PlayerRBC.js";
-import { HUDManager } from "../ui/HUDManager.js?v=phase03-hud-map";
-import { VesselTrack } from "../world/VesselTrack.js?v=phase03-hud-map";
+import { HUDManager } from "../ui/HUDManager.js?v=phase03-heart-map";
+import { VesselTrack } from "../world/VesselTrack.js?v=phase03-heart-map";
 import { GameLoop } from "./GameLoop.js";
-import { GameSession } from "./GameSession.js?v=phase03-hud-map";
-import { LevelManager } from "./LevelManager.js?v=phase03-hud-map";
+import { GameSession } from "./GameSession.js?v=phase03-heart-map";
+import { LevelManager } from "./LevelManager.js?v=phase03-heart-map";
 
 const EMPTY_STATUSES = Object.freeze([]);
 

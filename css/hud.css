@@ -154,6 +154,15 @@
   overflow: visible;
 }
 
+.circulation-heart {
+  pointer-events: none;
+}
+
+.circulation-heart__outline {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .circulation-vessel {
   opacity: 0.38;
   stroke-linecap: round;

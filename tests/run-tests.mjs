@@ -1,4 +1,4 @@
-import { createPhase03TestHarness } from "./unit/suites.js?v=phase03-hud-map";
+import { createPhase03TestHarness } from "./unit/suites.js?v=phase03-heart-map";
 
 const harness = createPhase03TestHarness();
 const summary = await harness.run();

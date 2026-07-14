@@ -1,6 +1,6 @@
-import { GAME_CONFIG } from "../config.js?v=phase03-hud-map";
-import { MessageOverlay } from "./MessageOverlay.js?v=phase03-hud-map";
-import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase03-hud-map";
+import { GAME_CONFIG } from "../config.js?v=phase03-heart-map";
+import { MessageOverlay } from "./MessageOverlay.js?v=phase03-heart-map";
+import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase03-heart-map";
 
 const EMPTY_STATUSES = Object.freeze([]);
 

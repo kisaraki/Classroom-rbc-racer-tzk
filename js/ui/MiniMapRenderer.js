@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase03-hud-map";
+import { GAME_CONFIG } from "../config.js?v=phase03-heart-map";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
@@ -66,6 +66,35 @@ export function buildVesselPathData(vessel) {
   ].join(" ");
 }
 
+export function buildHeartOutlinePathData(outline) {
+  if (
+    !outline ||
+    typeof outline !== "object" ||
+    !Array.isArray(outline.segments) ||
+    outline.segments.length === 0
+  ) {
+    throw new TypeError("A heart outline with cubic segments is required.");
+  }
+
+  const label = outline.id || "heart outline";
+  const pathParts = ["M " + formatPoint(outline.start, label + " start")];
+
+  outline.segments.forEach((segment, index) => {
+    const segmentLabel = label + " segment " + index;
+
+    pathParts.push(
+      [
+        "C " + formatPoint(segment.control1, segmentLabel + " control1"),
+        formatPoint(segment.control2, segmentLabel + " control2"),
+        formatPoint(segment.end, segmentLabel + " end")
+      ].join(" ")
+    );
+  });
+  pathParts.push("Z");
+
+  return pathParts.join(" ");
+}
+
 export function buildRoutePathData(route, vessels) {
   if (!route || !Array.isArray(route.vesselIds) || route.vesselIds.length === 0) {
     throw new TypeError("A route with at least one vessel is required.");
@@ -112,7 +141,8 @@ export function validateMinimapConfig(config = GAME_CONFIG.minimap) {
     !Number.isFinite(config.viewBoxHeight) ||
     !Array.isArray(config.nodes) ||
     !Array.isArray(config.vessels) ||
-    !Array.isArray(config.routes)
+    !Array.isArray(config.routes) ||
+    !config.heartOutline
   ) {
     throw new TypeError("A complete minimap configuration is required.");
   }
@@ -130,6 +160,36 @@ export function validateMinimapConfig(config = GAME_CONFIG.minimap) {
 
     nodesById.set(node.id, node);
   });
+
+  const heartOutline = config.heartOutline;
+  const chamberNodeIds = heartOutline.chamberNodeIds;
+  if (
+    !heartOutline.id ||
+    !heartOutline.label ||
+    !Array.isArray(chamberNodeIds) ||
+    chamberNodeIds.length !== 4 ||
+    new Set(chamberNodeIds).size !== chamberNodeIds.length ||
+    !chamberNodeIds.every((nodeId) => nodesById.has(nodeId))
+  ) {
+    throw new RangeError(
+      "The heart outline must identify four unique configured chambers."
+    );
+  }
+  if (
+    !Number.isFinite(heartOutline.strokeWidth) ||
+    heartOutline.strokeWidth <= 0 ||
+    !Number.isFinite(heartOutline.fillOpacity) ||
+    heartOutline.fillOpacity < 0 ||
+    heartOutline.fillOpacity > 1 ||
+    !Number.isFinite(heartOutline.strokeOpacity) ||
+    heartOutline.strokeOpacity < 0 ||
+    heartOutline.strokeOpacity > 1
+  ) {
+    throw new RangeError(
+      "The heart outline requires valid SVG presentation values."
+    );
+  }
+  buildHeartOutlinePathData(heartOutline);
 
   const vesselsById = new Map();
   config.vessels.forEach((vessel) => {
@@ -268,7 +328,10 @@ export class MiniMapRenderer {
       viewBox: "0 0 " + config.viewBoxWidth + " " + config.viewBoxHeight,
       preserveAspectRatio: "xMidYMid meet",
       role: "img",
-      "aria-label": "七節點血液循環圖，玩家位置沿第一關路徑連續移動"
+      "aria-label": "血液循環圖，心臟輪廓包含四腔室，玩家位置沿第一關路徑連續移動"
+    });
+    const heartLayer = createSvgElement(documentRef, "g", {
+      class: "circulation-map__heart"
     });
     const vesselLayer = createSvgElement(documentRef, "g", {
       class: "circulation-map__vessels",
@@ -285,6 +348,10 @@ export class MiniMapRenderer {
     svg.style.setProperty(
       "--minimap-pulse-duration",
       config.playerMarker.pulseDurationSeconds + "s"
+    );
+
+    heartLayer.append(
+      this.#createHeartOutline(documentRef, config.heartOutline)
     );
 
     config.vessels.forEach((vessel) => {
@@ -342,10 +409,44 @@ export class MiniMapRenderer {
       })
     );
 
-    svg.append(vesselLayer, routeLayer, nodeLayer, this.#marker);
+    svg.append(heartLayer, vesselLayer, routeLayer, nodeLayer, this.#marker);
     this.#host.replaceChildren(svg);
+    this.#host.dataset.heartChamberCount = String(
+      config.heartOutline.chamberNodeIds.length
+    );
     this.#host.dataset.nodeCount = String(config.nodes.length);
     this.#host.dataset.vesselCount = String(config.vessels.length);
+  }
+
+  #createHeartOutline(documentRef, outline) {
+    const fillColor = GAME_CONFIG.palette[outline.fillColorKey];
+    const strokeColor = GAME_CONFIG.palette[outline.strokeColorKey];
+
+    if (!fillColor || !strokeColor) {
+      throw new RangeError("Unknown heart outline palette key.");
+    }
+
+    const group = createSvgElement(documentRef, "g", {
+      class: "circulation-heart",
+      "data-heart-outline": outline.id,
+      "data-chamber-node-ids": outline.chamberNodeIds.join(" "),
+      role: "group",
+      "aria-label": outline.label
+    });
+    const path = createSvgElement(documentRef, "path", {
+      class: "circulation-heart__outline",
+      d: buildHeartOutlinePathData(outline),
+      fill: fillColor,
+      "fill-opacity": outline.fillOpacity,
+      stroke: strokeColor,
+      "stroke-opacity": outline.strokeOpacity,
+      "stroke-width": outline.strokeWidth,
+      "vector-effect": "non-scaling-stroke"
+    });
+
+    group.append(path);
+
+    return group;
   }
 
   #createNode(documentRef, node) {

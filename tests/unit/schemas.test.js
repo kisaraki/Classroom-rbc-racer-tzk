@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase03-hud-map";
+import { GAME_CONFIG } from "../../js/config.js?v=phase03-heart-map";
 import {
   assembleLevel,
   LEVELS
-} from "../../js/data/levels.js?v=phase03-hud-map";
+} from "../../js/data/levels.js?v=phase03-heart-map";
 import {
   createEntityState,
   createLevelCheckpoint,
@@ -11,7 +11,7 @@ import {
   isLevelCheckpoint,
   isLevelData,
   isPlayerState
-} from "../../js/data/schemas.js?v=phase03-hud-map";
+} from "../../js/data/schemas.js?v=phase03-heart-map";
 import {
   assert,
   assertApproximately,

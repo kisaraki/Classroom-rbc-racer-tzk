@@ -3,9 +3,9 @@ import {
   Color,
   TubeGeometry
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase03-hud-map";
-import { LEVELS } from "../../js/data/levels.js?v=phase03-hud-map";
-import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase03-hud-map";
+import { GAME_CONFIG } from "../../js/config.js?v=phase03-heart-map";
+import { LEVELS } from "../../js/data/levels.js?v=phase03-heart-map";
+import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase03-heart-map";
 import {
   assert,
   assertApproximately,

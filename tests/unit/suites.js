@@ -4,17 +4,17 @@ import { TestHarness } from "./TestHarness.js";
 import { registerEventBusTests } from "./eventBus.test.js";
 import { registerGameStateTests } from "./gameState.test.js";
 import { registerInputTests } from "./input.test.js";
-import { registerHudTests } from "./hud.test.js?v=phase03-hud-map";
-import { registerLevelManagerTests } from "./levelManager.test.js?v=phase03-hud-map";
-import { registerMinimapTests } from "./minimap.test.js?v=phase03-hud-map";
+import { registerHudTests } from "./hud.test.js?v=phase03-heart-map";
+import { registerLevelManagerTests } from "./levelManager.test.js?v=phase03-heart-map";
+import { registerMinimapTests } from "./minimap.test.js?v=phase03-heart-map";
 import { registerPlayerRbcTests } from "./playerRbc.test.js";
-import { registerPointerLockTests } from "./pointerLock.test.js?v=phase03-hud-map";
-import { registerSchemaTests } from "./schemas.test.js?v=phase03-hud-map";
+import { registerPointerLockTests } from "./pointerLock.test.js?v=phase03-heart-map";
+import { registerSchemaTests } from "./schemas.test.js?v=phase03-heart-map";
 import { registerSeededRandomTests } from "./seededRandom.test.js";
 import { registerTimingTests } from "./timing.test.js?v=phase01-real-clock";
 import { registerTrackMathTests } from "./trackMath.test.js";
 import { registerVendorTests } from "./vendor.test.js";
-import { registerVesselTrackTests } from "./vesselTrack.test.js?v=phase03-hud-map";
+import { registerVesselTrackTests } from "./vesselTrack.test.js?v=phase03-heart-map";
 import { registerWoundChanceTests } from "./woundChance.test.js";
 
 export function createPhase03TestHarness() {

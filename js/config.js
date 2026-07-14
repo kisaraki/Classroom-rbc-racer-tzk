@@ -221,6 +221,54 @@ export const GAME_CONFIG = deepFreeze({
     nodeStrokeWidth: 2,
     nodeFillOpacity: 0.18,
     nodeLabelFontSize: 10,
+    heartOutline: {
+      id: "four-chamber-heart",
+      label: "心臟輪廓，包含右心房、右心室、左心房與左心室",
+      chamberNodeIds: [
+        "right-atrium",
+        "right-ventricle",
+        "left-atrium",
+        "left-ventricle"
+      ],
+      fillColorKey: "woundDark",
+      strokeColorKey: "cockpitTrim",
+      fillOpacity: 0.62,
+      strokeOpacity: 0.82,
+      strokeWidth: 2.5,
+      start: [181, 232],
+      segments: [
+        {
+          control1: [166, 229],
+          control2: [146, 220],
+          end: [143, 201]
+        },
+        {
+          control1: [140, 183],
+          control2: [146, 162],
+          end: [158, 155]
+        },
+        {
+          control1: [168, 149],
+          control2: [177, 155],
+          end: [181, 163]
+        },
+        {
+          control1: [186, 155],
+          control2: [195, 149],
+          end: [205, 155]
+        },
+        {
+          control1: [217, 163],
+          control2: [221, 182],
+          end: [217, 200]
+        },
+        {
+          control1: [213, 218],
+          control2: [195, 228],
+          end: [181, 232]
+        }
+      ]
+    },
     nodes: [
       {
         id: "brain",
@@ -254,11 +302,11 @@ export const GAME_CONFIG = deepFreeze({
         id: "right-atrium",
         label: "右心房",
         shape: "circle",
-        x: 118,
-        y: 164,
-        radius: 11,
-        labelX: 99,
-        labelY: 153,
+        x: 159,
+        y: 176,
+        radius: 12,
+        labelX: 142,
+        labelY: 169,
         labelAnchor: "end",
         colorKey: "deoxygenatedBlue"
       },
@@ -266,11 +314,11 @@ export const GAME_CONFIG = deepFreeze({
         id: "right-ventricle",
         label: "右心室",
         shape: "circle",
-        x: 139,
-        y: 214,
-        radius: 12,
-        labelX: 111,
-        labelY: 229,
+        x: 169,
+        y: 207,
+        radius: 14,
+        labelX: 147,
+        labelY: 220,
         labelAnchor: "end",
         colorKey: "venousPurple"
       },
@@ -278,11 +326,11 @@ export const GAME_CONFIG = deepFreeze({
         id: "left-atrium",
         label: "左心房",
         shape: "circle",
-        x: 242,
-        y: 164,
+        x: 201,
+        y: 176,
         radius: 11,
-        labelX: 261,
-        labelY: 153,
+        labelX: 218,
+        labelY: 169,
         labelAnchor: "start",
         colorKey: "oxygenatedRed"
       },
@@ -290,11 +338,11 @@ export const GAME_CONFIG = deepFreeze({
         id: "left-ventricle",
         label: "左心室",
         shape: "circle",
-        x: 221,
-        y: 214,
-        radius: 12,
-        labelX: 249,
-        labelY: 229,
+        x: 195,
+        y: 207,
+        radius: 14,
+        labelX: 219,
+        labelY: 220,
         labelAnchor: "start",
         colorKey: "oxygenatedRed"
       },
@@ -319,9 +367,9 @@ export const GAME_CONFIG = deepFreeze({
         from: "left-ventricle",
         to: "brain",
         colorKey: "oxygenatedRed",
-        start: [221, 214],
-        control1: [304, 192],
-        control2: [312, 76],
+        start: [195, 207],
+        control1: [294, 187],
+        control2: [300, 72],
         end: [180, 34]
       },
       {
@@ -330,18 +378,18 @@ export const GAME_CONFIG = deepFreeze({
         to: "right-atrium",
         colorKey: "deoxygenatedBlue",
         start: [180, 34],
-        control1: [48, 75],
-        control2: [60, 143],
-        end: [118, 164]
+        control1: [55, 75],
+        control2: [72, 153],
+        end: [159, 176]
       },
       {
         id: "left-ventricle-to-tissues",
         from: "left-ventricle",
         to: "tissues",
         colorKey: "oxygenatedRed",
-        start: [221, 214],
-        control1: [278, 232],
-        control2: [253, 270],
+        start: [195, 207],
+        control1: [270, 226],
+        control2: [250, 270],
         end: [180, 270]
       },
       {
@@ -350,28 +398,28 @@ export const GAME_CONFIG = deepFreeze({
         to: "right-atrium",
         colorKey: "deoxygenatedBlue",
         start: [180, 270],
-        control1: [94, 270],
-        control2: [79, 213],
-        end: [118, 164]
+        control1: [106, 270],
+        control2: [94, 215],
+        end: [159, 176]
       },
       {
         id: "right-atrium-to-right-ventricle",
         from: "right-atrium",
         to: "right-ventricle",
         colorKey: "venousPurple",
-        start: [118, 164],
-        control1: [111, 184],
-        control2: [122, 206],
-        end: [139, 214]
+        start: [159, 176],
+        control1: [151, 188],
+        control2: [157, 202],
+        end: [169, 207]
       },
       {
         id: "right-ventricle-to-lungs",
         from: "right-ventricle",
         to: "lungs",
         colorKey: "deoxygenatedBlue",
-        start: [139, 214],
-        control1: [92, 180],
-        control2: [101, 118],
+        start: [169, 207],
+        control1: [111, 183],
+        control2: [111, 122],
         end: [180, 102]
       },
       {
@@ -380,19 +428,19 @@ export const GAME_CONFIG = deepFreeze({
         to: "left-atrium",
         colorKey: "oxygenatedRed",
         start: [180, 102],
-        control1: [258, 115],
-        control2: [274, 148],
-        end: [242, 164]
+        control1: [247, 115],
+        control2: [257, 153],
+        end: [201, 176]
       },
       {
         id: "left-atrium-to-left-ventricle",
         from: "left-atrium",
         to: "left-ventricle",
         colorKey: "oxygenatedRed",
-        start: [242, 164],
-        control1: [250, 184],
-        control2: [242, 207],
-        end: [221, 214]
+        start: [201, 176],
+        control1: [211, 188],
+        control2: [207, 202],
+        end: [195, 207]
       }
     ],
     routes: [
