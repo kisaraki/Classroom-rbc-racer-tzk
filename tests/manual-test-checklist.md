@@ -49,6 +49,10 @@ unit suite, but those tests do not replace the required foreground acceptance.
 - [x] The test page remains readable at narrow width and reports 50 PASS.
 - [x] `/rbc-racer/` project-subpath loading resolves all relative assets.
 - [x] `/rbc-racer/tests/unit-test.html` reports 50 passed and 0 failed.
+- [x] The public GitHub Pages root returns HTTP 200 and renders Three.js r184,
+  six vessel sections, 1,025 cached frames, and 13,860 triangles.
+- [x] The public GitHub Pages test page reports 50 passed and 0 failed with no
+  horizontal overflow.
 - [x] Runtime HTML, CSS, and JavaScript reference no remote image, model,
   video, font, CDN, backend, or database.
 
