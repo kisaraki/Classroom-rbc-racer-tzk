@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
 
 function deepFreeze(value) {
   if (value && typeof value === "object" && !Object.isFrozen(value)) {
@@ -104,7 +104,7 @@ export const LEVEL_SEMANTICS = deepFreeze({
         id: "tissue-capillary",
         locationLabel: "組織微血管",
         minimapSegmentId: "tissue-capillary",
-        gasExchangeZone: "SYSTEMIC_TISSUE"
+        gasExchangeZone: "TISSUE"
       },
       {
         id: "venule",
@@ -150,7 +150,7 @@ export const LEVEL_SEMANTICS = deepFreeze({
         id: "alveolar-capillary",
         locationLabel: "肺泡微血管",
         minimapSegmentId: "alveolar-capillary",
-        gasExchangeZone: "PULMONARY_ALVEOLI"
+        gasExchangeZone: "LUNG"
       },
       {
         id: "pulmonary-vein",
@@ -201,7 +201,7 @@ export const LEVEL_SEMANTICS = deepFreeze({
         id: "brain-upper-capillary",
         locationLabel: "腦／上半身微血管",
         minimapSegmentId: "brain-upper-capillary",
-        gasExchangeZone: "SYSTEMIC_BRAIN_UPPER_TISSUE"
+        gasExchangeZone: "TISSUE"
       },
       {
         id: "venule",
@@ -247,7 +247,7 @@ export const LEVEL_SEMANTICS = deepFreeze({
         id: "alveolar-capillary",
         locationLabel: "肺泡微血管",
         minimapSegmentId: "alveolar-capillary",
-        gasExchangeZone: "PULMONARY_ALVEOLI"
+        gasExchangeZone: "LUNG"
       },
       {
         id: "pulmonary-vein",
@@ -284,11 +284,34 @@ export function assembleLevel(levelId, semanticDefinition) {
       colorEnd: GAME_CONFIG.palette[configured.colorEndKey]
     });
   });
-  const gasTriggerDistances = Object.fromEntries(
-    Object.entries(tuning.gasTriggerRatios).map(([key, ratio]) => [
-      key,
-      ratio * tuning.trackLength
-    ])
+  const exchangeSections = sections.filter(
+    (section) => section.gasExchangeZone !== undefined
+  );
+
+  if (exchangeSections.length !== 1) {
+    throw new RangeError(
+      "A level must define exactly one tissue or lung exchange section."
+    );
+  }
+
+  const exchangeSection = exchangeSections[0];
+  const exchangeRegion = exchangeSection.gasExchangeZone;
+  const opportunityCount =
+    GAME_CONFIG.qte.opportunityCountByRegion[exchangeRegion];
+
+  if (!Number.isInteger(opportunityCount) || opportunityCount <= 0) {
+    throw new RangeError(
+      "The exchange region requires a configured opportunity count."
+    );
+  }
+
+  const exchangeLength =
+    exchangeSection.endDistance - exchangeSection.startDistance;
+  const triggerDistances = Array.from(
+    { length: opportunityCount },
+    (_, index) =>
+      exchangeSection.startDistance +
+      exchangeLength * ((index + 1) / (opportunityCount + 1))
   );
 
   return deepFreeze({
@@ -303,8 +326,12 @@ export function assembleLevel(levelId, semanticDefinition) {
     trackLength: tuning.trackLength,
     seed: tuning.seed,
     controlPoints: tuning.controlPoints,
-    gasTriggerRatios: tuning.gasTriggerRatios,
-    gasTriggerDistances,
+    gasExchange: {
+      region: exchangeRegion,
+      sectionId: exchangeSection.id,
+      opportunityCount,
+      triggerDistances
+    },
     start: {
       distance: tuning.startDistance,
       locationLabel: semanticDefinition.startLocationLabel

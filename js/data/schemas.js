@@ -1,10 +1,25 @@
-import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
 
 export const GAS_EXCHANGE_STATUS = Object.freeze({
   PENDING: "PENDING",
   SUCCESS: "SUCCESS",
   FAILED: "FAILED"
 });
+
+export const RBC_COLOR_STATES = Object.freeze({
+  RED: "RED",
+  RED_PURPLE: "RED_PURPLE"
+});
+
+export function toggleRbcColorState(colorState) {
+  if (!Object.values(RBC_COLOR_STATES).includes(colorState)) {
+    throw new RangeError("Unknown RBC color state: " + colorState);
+  }
+
+  return colorState === RBC_COLOR_STATES.RED
+    ? RBC_COLOR_STATES.RED_PURPLE
+    : RBC_COLOR_STATES.RED;
+}
 
 export const PLAYER_STATE_SCHEMA = Object.freeze({
   hp: "finite number",
@@ -21,7 +36,8 @@ export const PLAYER_STATE_SCHEMA = Object.freeze({
   gasExchangeStatus: "GAS_EXCHANGE_STATUS",
   gasExchangeAttempts: "non-negative integer",
   woundDodgedCount: "non-negative integer",
-  qteSuccessCount: "non-negative integer"
+  qteSuccessCount: "non-negative integer",
+  rbcColorState: "RBC_COLOR_STATES"
 });
 
 export const ENTITY_STATE_SCHEMA = Object.freeze({
@@ -49,7 +65,8 @@ export const LEVEL_DATA_SCHEMA = Object.freeze({
   start: "route endpoint",
   end: "route endpoint",
   sections: "array",
-  multipliers: "object"
+  multipliers: "object",
+  gasExchange: "tissue or lung opportunity data"
 });
 
 export const LEVEL_SECTION_SCHEMA = Object.freeze({
@@ -71,7 +88,8 @@ export const LEVEL_CHECKPOINT_SCHEMA = Object.freeze({
   levelId: "configured level id",
   hp: "finite number",
   score: "finite number",
-  seed: "integer"
+  seed: "integer",
+  rbcColorState: "RBC_COLOR_STATES"
 });
 
 function isObject(value) {
@@ -99,6 +117,39 @@ function isRouteEndpoint(value) {
     isObject(value) &&
     isFiniteNumber(value.distance) &&
     typeof value.locationLabel === "string"
+  );
+}
+
+function isGasExchangeData(value, sections) {
+  if (
+    !isObject(value) ||
+    !Object.hasOwn(
+      GAME_CONFIG.qte.opportunityCountByRegion,
+      value.region
+    ) ||
+    typeof value.sectionId !== "string" ||
+    !Number.isInteger(value.opportunityCount) ||
+    value.opportunityCount !==
+      GAME_CONFIG.qte.opportunityCountByRegion[value.region] ||
+    !Array.isArray(value.triggerDistances) ||
+    value.triggerDistances.length !== value.opportunityCount
+  ) {
+    return false;
+  }
+
+  const exchangeSection = sections.find(
+    (section) => section.id === value.sectionId
+  );
+
+  return (
+    exchangeSection?.gasExchangeZone === value.region &&
+    value.triggerDistances.every(
+      (distance, index, distances) =>
+        isFiniteNumber(distance) &&
+        distance > exchangeSection.startDistance &&
+        distance < exchangeSection.endDistance &&
+        (index === 0 || distance > distances[index - 1])
+    )
   );
 }
 
@@ -142,7 +193,8 @@ export function isPlayerState(value) {
     Object.values(GAS_EXCHANGE_STATUS).includes(value.gasExchangeStatus) &&
     isNonNegativeInteger(value.gasExchangeAttempts) &&
     isNonNegativeInteger(value.woundDodgedCount) &&
-    isNonNegativeInteger(value.qteSuccessCount)
+    isNonNegativeInteger(value.qteSuccessCount) &&
+    Object.values(RBC_COLOR_STATES).includes(value.rbcColorState)
   );
 }
 
@@ -163,6 +215,7 @@ export function createPlayerState(overrides = {}) {
     gasExchangeAttempts: 0,
     woundDodgedCount: 0,
     qteSuccessCount: 0,
+    rbcColorState: RBC_COLOR_STATES.RED,
     ...overrides
   };
 
@@ -247,7 +300,8 @@ export function isLevelData(value) {
     Array.isArray(value.sections) &&
     value.sections.length > 0 &&
     value.sections.every(isLevelSection) &&
-    isObject(value.multipliers)
+    isObject(value.multipliers) &&
+    isGasExchangeData(value.gasExchange, value.sections)
   );
 }
 
@@ -257,7 +311,8 @@ export function isLevelCheckpoint(value) {
     isConfiguredLevelId(value.levelId) &&
     isFiniteNumber(value.hp) &&
     isFiniteNumber(value.score) &&
-    Number.isInteger(value.seed)
+    Number.isInteger(value.seed) &&
+    Object.values(RBC_COLOR_STATES).includes(value.rbcColorState)
   );
 }
 
@@ -270,7 +325,8 @@ export function createLevelCheckpoint(playerState, seed) {
     levelId: playerState.currentLevel,
     hp: playerState.hp,
     score: playerState.score,
-    seed
+    seed,
+    rbcColorState: playerState.rbcColorState
   };
 
   if (!isLevelCheckpoint(checkpoint)) {

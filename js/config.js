@@ -34,6 +34,7 @@ export const GAME_CONFIG = deepFreeze({
   palette: {
     oxygenatedRed: "#ff3347",
     rbcBody: "#cf1f2c",
+    rbcDeoxygenatedBody: "#95294f",
     transitionMagenta: "#d72678",
     deoxygenatedBlue: "#3157c8",
     venousPurple: "#6d348f",
@@ -98,6 +99,14 @@ export const GAME_CONFIG = deepFreeze({
     realTimeTimersContinueWhilePaused: true,
     millisecondsPerSecond: 1000,
     fpsSampleWindowSeconds: 1
+  },
+
+  performanceAcceptance: {
+    minimumFps: 30,
+    maximumDrawCalls: 30,
+    maximumTriangles: 20000,
+    longRunSampleSeconds: 60,
+    maximumHeapGrowthMegabytes: 16
   },
 
   deviceSupport: {
@@ -1124,11 +1133,6 @@ export const GAME_CONFIG = deepFreeze({
         [292, -70, -680],
         [305, -30, -635]
       ],
-      gasTriggerRatios: {
-        primary: 0.59,
-        retry: 0.66,
-        fallback: 0.695
-      },
       sectionRatios: [
         0.03,
         0.12,
@@ -1241,11 +1245,6 @@ export const GAME_CONFIG = deepFreeze({
         [35.8, -11.3, -772.3],
         [0, 0, -828.9]
       ],
-      gasTriggerRatios: {
-        primary: 0.40,
-        retry: 0.55,
-        fallback: 0.64
-      },
       sectionRatios: [
         0.05,
         0.25,
@@ -1331,11 +1330,6 @@ export const GAME_CONFIG = deepFreeze({
         [45.5, -17.1, -1639.3],
         [49.3, 0, -1686.6]
       ],
-      gasTriggerRatios: {
-        primary: 0.56,
-        retry: 0.65,
-        fallback: 0.695
-      },
       sectionRatios: [
         0.03,
         0.12,
@@ -1448,11 +1442,6 @@ export const GAME_CONFIG = deepFreeze({
         [35.8, -11.3, -772.3],
         [0, 0, -828.9]
       ],
-      gasTriggerRatios: {
-        primary: 0.40,
-        retry: 0.55,
-        fallback: 0.64
-      },
       sectionRatios: [
         0.05,
         0.25,
@@ -1523,7 +1512,10 @@ export const GAME_CONFIG = deepFreeze({
     carbonDioxideThreshold: 3,
     successScore: 10,
     failureScore: -3,
-    maxAttempts: 2
+    opportunityCountByRegion: {
+      TISSUE: 10,
+      LUNG: 20
+    }
   },
 
   lowBloodPressure: {

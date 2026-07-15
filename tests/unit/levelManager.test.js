@@ -1,9 +1,9 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase09-endings-r1";
-import { LevelManager } from "../../js/core/LevelManager.js?v=phase09-endings-r1";
-import { LEVELS } from "../../js/data/levels.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
+import { LevelManager } from "../../js/core/LevelManager.js?v=phase10-final-r1";
+import { LEVELS } from "../../js/data/levels.js?v=phase10-final-r1";
 import { InputController } from "../../js/input/InputController.js";
 import { PlayerRBC } from "../../js/player/PlayerRBC.js";
-import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase09-endings-r1";
+import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase10-final-r1";
 import {
   assert,
   assertApproximately,
@@ -157,23 +157,46 @@ export function registerLevelManagerTests(harness) {
     });
   });
 
-  harness.test("every gas trigger remains inside its configured exchange zone", () => {
+  harness.test("every gas event remains inside its configured exchange zone", () => {
     LEVELS.forEach((level) => {
       const exchangeSection = level.sections.find(
         (section) => section.gasExchangeZone !== undefined
       );
-      const triggers = Object.values(level.gasTriggerDistances);
+      const triggers = level.gasExchange.triggerDistances;
 
       assert(exchangeSection !== undefined);
+      assertEqual(exchangeSection.id, level.gasExchange.sectionId);
+      assertEqual(exchangeSection.gasExchangeZone, level.gasExchange.region);
       assert(
         triggers.every(
           (distance) =>
-            distance >= exchangeSection.startDistance &&
-            distance <= exchangeSection.endDistance
+            distance > exchangeSection.startDistance &&
+            distance < exchangeSection.endDistance
         )
       );
-      assert(triggers[0] < triggers[1]);
-      assert(triggers[1] < triggers[2]);
+      assert(
+        triggers.every(
+          (distance, index) => index === 0 || distance > triggers[index - 1]
+        )
+      );
+    });
+  });
+
+  harness.test("systemic tissue has 10 events and lung has 20", () => {
+    LEVELS.forEach((level) => {
+      const expectedCount =
+        GAME_CONFIG.qte.opportunityCountByRegion[
+          level.gasExchange.region
+        ];
+      const expectedRegion =
+        level.circulationType === "SYSTEMIC" ? "TISSUE" : "LUNG";
+
+      assertEqual(
+        level.gasExchange.opportunityCount,
+        expectedCount
+      );
+      assertEqual(level.gasExchange.triggerDistances.length, expectedCount);
+      assertEqual(level.gasExchange.region, expectedRegion);
     });
   });
 

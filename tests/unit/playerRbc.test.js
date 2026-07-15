@@ -3,10 +3,13 @@ import {
   PerspectiveCamera,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase09-endings-r1";
-import { createLevelCheckpoint } from "../../js/data/schemas.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
+import {
+  createLevelCheckpoint,
+  RBC_COLOR_STATES
+} from "../../js/data/schemas.js?v=phase10-final-r1";
 import { InputController } from "../../js/input/InputController.js";
-import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase09-endings-r1";
+import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase10-final-r1";
 import {
   assert,
   assertApproximately,
@@ -246,6 +249,29 @@ export function registerPlayerRbcTests(harness) {
     player.dispose();
   });
 
+  harness.test("successful gas exchange toggles red and red-purple body states", () => {
+    const player = new PlayerRBC();
+    const red = new Color(GAME_CONFIG.palette.rbcBody);
+    const redPurple = new Color(
+      GAME_CONFIG.palette.rbcDeoxygenatedBody
+    );
+
+    assertEqual(player.state.rbcColorState, RBC_COLOR_STATES.RED);
+    assertEqual(player.bodyMaterial.color.equals(red), true);
+    assertEqual(
+      player.completeGasExchange(),
+      RBC_COLOR_STATES.RED_PURPLE
+    );
+    assertEqual(player.bodyMaterial.color.equals(redPurple), true);
+    assertEqual(player.noseMaterial.color.equals(redPurple), true);
+    assertEqual(
+      player.completeGasExchange(),
+      RBC_COLOR_STATES.RED
+    );
+    assertEqual(player.bodyMaterial.color.equals(red), true);
+    player.dispose();
+  });
+
   harness.test("malaria hood uses five-second effect and 0.4-second restore deadlines", () => {
     const player = new PlayerRBC();
     const hood = player.hoodController;
@@ -358,7 +384,10 @@ export function registerPlayerRbcTests(harness) {
   harness.test("checkpoint retry restores canonical Level 1 player state", () => {
     const player = new PlayerRBC();
     const checkpoint = createLevelCheckpoint(
-      player.state,
+      {
+        ...player.state,
+        rbcColorState: RBC_COLOR_STATES.RED_PURPLE
+      },
       GAME_CONFIG.levels[1].seed
     );
     player.state.hp = 0;
@@ -375,6 +404,11 @@ export function registerPlayerRbcTests(harness) {
     assertEqual(state.score, GAME_CONFIG.score.initial);
     assertEqual(state.distanceAlongTrack, 0);
     assertEqual(state.gasExchangeAttempts, 0);
+    assertEqual(state.rbcColorState, RBC_COLOR_STATES.RED_PURPLE);
+    assertEqual(
+      player.bodyMaterial.color.getHexString(),
+      new Color(GAME_CONFIG.palette.rbcDeoxygenatedBody).getHexString()
+    );
     assertEqual(player.hoodController.isBasicObstructionActive, false);
     assertEqual(player.hoodController.group.visible, true);
     assertThrows(() => player.resetForCheckpoint({}), TypeError);

@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
-import { CutsceneRenderer } from "../cutscenes/CutsceneRenderer.js?v=phase09-endings-r1";
-import { createFlightInstrumentSnapshot } from "./FlightInstrumentModel.js?v=phase09-endings-r1";
-import { MessageOverlay } from "./MessageOverlay.js?v=phase09-endings-r1";
-import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { CutsceneRenderer } from "../cutscenes/CutsceneRenderer.js?v=phase10-final-r1";
+import { createFlightInstrumentSnapshot } from "./FlightInstrumentModel.js?v=phase10-final-r1";
+import { MessageOverlay } from "./MessageOverlay.js?v=phase10-final-r1";
+import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase10-final-r1";
 
 const EMPTY_STATUSES = Object.freeze([]);
 
@@ -231,9 +231,9 @@ export class HUDManager {
   showReady() {
     this.#elements.overlay.hidden = false;
     this.#elements.overlay.dataset.mode = "READY";
-    this.#elements.overlayIndex.textContent = "09";
+    this.#elements.overlayIndex.textContent = "10";
     this.#elements.overlayKicker.textContent =
-      "Phase 09 / Full circulation run";
+      "Phase 10 / Final circulation build";
     this.#elements.overlayTitle.textContent = "完整循環啟航";
     this.#elements.overlayCopy.textContent =
       "四關會自動銜接心腔輸送帶，失敗時依原因播放回收、墜落或中風結局；完成第四關後進入 O₂ 旗幟勝利遊街。";
@@ -298,7 +298,7 @@ export class HUDManager {
 
     const isInput = diagnostics.phase === "INPUT";
     const attempt = Math.min(
-      GAME_CONFIG.qte.maxAttempts,
+      diagnostics.opportunityCount,
       diagnostics.attempts + Number(isInput)
     );
     const deadline = isInput
@@ -315,7 +315,7 @@ export class HUDManager {
     this.#elements.qtePanel.dataset.outcome = diagnostics.lastOutcome ?? "";
     this.#elements.qtePanel.dataset.status = diagnostics.status;
     this.#elements.qteAttempt.textContent =
-      "ATTEMPT " + attempt + " / " + GAME_CONFIG.qte.maxAttempts;
+      "ATTEMPT " + attempt + " / " + diagnostics.opportunityCount;
     this.#elements.qteInstruction.textContent =
       (
         GAME_CONFIG.qte.durationMs /
@@ -352,7 +352,7 @@ export class HUDManager {
       this.#elements.qteResultCopy.textContent = succeeded
         ? "血液已完成氣體交換，血管色彩開始轉換。"
         : retryAvailable
-          ? "前方會出現第二個 Gas Token。"
+          ? "同一交換區前方仍有 Gas Token；完成任一次即可成功。"
           : "已記錄減分，仍可完成本關。";
     }
   }

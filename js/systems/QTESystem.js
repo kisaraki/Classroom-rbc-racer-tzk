@@ -1,6 +1,6 @@
-import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
-import { GameClock } from "../core/GameClock.js?v=phase09-endings-r1";
-import { GAS_EXCHANGE_STATUS } from "../data/schemas.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GameClock } from "../core/GameClock.js?v=phase10-final-r1";
+import { GAS_EXCHANGE_STATUS } from "../data/schemas.js?v=phase10-final-r1";
 
 export const QTE_ACTIONS = Object.freeze({
   OXYGEN: "KeyO",
@@ -26,9 +26,7 @@ export const QTE_OUTCOMES = Object.freeze({
 });
 
 export const QTE_TRIGGER_TYPES = Object.freeze({
-  PRIMARY: "PRIMARY",
-  RETRY: "RETRY",
-  FALLBACK: "FALLBACK"
+  OPPORTUNITY: "OPPORTUNITY"
 });
 
 function assertTimestamp(value, label = "nowMs") {
@@ -74,7 +72,7 @@ export class QTESystem {
   #carbonDioxideCount = 0;
   #qteExpiresAtMs = null;
   #resultExpiresAtMs = null;
-  #activeTriggerType = null;
+  #activeOpportunityIndex = null;
   #lastOutcome = null;
 
   constructor({
@@ -82,12 +80,34 @@ export class QTESystem {
     config = GAME_CONFIG.qte,
     clock = new GameClock()
   } = {}) {
+    const gasExchange = level?.gasExchange;
+    const exchangeSection = level?.sections?.find(
+      (section) => section.id === gasExchange?.sectionId
+    );
+
     if (
-      !level?.gasTriggerDistances ||
-      !Object.values(level.gasTriggerDistances).every(Number.isFinite)
+      !gasExchange ||
+      !Object.hasOwn(
+        config?.opportunityCountByRegion ?? {},
+        gasExchange.region
+      ) ||
+      !Number.isInteger(gasExchange.opportunityCount) ||
+      gasExchange.opportunityCount <= 0 ||
+      gasExchange.opportunityCount !==
+        config.opportunityCountByRegion[gasExchange.region] ||
+      !Array.isArray(gasExchange.triggerDistances) ||
+      gasExchange.triggerDistances.length !== gasExchange.opportunityCount ||
+      exchangeSection?.gasExchangeZone !== gasExchange.region ||
+      !gasExchange.triggerDistances.every(
+        (distance, index, distances) =>
+          Number.isFinite(distance) &&
+          distance > exchangeSection.startDistance &&
+          distance < exchangeSection.endDistance &&
+          (index === 0 || distance > distances[index - 1])
+      )
     ) {
       throw new TypeError(
-        "QTESystem requires configured gas trigger distances."
+        "QTESystem requires configured tissue or lung opportunities."
       );
     }
 
@@ -100,8 +120,6 @@ export class QTESystem {
       config.oxygenThreshold <= 0 ||
       !Number.isInteger(config.carbonDioxideThreshold) ||
       config.carbonDioxideThreshold <= 0 ||
-      !Number.isInteger(config.maxAttempts) ||
-      config.maxAttempts <= 0 ||
       !Number.isFinite(config.successScore) ||
       !Number.isFinite(config.failureScore)
     ) {
@@ -125,6 +143,10 @@ export class QTESystem {
     return this.#attempts;
   }
 
+  get opportunityCount() {
+    return this.#level.gasExchange.opportunityCount;
+  }
+
   get qteExpiresAtMs() {
     return this.#qteExpiresAtMs;
   }
@@ -133,46 +155,60 @@ export class QTESystem {
     return this.#resultExpiresAtMs;
   }
 
-  get nextTriggerType() {
+  get nextOpportunityIndex() {
     if (
       this.#phase !== QTE_PHASES.IDLE ||
       this.#status !== GAS_EXCHANGE_STATUS.PENDING ||
-      this.#attempts >= this.#config.maxAttempts
+      this.#attempts >= this.opportunityCount
     ) {
       return null;
     }
 
-    return this.#attempts === 0
-      ? QTE_TRIGGER_TYPES.PRIMARY
-      : QTE_TRIGGER_TYPES.RETRY;
+    return this.#attempts;
+  }
+
+  get nextTriggerType() {
+    return this.nextOpportunityIndex === null
+      ? null
+      : QTE_TRIGGER_TYPES.OPPORTUNITY;
   }
 
   get nextTriggerDistance() {
-    const triggerType = this.nextTriggerType;
-
-    if (triggerType === QTE_TRIGGER_TYPES.PRIMARY) {
-      return this.#level.gasTriggerDistances.primary;
-    }
-
-    if (triggerType === QTE_TRIGGER_TYPES.RETRY) {
-      return this.#level.gasTriggerDistances.retry;
-    }
-
-    return null;
+    const index = this.nextOpportunityIndex;
+    return index === null
+      ? null
+      : this.#level.gasExchange.triggerDistances[index];
   }
 
   get diagnostics() {
+    const nextOpportunityIndex = this.nextOpportunityIndex;
+
     return Object.freeze({
       phase: this.#phase,
       status: this.#status,
       attempts: this.#attempts,
+      opportunityCount: this.opportunityCount,
+      remainingOpportunities: Math.max(
+        0,
+        this.opportunityCount - this.#attempts
+      ),
+      exchangeRegion: this.#level.gasExchange.region,
+      activeOpportunityNumber:
+        this.#activeOpportunityIndex === null
+          ? null
+          : this.#activeOpportunityIndex + 1,
+      nextOpportunityNumber:
+        nextOpportunityIndex === null ? null : nextOpportunityIndex + 1,
       oxygenCount: this.#oxygenCount,
       carbonDioxideCount: this.#carbonDioxideCount,
       oxygenThreshold: this.#config.oxygenThreshold,
       carbonDioxideThreshold: this.#config.carbonDioxideThreshold,
       qteExpiresAtMs: this.#qteExpiresAtMs,
       resultExpiresAtMs: this.#resultExpiresAtMs,
-      activeTriggerType: this.#activeTriggerType,
+      activeTriggerType:
+        this.#activeOpportunityIndex === null
+          ? null
+          : QTE_TRIGGER_TYPES.OPPORTUNITY,
       nextTriggerType: this.nextTriggerType,
       nextTriggerDistance: this.nextTriggerDistance,
       lastOutcome: this.#lastOutcome,
@@ -180,39 +216,19 @@ export class QTESystem {
     });
   }
 
-  tryStart(
-    previousDistance,
-    currentDistance,
-    nowMs,
-    { atLevelEnd = false } = {}
-  ) {
+  tryStart(previousDistance, currentDistance, nowMs) {
     assertDistance(previousDistance, "previousDistance");
     assertDistance(currentDistance, "currentDistance");
     assertTimestamp(nowMs);
 
-    if (typeof atLevelEnd !== "boolean") {
-      throw new TypeError("atLevelEnd must be a boolean.");
-    }
+    const opportunityIndex = this.nextOpportunityIndex;
+    const targetDistance = this.nextTriggerDistance;
 
-    const expectedType = this.nextTriggerType;
-    const expectedDistance = this.nextTriggerDistance;
-
-    if (expectedType === null || expectedDistance === null) {
-      return null;
-    }
-
-    const crossedExpected = crossedDistance(
-      previousDistance,
-      currentDistance,
-      expectedDistance
-    );
-    const crossedFallback = crossedDistance(
-      previousDistance,
-      currentDistance,
-      this.#level.gasTriggerDistances.fallback
-    );
-
-    if (!crossedExpected && !crossedFallback && !atLevelEnd) {
+    if (
+      opportunityIndex === null ||
+      targetDistance === null ||
+      !crossedDistance(previousDistance, currentDistance, targetDistance)
+    ) {
       return null;
     }
 
@@ -221,9 +237,7 @@ export class QTESystem {
     this.#carbonDioxideCount = 0;
     this.#resultExpiresAtMs = null;
     this.#lastOutcome = null;
-    this.#activeTriggerType = crossedExpected
-      ? expectedType
-      : QTE_TRIGGER_TYPES.FALLBACK;
+    this.#activeOpportunityIndex = opportunityIndex;
     this.#qteExpiresAtMs = this.#clock.deadlineAfterMs(
       this.#config.durationMs,
       nowMs
@@ -231,7 +245,10 @@ export class QTESystem {
 
     return Object.freeze({
       type: QTE_EVENTS.STARTED,
-      triggerType: this.#activeTriggerType,
+      triggerType: QTE_TRIGGER_TYPES.OPPORTUNITY,
+      opportunityNumber: opportunityIndex + 1,
+      opportunityCount: this.opportunityCount,
+      exchangeRegion: this.#level.gasExchange.region,
       expiresAtMs: this.#qteExpiresAtMs
     });
   }
@@ -289,7 +306,7 @@ export class QTESystem {
       const outcome = this.#lastOutcome;
       this.#phase = QTE_PHASES.IDLE;
       this.#resultExpiresAtMs = null;
-      this.#activeTriggerType = null;
+      this.#activeOpportunityIndex = null;
       return Object.freeze({
         type: QTE_EVENTS.RESULT_EXPIRED,
         outcome,
@@ -308,7 +325,7 @@ export class QTESystem {
     this.#carbonDioxideCount = 0;
     this.#qteExpiresAtMs = null;
     this.#resultExpiresAtMs = null;
-    this.#activeTriggerType = null;
+    this.#activeOpportunityIndex = null;
     this.#lastOutcome = null;
   }
 
@@ -324,7 +341,7 @@ export class QTESystem {
 
     if (outcome === QTE_OUTCOMES.SUCCESS) {
       this.#status = GAS_EXCHANGE_STATUS.SUCCESS;
-    } else if (this.#attempts >= this.#config.maxAttempts) {
+    } else if (this.#attempts >= this.opportunityCount) {
       this.#status = GAS_EXCHANGE_STATUS.FAILED;
     } else {
       this.#status = GAS_EXCHANGE_STATUS.PENDING;
@@ -335,6 +352,8 @@ export class QTESystem {
       outcome,
       status: this.#status,
       attempts: this.#attempts,
+      opportunityNumber: this.#attempts,
+      opportunityCount: this.opportunityCount,
       scoreDelta:
         outcome === QTE_OUTCOMES.SUCCESS
           ? this.#config.successScore

@@ -10,42 +10,42 @@ import {
   SRGBColorSpace,
   WebGLRenderer
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
 import {
   CUTSCENE_TYPES,
   CutsceneManager
-} from "../cutscenes/CutsceneManager.js?v=phase09-endings-r1";
-import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase09-endings-r1";
+} from "../cutscenes/CutsceneManager.js?v=phase10-final-r1";
+import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase10-final-r1";
 import {
   createLevelCheckpoint
-} from "../data/schemas.js?v=phase09-endings-r1";
-import { CameraController } from "../input/CameraController.js?v=phase09-endings-r1";
-import { InputController } from "../input/InputController.js?v=phase09-endings-r1";
+} from "../data/schemas.js?v=phase10-final-r1";
+import { CameraController } from "../input/CameraController.js?v=phase10-final-r1";
+import { InputController } from "../input/InputController.js?v=phase10-final-r1";
 import { PointerLockController } from "../input/PointerLockController.js";
-import { PlayerRBC } from "../player/PlayerRBC.js?v=phase09-endings-r1";
-import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=phase09-endings-r1";
-import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase09-endings-r1";
-import { EntityManager } from "../systems/EntityManager.js?v=phase09-endings-r1";
+import { PlayerRBC } from "../player/PlayerRBC.js?v=phase10-final-r1";
+import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=phase10-final-r1";
+import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase10-final-r1";
+import { EntityManager } from "../systems/EntityManager.js?v=phase10-final-r1";
 import {
   canCompleteLevel,
   QTE_EVENTS,
   QTE_OUTCOMES,
   QTE_PHASES,
   QTESystem
-} from "../systems/QTESystem.js?v=phase09-endings-r1";
-import { StatusEffectManager } from "../systems/StatusEffectManager.js?v=phase09-endings-r1";
-import { HUDManager } from "../ui/HUDManager.js?v=phase09-endings-r1";
+} from "../systems/QTESystem.js?v=phase10-final-r1";
+import { StatusEffectManager } from "../systems/StatusEffectManager.js?v=phase10-final-r1";
+import { HUDManager } from "../ui/HUDManager.js?v=phase10-final-r1";
 import { SeededRandom } from "../utils/SeededRandom.js";
-import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase09-endings-r1";
-import { VesselTrack } from "../world/VesselTrack.js?v=phase09-endings-r1";
+import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase10-final-r1";
+import { VesselTrack } from "../world/VesselTrack.js?v=phase10-final-r1";
 import { GameLoop } from "./GameLoop.js";
-import { GameSession } from "./GameSession.js?v=phase09-endings-r1";
-import { GAME_STATES } from "./GameStateMachine.js?v=phase09-endings-r1";
-import { LevelManager } from "./LevelManager.js?v=phase09-endings-r1";
+import { GameSession } from "./GameSession.js?v=phase10-final-r1";
+import { GAME_STATES } from "./GameStateMachine.js?v=phase10-final-r1";
+import { LevelManager } from "./LevelManager.js?v=phase10-final-r1";
 import {
   createLevelStartPlayerState,
   createRetryPlayerState
-} from "./RunProgression.js?v=phase09-endings-r1";
+} from "./RunProgression.js?v=phase10-final-r1";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);
@@ -244,7 +244,7 @@ export class Game {
     this.#root.dataset.rbcLabelHeight = String(
       GAME_CONFIG.playerModel.label.planeHeight
     );
-    this.#root.dataset.phase = "09";
+    this.#root.dataset.phase = "10";
     this.#root.dataset.proceduralAssets = "true";
     this.#root.dataset.entityBatchCount = String(
       this.entityManager.batchCount
@@ -266,6 +266,8 @@ export class Game {
     this.#root.dataset.checkpointSeed = String(
       this.#levelCheckpoint.seed
     );
+    this.#root.dataset.checkpointRbcColorState =
+      this.#levelCheckpoint.rbcColorState;
     this.#publishLevelMetadata();
     this.hud.showReady();
     this.#resize();
@@ -391,12 +393,7 @@ export class Game {
     const qteStart = this.qteSystem.tryStart(
       this.player.state.previousDistanceAlongTrack,
       this.player.state.distanceAlongTrack,
-      this.#session.nowMs,
-      {
-        atLevelEnd: this.levelManager.isAtEnd(
-          this.player.state.distanceAlongTrack
-        )
-      }
+      this.#session.nowMs
     );
 
     if (qteStart && this.#session.enterQte()) {
@@ -547,6 +544,7 @@ export class Game {
 
       if (event.outcome === QTE_OUTCOMES.SUCCESS) {
         this.player.state.qteSuccessCount += 1;
+        this.player.completeGasExchange();
       }
 
       this.track.setGasExchangeStatus(event.status);
@@ -643,10 +641,12 @@ export class Game {
     const nextLevel = this.levelManager.peekNextLevel();
     const hp = this.player.state.hp;
     const score = this.player.state.score;
+    const rbcColorState = this.player.state.rbcColorState;
     const playerState = createLevelStartPlayerState({
       levelId: nextLevel.id,
       hp,
-      score
+      score,
+      rbcColorState
     });
     this.#replaceLevelRuntime({
       levelId: nextLevel.id,
@@ -1093,6 +1093,19 @@ export class Game {
     );
     this.#root.dataset.qteTriggerType =
       qteDiagnostics.activeTriggerType ?? "";
+    this.#root.dataset.qteExchangeRegion =
+      qteDiagnostics.exchangeRegion;
+    this.#root.dataset.qteOpportunityCount = String(
+      qteDiagnostics.opportunityCount
+    );
+    this.#root.dataset.qteActiveOpportunity =
+      qteDiagnostics.activeOpportunityNumber === null
+        ? ""
+        : String(qteDiagnostics.activeOpportunityNumber);
+    this.#root.dataset.qteNextOpportunity =
+      qteDiagnostics.nextOpportunityNumber === null
+        ? ""
+        : String(qteDiagnostics.nextOpportunityNumber);
     this.#root.dataset.qteNextTriggerType =
       qteDiagnostics.nextTriggerType ?? "";
     this.#root.dataset.qteNextTriggerDistance =
@@ -1118,6 +1131,10 @@ export class Game {
     this.#root.dataset.gasTokenDistance = String(
       this.gasToken.distanceAlongTrack
     );
+    this.#root.dataset.rbcColorState = state.rbcColorState;
+    this.#root.dataset.rbcBodyColor = reflectionDiagnostics.bodyColor;
+    this.#root.dataset.rbcCockpitColor =
+      reflectionDiagnostics.cockpitColor;
     const cutsceneDiagnostics = this.#cutsceneManager.diagnostics;
     this.#root.dataset.cutsceneActive = String(
       cutsceneDiagnostics.active
@@ -1463,6 +1480,10 @@ export class Game {
     this.#root.dataset.trackStart = String(this.level.start.distance);
     this.#root.dataset.trackEnd = String(this.level.end.distance);
     this.#root.dataset.trackSections = String(this.track.sections.length);
+    this.#root.dataset.gasExchangeRegion = this.level.gasExchange.region;
+    this.#root.dataset.gasExchangeOpportunityCount = String(
+      this.level.gasExchange.opportunityCount
+    );
     this.#root.dataset.cachedFrames = String(
       this.track.cachedFrameCount
     );
@@ -1476,6 +1497,8 @@ export class Game {
     this.#root.dataset.checkpointSeed = String(
       this.#levelCheckpoint.seed
     );
+    this.#root.dataset.checkpointRbcColorState =
+      this.#levelCheckpoint.rbcColorState;
     this.#root.dataset.entityBatchCount = String(
       this.entityManager.batchCount
     );

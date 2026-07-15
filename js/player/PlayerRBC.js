@@ -13,11 +13,13 @@ import {
   Vector2,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
 import {
   createPlayerState,
-  isLevelCheckpoint
-} from "../data/schemas.js?v=phase09-endings-r1";
+  isLevelCheckpoint,
+  RBC_COLOR_STATES,
+  toggleRbcColorState
+} from "../data/schemas.js?v=phase10-final-r1";
 import {
   clampBloodPressure,
   getSpeedForBloodPressure,
@@ -27,7 +29,7 @@ import { clampLateralOffset } from "../world/TrackMath.js";
 import {
   createRbcLabelTexture,
   HoodController
-} from "./HoodController.js?v=phase09-endings-r1";
+} from "./HoodController.js?v=phase10-final-r1";
 
 function createBiconcaveGeometry(modelConfig) {
   const profile = [];
@@ -115,12 +117,16 @@ export class PlayerRBC {
     this.cockpitGroup.name = "player-rbc-first-person-cockpit";
 
     const modelConfig = config.playerModel;
+    const baseBodyColor =
+      this.state.rbcColorState === RBC_COLOR_STATES.RED
+        ? config.palette.rbcBody
+        : config.palette.rbcDeoxygenatedBody;
     const labelTexture = createRbcLabelTexture(modelConfig.label);
     this.labelTexture = labelTexture;
 
     const bodyGeometry = createBiconcaveGeometry(modelConfig);
     const bodyMaterial = new MeshStandardMaterial({
-      color: config.palette.rbcBody,
+      color: baseBodyColor,
       roughness: modelConfig.bodyRoughness,
       metalness: modelConfig.bodyMetalness,
       emissive: config.palette.cockpitShadow,
@@ -151,7 +157,7 @@ export class PlayerRBC {
       cockpit.heightSegments
     );
     const noseMaterial = new MeshStandardMaterial({
-      color: config.palette.rbcBody,
+      color: baseBodyColor,
       roughness: cockpit.noseRoughness,
       metalness: cockpit.noseMetalness,
       emissive: config.palette.cockpitShadow,
@@ -257,6 +263,14 @@ export class PlayerRBC {
     return this.state.bp;
   }
 
+  completeGasExchange() {
+    this.state.rbcColorState = toggleRbcColorState(
+      this.state.rbcColorState
+    );
+    this.#syncBaseBodyColor();
+    return this.state.rbcColorState;
+  }
+
   updateVesselReflection(vesselColor, elapsedSeconds) {
     if (!vesselColor?.isColor) {
       throw new TypeError("Vessel reflection requires a Three.js Color.");
@@ -299,7 +313,8 @@ export class PlayerRBC {
     return Object.freeze({
       environmentColor: "#" + this.#environmentColor.getHexString(),
       bodyColor: "#" + this.bodyMaterial.color.getHexString(),
-      cockpitColor: "#" + this.noseMaterial.color.getHexString()
+      cockpitColor: "#" + this.noseMaterial.color.getHexString(),
+      rbcColorState: this.state.rbcColorState
     });
   }
 
@@ -331,18 +346,28 @@ export class PlayerRBC {
     this.state = createPlayerState({
       hp: retryHp,
       score: checkpoint.score,
-      currentLevel: checkpoint.levelId
+      currentLevel: checkpoint.levelId,
+      rbcColorState: checkpoint.rbcColorState
     });
     this.speed = getSpeedForBloodPressure(this.state.bp, this.config);
     this.hitWall = false;
     this.hoodController.reset();
-    this.bodyMaterial.color.copy(this.#baseBodyColor);
+    this.#syncBaseBodyColor();
     this.bodyMaterial.emissive.set(this.config.palette.cockpitShadow);
-    this.noseMaterial.color.copy(this.#baseBodyColor);
     this.noseMaterial.emissive.copy(this.#baseCockpitEmissive);
-    this.#environmentColor.set(this.config.palette.rbcBody);
-    this.#reflectionInitialized = false;
     return this.state;
+  }
+
+  #syncBaseBodyColor() {
+    const color =
+      this.state.rbcColorState === RBC_COLOR_STATES.RED
+        ? this.config.palette.rbcBody
+        : this.config.palette.rbcDeoxygenatedBody;
+    this.#baseBodyColor.set(color);
+    this.bodyMaterial.color.copy(this.#baseBodyColor);
+    this.noseMaterial.color.copy(this.#baseBodyColor);
+    this.#environmentColor.copy(this.#baseBodyColor);
+    this.#reflectionInitialized = false;
   }
 
   dispose() {

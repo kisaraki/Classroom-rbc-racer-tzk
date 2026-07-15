@@ -1,34 +1,35 @@
 import { registerBloodPressureDrivingTests } from "./bloodPressureDriving.test.js";
-import { registerBloodPressureHazardTests } from "./bloodPressureHazards.test.js?v=phase09-endings-r1";
+import { registerBloodPressureHazardTests } from "./bloodPressureHazards.test.js?v=phase10-final-r1";
 import { registerCameraTests } from "./camera.test.js";
-import { registerCollisionTests } from "./collision.test.js?v=phase09-endings-r1";
-import { registerCutsceneTests } from "./cutscene.test.js?v=phase09-endings-r1";
-import { registerDeviceSupportTests } from "./deviceSupport.test.js?v=phase09-endings-r1";
-import { registerEntityManagerTests } from "./entityManager.test.js?v=phase09-endings-r1";
-import { registerEntityTypeTests } from "./entityTypes.test.js?v=phase09-endings-r1";
+import { registerCollisionTests } from "./collision.test.js?v=phase10-final-r1";
+import { registerCutsceneTests } from "./cutscene.test.js?v=phase10-final-r1";
+import { registerDeviceSupportTests } from "./deviceSupport.test.js?v=phase10-final-r1";
+import { registerEntityManagerTests } from "./entityManager.test.js?v=phase10-final-r1";
+import { registerEntityTypeTests } from "./entityTypes.test.js?v=phase10-final-r1";
 import { TestHarness } from "./TestHarness.js";
 import { registerEventBusTests } from "./eventBus.test.js";
-import { registerFlightInstrumentTests } from "./flightInstruments.test.js?v=phase09-endings-r1";
-import { registerGameStateTests } from "./gameState.test.js?v=phase09-endings-r1";
-import { registerInputTests } from "./input.test.js?v=phase09-endings-r1";
-import { registerHudTests } from "./hud.test.js?v=phase09-endings-r1";
-import { registerLevelManagerTests } from "./levelManager.test.js?v=phase09-endings-r1";
-import { registerMinimapTests } from "./minimap.test.js?v=phase09-endings-r1";
-import { registerPlayerRbcTests } from "./playerRbc.test.js?v=phase09-endings-r1";
-import { registerPointerLockTests } from "./pointerLock.test.js?v=phase09-endings-r1";
-import { registerProceduralAssetTests } from "./proceduralAssets.test.js?v=phase09-endings-r1";
-import { registerQteTests } from "./qte.test.js?v=phase09-endings-r1";
-import { registerRunProgressionTests } from "./runProgression.test.js?v=phase09-endings-r1";
-import { registerSchemaTests } from "./schemas.test.js?v=phase09-endings-r1";
+import { registerFlightInstrumentTests } from "./flightInstruments.test.js?v=phase10-final-r1";
+import { registerGameStateTests } from "./gameState.test.js?v=phase10-final-r1";
+import { registerInputTests } from "./input.test.js?v=phase10-final-r1";
+import { registerHudTests } from "./hud.test.js?v=phase10-final-r1";
+import { registerLevelManagerTests } from "./levelManager.test.js?v=phase10-final-r1";
+import { registerMinimapTests } from "./minimap.test.js?v=phase10-final-r1";
+import { registerPlayerRbcTests } from "./playerRbc.test.js?v=phase10-final-r1";
+import { registerPointerLockTests } from "./pointerLock.test.js?v=phase10-final-r1";
+import { registerProceduralAssetTests } from "./proceduralAssets.test.js?v=phase10-final-r1";
+import { registerQteTests } from "./qte.test.js?v=phase10-final-r1";
+import { registerResourceLifecycleTests } from "./resourceLifecycle.test.js?v=phase10-final-r1";
+import { registerRunProgressionTests } from "./runProgression.test.js?v=phase10-final-r1";
+import { registerSchemaTests } from "./schemas.test.js?v=phase10-final-r1";
 import { registerSeededRandomTests } from "./seededRandom.test.js";
-import { registerStatusEffectTests } from "./statusEffects.test.js?v=phase09-endings-r1";
+import { registerStatusEffectTests } from "./statusEffects.test.js?v=phase10-final-r1";
 import { registerTimingTests } from "./timing.test.js?v=phase01-real-clock";
 import { registerTrackMathTests } from "./trackMath.test.js";
 import { registerVendorTests } from "./vendor.test.js";
-import { registerVesselTrackTests } from "./vesselTrack.test.js?v=phase09-endings-r1";
-import { registerWoundChanceTests } from "./woundChance.test.js?v=phase09-endings-r1";
+import { registerVesselTrackTests } from "./vesselTrack.test.js?v=phase10-final-r1";
+import { registerWoundChanceTests } from "./woundChance.test.js?v=phase10-final-r1";
 
-export function createPhase09TestHarness() {
+export function createPhase10TestHarness() {
   const harness = new TestHarness();
 
   registerTrackMathTests(harness);
@@ -47,6 +48,7 @@ export function createPhase09TestHarness() {
   registerInputTests(harness);
   registerStatusEffectTests(harness);
   registerQteTests(harness);
+  registerResourceLifecycleTests(harness);
   registerCutsceneTests(harness);
   registerRunProgressionTests(harness);
   registerGameStateTests(harness);

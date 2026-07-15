@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 

@@ -1,13 +1,13 @@
-import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
 import {
   ENTITY_CATEGORIES,
   getEntityType
-} from "../data/entityTypes.js?v=phase09-endings-r1";
+} from "../data/entityTypes.js?v=phase10-final-r1";
 import {
   isEntityState,
   isPlayerState
-} from "../data/schemas.js?v=phase09-endings-r1";
-import { ScoreSystem } from "./ScoreSystem.js?v=phase09-endings-r1";
+} from "../data/schemas.js?v=phase10-final-r1";
+import { ScoreSystem } from "./ScoreSystem.js?v=phase10-final-r1";
 
 export function isSweptLongitudinalHit(
   playerState,

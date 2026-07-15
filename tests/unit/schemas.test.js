@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
 import {
   assembleLevel,
   LEVELS
-} from "../../js/data/levels.js?v=phase09-endings-r1";
+} from "../../js/data/levels.js?v=phase10-final-r1";
 import {
   createEntityState,
   createLevelCheckpoint,
@@ -10,8 +10,10 @@ import {
   isEntityState,
   isLevelCheckpoint,
   isLevelData,
-  isPlayerState
-} from "../../js/data/schemas.js?v=phase09-endings-r1";
+  isPlayerState,
+  RBC_COLOR_STATES,
+  toggleRbcColorState
+} from "../../js/data/schemas.js?v=phase10-final-r1";
 import {
   assert,
   assertApproximately,
@@ -29,6 +31,15 @@ export function registerSchemaTests(harness) {
     assert(isPlayerState(player));
     assert(isLevelCheckpoint(checkpoint));
     assertEqual(checkpoint.hp, GAME_CONFIG.hp.initial);
+    assertEqual(checkpoint.rbcColorState, RBC_COLOR_STATES.RED);
+    assertEqual(
+      toggleRbcColorState(RBC_COLOR_STATES.RED),
+      RBC_COLOR_STATES.RED_PURPLE
+    );
+    assertEqual(
+      toggleRbcColorState(RBC_COLOR_STATES.RED_PURPLE),
+      RBC_COLOR_STATES.RED
+    );
   });
 
   harness.test("entity factory uses the canonical track coordinates", () => {
@@ -53,7 +64,8 @@ export function registerSchemaTests(harness) {
     const sections = tuning.sectionRatios.map((ratio, index) => ({
       id: "test-section-" + index,
       locationLabel: "Test section",
-      minimapSegmentId: "test-segment-" + index
+      minimapSegmentId: "test-segment-" + index,
+      ...(index === 4 ? { gasExchangeZone: "TISSUE" } : {})
     }));
     const level = assembleLevel(1, {
       name: "Test level",
@@ -75,7 +87,7 @@ export function registerSchemaTests(harness) {
     assertEqual(level.sections.length, tuning.sectionRatios.length);
   });
 
-  harness.test("Phase 09 retains four complete data-driven levels", () => {
+  harness.test("Phase 10 retains four complete data-driven levels", () => {
     assertEqual(LEVELS.length, GAME_CONFIG.game.totalLevelCount);
     assertEqual(LEVELS.map((level) => level.id).join(","), "1,2,3,4");
 
@@ -87,7 +99,42 @@ export function registerSchemaTests(harness) {
       assertEqual(level.controlPoints.length >= 2, true);
       assertEqual(level.start.distance, 0);
       assertEqual(level.end.distance, level.trackLength);
+      assertEqual(
+        level.gasExchange.triggerDistances.length,
+        level.gasExchange.opportunityCount
+      );
     });
+  });
+
+  harness.test("gas opportunities stay ordered inside their exchange section", () => {
+    const level = LEVELS[0];
+    const exchangeSection = level.sections.find(
+      (section) => section.id === level.gasExchange.sectionId
+    );
+    const outsideZone = {
+      ...level,
+      gasExchange: {
+        ...level.gasExchange,
+        triggerDistances: [
+          exchangeSection.startDistance,
+          ...level.gasExchange.triggerDistances.slice(1)
+        ]
+      }
+    };
+    const outOfOrder = {
+      ...level,
+      gasExchange: {
+        ...level.gasExchange,
+        triggerDistances: [
+          level.gasExchange.triggerDistances[1],
+          level.gasExchange.triggerDistances[0],
+          ...level.gasExchange.triggerDistances.slice(2)
+        ]
+      }
+    };
+
+    assertEqual(isLevelData(outsideZone), false);
+    assertEqual(isLevelData(outOfOrder), false);
   });
 
   harness.test("configured level ratios and baseline times are consistent", () => {

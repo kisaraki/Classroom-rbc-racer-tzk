@@ -1,10 +1,10 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
 import {
   ENTITY_CATEGORIES,
   ENTITY_TYPES,
   GENERAL_SPAWN_TYPE_IDS,
   getEntityType
-} from "../../js/data/entityTypes.js?v=phase09-endings-r1";
+} from "../../js/data/entityTypes.js?v=phase10-final-r1";
 import {
   assert,
   assertDeepEqual,

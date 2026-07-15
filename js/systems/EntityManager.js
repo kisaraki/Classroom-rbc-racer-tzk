@@ -1,17 +1,17 @@
 import { Group } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
 import {
   ENTITY_CATEGORIES,
   ENTITY_TYPES,
   GENERAL_SPAWN_TYPE_IDS,
   getEntityType
-} from "../data/entityTypes.js?v=phase09-endings-r1";
+} from "../data/entityTypes.js?v=phase10-final-r1";
 import {
   createEntityState,
   isPlayerState
-} from "../data/schemas.js?v=phase09-endings-r1";
+} from "../data/schemas.js?v=phase10-final-r1";
 import { SeededRandom } from "../utils/SeededRandom.js";
-import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase09-endings-r1";
+import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase10-final-r1";
 
 function requireUnitValue(value) {
   if (!Number.isFinite(value) || value < 0 || value >= 1) {
@@ -162,7 +162,7 @@ export class EntityManager {
     if (
       !track?.getRadiusAtDistance ||
       !track?.getFrameAtDistance ||
-      !level?.gasTriggerDistances
+      !Array.isArray(level?.gasExchange?.triggerDistances)
     ) {
       throw new TypeError("EntityManager requires a playable track and level.");
     }
@@ -352,7 +352,7 @@ export class EntityManager {
 
     const woundType = getEntityType("wound");
     const reservedDistances = [
-      ...Object.values(this.#level.gasTriggerDistances),
+      ...this.#level.gasExchange.triggerDistances,
       this.#level.end.distance
     ];
 
@@ -447,7 +447,7 @@ export class EntityManager {
   #buildSchedule() {
     const schedule = [];
     const reservedDistances = [
-      ...Object.values(this.#level.gasTriggerDistances),
+      ...this.#level.gasExchange.triggerDistances,
       this.#level.end.distance
     ];
     let lastDebuffTypeId = "";

@@ -1,8 +1,8 @@
-import { createPhase09TestHarness } from "./unit/suites.js?v=phase09-endings-r1";
+import { createPhase10TestHarness } from "./unit/suites.js?v=phase10-final-r1";
 
 const resultList = document.querySelector("#test-results");
 const summaryElement = document.querySelector("#test-summary");
-const harness = createPhase09TestHarness();
+const harness = createPhase10TestHarness();
 const summary = await harness.run();
 
 summary.results.forEach((result) => {
@@ -31,4 +31,4 @@ summaryElement.textContent =
   " total.";
 summaryElement.dataset.status = summary.status;
 document.documentElement.dataset.testStatus = summary.status;
-globalThis.__PHASE_09_TEST_RESULT__ = summary;
+globalThis.__PHASE_10_TEST_RESULT__ = summary;

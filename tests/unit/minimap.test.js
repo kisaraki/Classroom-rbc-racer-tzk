@@ -1,5 +1,5 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase09-endings-r1";
-import { LEVELS } from "../../js/data/levels.js?v=phase09-endings-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
+import { LEVELS } from "../../js/data/levels.js?v=phase10-final-r1";
 import {
   buildHeartOutlinePathData,
   buildRoutePathData,
@@ -7,7 +7,7 @@ import {
   calculateMarkerPoint,
   clampMinimapProgress,
   validateMinimapConfig
-} from "../../js/ui/MiniMapRenderer.js?v=phase09-endings-r1";
+} from "../../js/ui/MiniMapRenderer.js?v=phase10-final-r1";
 import {
   assert,
   assertApproximately,
