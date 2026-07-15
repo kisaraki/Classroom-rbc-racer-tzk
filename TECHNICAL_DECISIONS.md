@@ -1,10 +1,12 @@
-# RBC Racer 技術決策附錄
+# Project Aorta：大動脈計畫室 技術決策附錄
 
-**附錄版本：** 1.5
+**附錄版本：** 1.6
 
-**對應總案版本：** 3.4
+**對應總案版本：** 3.5
 
-**Phase 11 實作基線：** `e22cd963ed5bd12cca877200dd2f2238cff169fc`
+**前一功能基線：** `e22cd963ed5bd12cca877200dd2f2238cff169fc`
+
+**產品狀態：** STABLE／Version 1.1（20260715）
 
 **決策日期：** 2026-07-15
 
@@ -18,7 +20,7 @@
 
 本附錄將總案中的玩法需求轉換為可直接實作與測試的技術契約。
 
-若本附錄與舊版總案衝突，以 3.4 版總案及本附錄為準。循環系統繁體中文術語以 `CIRCULATION_TERMINOLOGY.md` 指定的台灣教材為準。醫學資料只用於校準循環方向、相對路徑與教育表述；遊戲時間、世界單位、BP、傷害和生成機率仍是遊戲化數值，不代表真實生理量測。
+若本附錄與舊版總案衝突，以 3.5 版總案及本附錄為準。循環系統繁體中文術語以 `CIRCULATION_TERMINOLOGY.md` 指定的台灣教材為準。醫學資料只用於校準循環方向、相對路徑與教育表述；遊戲時間、世界單位、BP、傷害和生成機率仍是遊戲化數值，不代表真實生理量測。
 
 ---
 
@@ -38,7 +40,7 @@
 | TD-010 | 先完成第一關端到端垂直切片，再資料化擴展其餘三關 |
 | TD-011 | Three.js 固定使用官方 r184，正式版保留 MIT 授權與來源雜湊 |
 | TD-012 | `js/config.js` 是所有可調整遊戲數值的唯一來源 |
-| TD-013 | 每一階段必須完成測試、修正、重測與 PASS 報告後才能進入下一階段 |
+| TD-013 | 每批變更必須完成測試、修正、重測與 PASS 報告；STABLE 後採 SemVer，不新增編號階段 |
 | TD-014 | 氣體交換只在體微血管或肺泡微血管觸發，不在心臟、一般動脈或靜脈建立保底事件 |
 | TD-015 | 成功交換切換 RBC 紅／紅紫狀態，並由跨關資料與 checkpoint 保存 |
 | TD-016 | 玩家可見循環術語採教材的「充氧血／減氧血／微血管」；路線限定詞不得被描述為新的循環類型 |
@@ -47,9 +49,10 @@
 | TD-019 | 每關每 5 隻瘧原蟲觸發 15 秒血球破裂與 BP 上限 60；每 10 次 CO 碰撞觸發持續性 CO 中毒與 O/C 各 9 次 |
 | TD-020 | 任務逾時只在尚未抵達終點時成立，跨 deadline 的 simulation delta 必須切在截止時間 |
 | TD-021 | 瘧原蟲頭罩期間以程序化蒸氣模糊全畫面，直到絕對期限與復原動畫完成 |
-| TD-022 | 玩家畫面移除 Phase、build 與系統診斷文字，內部 data attributes 仍可供自動驗證 |
+| TD-022 | 玩家畫面移除編號階段、build 與系統診斷文字，內部 data attributes 仍可供自動驗證 |
 | TD-023 | 開始按鈕立即顯示 Pointer Lock 等待狀態；靜默失敗依集中期限轉為可重試錯誤，`file://` 則提供靜態伺服器指引 |
 | TD-024 | RBC 截面採十字線至機體下緣的垂直膠囊；增益／減益以完整本體與標示牌聯集判定碰撞 |
+| TD-025 | 正式名稱、副標、STABLE、Version 1.1 與發布日期集中於 `GAME_CONFIG.app`，現行 gate 統一命名為 `test:stable` |
 
 ## 2.1 Three.js 版本鎖定
 
@@ -527,7 +530,7 @@ gasExchangeAttempts = 0;
 4. 記錄發現的錯誤與重現方式。
 5. 修正本階段錯誤。
 6. 重新執行自動測試與手動驗收。
-7. 依 `PHASE_REPORT_TEMPLATE.md` 提交 `reports/phase-XX-report.md`。
+7. 依 `RELEASE_REPORT_TEMPLATE.md` 提交版本或變更報告。
 8. 報告結果為 PASS 後才可進入下一階段。
 
 若存在未修正錯誤、未執行測試、測試結果不明或提前實作後續功能，報告必須標示 BLOCKED，不得開始下一階段。
@@ -550,7 +553,7 @@ gasExchangeAttempts = 0;
 
 ---
 
-# 十七、Phase 11 累積狀態與逾時契約
+# 十七、STABLE 1.1 累積狀態與逾時契約
 
 ## 17.1 小地圖交換節點
 
@@ -577,7 +580,7 @@ gasExchangeAttempts = 0;
 
 ## 17.6 視覺與介面
 
-任何瘧原蟲頭罩效果與復原動畫期間，程序化 CSS 水蒸氣以 `backdrop-filter` 模糊全畫面；模糊、透明度與漂移時間由 `js/config.js` 注入 CSS variables。玩家畫面不顯示 Phase、build、FPS、Pointer Lock、內部 state、checkpoint seed 或 cutscene phase ID；必要資料可保留在不可見的 `data-*` 診斷屬性。
+任何瘧原蟲頭罩效果與復原動畫期間，程序化 CSS 水蒸氣以 `backdrop-filter` 模糊全畫面；模糊、透明度與漂移時間由 `js/config.js` 注入 CSS variables。玩家畫面不顯示編號階段、build、FPS、Pointer Lock、內部 state、checkpoint seed 或過場內部識別；必要資料可保留在不可見的 `data-*` 診斷屬性。
 
 ## 17.7 啟動與 Pointer Lock 可靠性
 
@@ -593,3 +596,12 @@ gasExchangeAttempts = 0;
 - 增益／減益本體半徑必須覆蓋程序化模型在最大 pulse 時的截面，不得只使用核心幾何半徑。
 - `BUFF`、`DEBUFF` 且具有非空白 `label` 的物件，其程序化標示牌是獨立碰撞面；瘧原蟲無牌面，Wound 不套用此分類規則。
 - 本體圓與標示牌矩形都和玩家膠囊進行截面距離測試，任一成立後仍沿用既有優先序、單次消耗與掃掠縱向判定。
+
+## 17.9 正式產品識別與版本
+
+- `GAME_CONFIG.app` 是正式名稱、副標、狀態、版本、發布日期與顯示字串的唯一執行時來源。
+- 正式名稱為「Project Aorta：大動脈計畫室」，副標為「RBC RACER」，狀態為 `STABLE`。
+- 玩家顯示版本固定為 `Version：1.1（20260715）`；`package.json` 使用相容 SemVer 的 `1.1.0`。
+- `index.html` 保留同值的無模組 fallback，ES Module 啟動後必須由 `GAME_CONFIG.app` 重設品牌節點與 `data-release-*` 診斷屬性。
+- 快取識別統一為 `stable-v1.1-20260715-r2`；npm、測試、CI 與文件的正式 gate 統一為 `npm run test:stable`。
+- Phase 00–10 僅為歷史報告；STABLE 後續變更採 SemVer 與版本報告，不建立新的編號階段。

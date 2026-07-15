@@ -1,13 +1,13 @@
 import {
   GameLoop,
   getSimulationDeltaSeconds
-} from "../../js/core/GameLoop.js?v=phase11-r4";
+} from "../../js/core/GameLoop.js?v=stable-v1.1-20260715-r2";
 import {
   GAME_STATES,
   GameStateMachine
-} from "../../js/core/GameStateMachine.js?v=phase11-r4";
-import { GameClock } from "../../js/core/GameClock.js?v=phase11-r4";
-import { GameSession } from "../../js/core/GameSession.js?v=phase11-r4";
+} from "../../js/core/GameStateMachine.js?v=stable-v1.1-20260715-r2";
+import { GameClock } from "../../js/core/GameClock.js?v=stable-v1.1-20260715-r2";
+import { GameSession } from "../../js/core/GameSession.js?v=stable-v1.1-20260715-r2";
 import {
   assertEqual,
   assertThrows

@@ -1,19 +1,19 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
+import { GAME_CONFIG } from "../../js/config.js?v=stable-v1.1-20260715-r2";
 import {
   ENTITY_TRIGGERS,
   getEntityType
-} from "../../js/data/entityTypes.js?v=phase11-r4";
+} from "../../js/data/entityTypes.js?v=stable-v1.1-20260715-r2";
 import {
   createEntityState,
   createPlayerState
-} from "../../js/data/schemas.js?v=phase11-r4";
+} from "../../js/data/schemas.js?v=stable-v1.1-20260715-r2";
 import {
   CollisionSystem,
   isCrossSectionHit,
   isEntityLabelHit,
   isSweptLongitudinalHit
-} from "../../js/systems/CollisionSystem.js?v=phase11-r4";
-import { applyEntityScoreEffect } from "../../js/systems/ScoreSystem.js?v=phase11-r4";
+} from "../../js/systems/CollisionSystem.js?v=stable-v1.1-20260715-r2";
+import { applyEntityScoreEffect } from "../../js/systems/ScoreSystem.js?v=stable-v1.1-20260715-r2";
 import {
   assertEqual,
   assertThrows

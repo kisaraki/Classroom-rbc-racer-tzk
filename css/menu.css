@@ -49,6 +49,40 @@
   content: "";
 }
 
+.overlay-product {
+  display: grid;
+  gap: 0.24rem;
+  margin-bottom: 1.7rem;
+  padding: 0.8rem 1rem;
+  border-left: 0.18rem solid var(--oxygen);
+  background: linear-gradient(90deg, rgba(69, 224, 208, 0.1), transparent);
+  font-family: var(--mono-font);
+}
+
+.overlay-product > span {
+  color: var(--ink);
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: clamp(1rem, 1.5vw, 1.35rem);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.overlay-product > strong {
+  color: var(--blood-hot);
+  font-size: 0.76rem;
+  letter-spacing: 0.22em;
+}
+
+.overlay-product > small {
+  color: var(--ink-soft);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+}
+
+.overlay-product > small b {
+  color: var(--oxygen);
+}
+
 .overlay-kicker {
   margin: 0 0 1rem;
   color: var(--blood-hot);

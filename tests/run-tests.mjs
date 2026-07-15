@@ -1,9 +1,9 @@
-import { createPhase11TestHarness } from "./unit/suites.js?v=phase11-r4";
+import { createStableTestHarness } from "./unit/suites.js?v=stable-v1.1-20260715-r2";
 
-const harness = createPhase11TestHarness();
+const harness = createStableTestHarness();
 const summary = await harness.run();
 
-console.log("RBC Racer Phase 11 unit tests");
+console.log("Project Aorta：大動脈計畫室 STABLE unit tests");
 
 summary.results.forEach((result) => {
   const duration = result.durationMs.toFixed(2);

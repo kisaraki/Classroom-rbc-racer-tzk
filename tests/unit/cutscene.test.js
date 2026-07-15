@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
+import { GAME_CONFIG } from "../../js/config.js?v=stable-v1.1-20260715-r2";
 import {
   CUTSCENE_TYPES,
   CutsceneManager
-} from "../../js/cutscenes/CutsceneManager.js?v=phase11-r4";
+} from "../../js/cutscenes/CutsceneManager.js?v=stable-v1.1-20260715-r2";
 import {
   assertApproximately,
   assertEqual,
@@ -10,7 +10,7 @@ import {
 } from "./TestHarness.js";
 
 export function registerCutsceneTests(harness) {
-  harness.test("all Phase 11 cutscenes use configured absolute durations", () => {
+  harness.test("all STABLE cutscenes use configured absolute durations", () => {
     Object.values(CUTSCENE_TYPES).forEach((type) => {
       const manager = new CutsceneManager();
       const snapshot = manager.start(type, 1250, { levelId: 1 });

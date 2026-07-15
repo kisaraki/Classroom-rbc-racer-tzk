@@ -1,4 +1,4 @@
-import { GameClock } from "../../js/core/GameClock.js?v=phase01-real-clock";
+import { GameClock } from "../../js/core/GameClock.js?v=stable-v1.1-20260715-r2";
 import {
   assertApproximately,
   assertEqual,

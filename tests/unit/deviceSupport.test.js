@@ -1,9 +1,9 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
+import { GAME_CONFIG } from "../../js/config.js?v=stable-v1.1-20260715-r2";
 import {
   getDeviceSupport,
   isMobileDevice,
   showUnsupportedMobileDevice
-} from "../../js/core/DeviceSupport.js?v=phase11-r4";
+} from "../../js/core/DeviceSupport.js?v=stable-v1.1-20260715-r2";
 import {
   assertEqual,
   assertThrows

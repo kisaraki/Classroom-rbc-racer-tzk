@@ -1,5 +1,5 @@
-import { GAME_CONFIG } from "../config.js?v=phase11-r4";
-import { CUTSCENE_TYPES } from "./CutsceneManager.js?v=phase11-r4";
+import { GAME_CONFIG } from "../config.js?v=stable-v1.1-20260715-r2";
+import { CUTSCENE_TYPES } from "./CutsceneManager.js?v=stable-v1.1-20260715-r2";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);

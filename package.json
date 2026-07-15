@@ -1,11 +1,11 @@
 {
-  "name": "rbc-racer",
-  "version": "0.0.0",
+  "name": "project-aorta-rbc-racer",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node ./tests/run-tests.mjs",
-    "test:audit": "node ./tests/phase-11-audit.mjs",
-    "test:phase11": "npm test && npm run test:audit"
+    "test:audit": "node ./tests/stable-audit.mjs",
+    "test:stable": "npm test && npm run test:audit"
   }
 }

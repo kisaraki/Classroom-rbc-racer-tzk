@@ -25,9 +25,9 @@
   left: clamp(1rem, 2vw, 2rem);
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  height: 2.65rem;
-  padding-right: 1rem;
+  gap: 1rem;
+  min-height: 3.2rem;
+  padding: 0.45rem 1.15rem 0.45rem 0.8rem;
   border: 1px solid var(--line);
   background: linear-gradient(90deg, var(--glass-strong), rgba(16, 2, 7, 0.38));
   clip-path: polygon(0 0, calc(100% - 0.7rem) 0, 100% 0.7rem, 100% 100%, 0 100%);
@@ -38,34 +38,36 @@
   backdrop-filter: blur(0.7rem);
 }
 
-.hud-brand__phase {
+.hud-brand__identity,
+.hud-brand__release {
   display: grid;
-  align-self: stretch;
-  place-items: center;
-  min-width: 3.2rem;
-  color: var(--blood-black);
-  background: var(--blood-hot);
-  font-weight: 900;
+  gap: 0.14rem;
 }
 
-.hud-brand__name {
+.hud-brand__identity strong {
   color: var(--ink);
-  font-weight: 800;
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
 }
 
-.hud-brand__status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.42rem;
+.hud-brand__identity small,
+.hud-brand__release small {
   color: var(--ink-soft);
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
 }
 
-.hud-brand__status i {
-  width: 0.42rem;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--oxygen);
-  box-shadow: 0 0 0.8rem var(--oxygen);
+.hud-brand__release {
+  padding-left: 0.85rem;
+  border-left: 1px solid var(--line);
+}
+
+.hud-brand__release b {
+  color: var(--oxygen);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-shadow: 0 0 0.8rem rgba(69, 224, 208, 0.52);
 }
 
 .circulation-card {
@@ -1342,13 +1344,13 @@
 }
 
 @media (max-width: 48rem) {
-  .hud-brand__name,
-  .hud-brand__status {
+  .hud-brand__identity strong,
+  .hud-brand__release {
     display: none;
   }
 
   .hud-brand {
-    padding-right: 0;
+    padding-right: 0.8rem;
   }
 
   .vital-stack {

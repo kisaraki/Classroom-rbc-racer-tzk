@@ -135,8 +135,17 @@ await check("runtime deadlines do not use interval timers", async () => {
   );
 });
 
-await check("all tuning and Phase 11 limits are deep-frozen config", async () => {
+await check("all STABLE release limits are deep-frozen config", async () => {
   assert(isDeepFrozen(GAME_CONFIG), "GAME_CONFIG is not deeply frozen");
+  assert(
+    GAME_CONFIG.app.name === "Project Aorta：大動脈計畫室" &&
+      GAME_CONFIG.app.subtitle === "RBC RACER" &&
+      GAME_CONFIG.app.status === "STABLE" &&
+      GAME_CONFIG.app.version === "1.1" &&
+      GAME_CONFIG.app.releaseDate === "20260715" &&
+      GAME_CONFIG.app.displayVersion === "Version：1.1（20260715）",
+    "release identity is not centralized"
+  );
   assert(
     GAME_CONFIG.qte.opportunityCountByRegion.TISSUE === 10 &&
       GAME_CONFIG.qte.opportunityCountByRegion.LUNG === 20,
@@ -153,7 +162,7 @@ await check("all tuning and Phase 11 limits are deep-frozen config", async () =>
       GAME_CONFIG.bloodRupture.bloodPressureMaximum === 60 &&
       GAME_CONFIG.carbonMonoxidePoisoning.collisionTriggerCount === 10 &&
       GAME_CONFIG.qte.carbonMonoxidePoisoningThreshold === 9,
-    "Phase 11 cumulative hazard values are not centralized"
+    "STABLE cumulative hazard values are not centralized"
   );
   assert(
     GAME_CONFIG.collision.playerProfile.topOffsetY === 0 &&
@@ -207,7 +216,7 @@ await check("four routes share one core implementation", async () => {
   assert(forkedCore.length === 0, "level-specific core fork found");
 });
 
-await check("Phase 11 timeout and player-facing HUD replace development UI", async () => {
+await check("STABLE identity, timeout, and player-facing HUD replace development UI", async () => {
   const index = await read("index.html");
   const stateMachine = await read(
     path.join("js", "core", "GameStateMachine.js")
@@ -219,8 +228,35 @@ await check("Phase 11 timeout and player-facing HUD replace development UI", asy
   const pointerLock = await read(
     path.join("js", "input", "PointerLockController.js")
   );
+  const main = await read(path.join("js", "main.js"));
   const hud = await read(path.join("js", "ui", "HUDManager.js"));
+  const releaseFiles = allFiles.filter(
+    (file) =>
+      /\.(?:html|css|js|mjs|json|md|yml)$/.test(file) &&
+      !file.startsWith("vendor" + path.sep)
+  );
+  const releaseSource = (
+    await Promise.all(releaseFiles.map((file) => read(file)))
+  ).join("\n");
 
+  assert(
+    [
+      "Project Aorta：大動脈計畫室",
+      "RBC RACER",
+      "STABLE",
+      "Version：1.1（20260715）"
+    ].every((value) => index.includes(value)),
+    "formal product identity is missing from the game entry"
+  );
+  assert(
+    /\[data-product-status\]/.test(main) &&
+      !/querySelectorAll\(["']\[data-release-status\]/.test(main),
+    "release binding can overwrite the game root"
+  );
+  assert(
+    !/Phase\s*1(?:1|2)/i.test(releaseSource),
+    "deprecated numbered release stage remains in the repository"
+  );
   assert(/GAME_OVER_TIMEOUT/.test(stateMachine), "timeout state is missing");
   assert(/cutscene-rbc--shriveled/.test(renderer), "shriveled RBC ending is missing");
   assert(/肝臟工廠/.test(renderer), "liver factory ending is missing");
@@ -280,7 +316,7 @@ failures.forEach(({ name, message }) =>
   console.error("FAIL " + name + ": " + message)
 );
 console.log(
-  "Phase 11 audit: " +
+  "STABLE audit: " +
     passes.length +
     " passed, " +
     failures.length +

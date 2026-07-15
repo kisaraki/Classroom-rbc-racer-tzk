@@ -1,9 +1,9 @@
-# Phase 11 手動驗收清單
+# Project Aorta：大動脈計畫室 STABLE Version 1.1 驗收清單
 
 ## 自動門檻
 
-- [x] `npm run test:phase11`：203 passed、0 failed。
-- [x] Phase 11 audit：9 passed、0 failed。
+- [x] `npm run test:stable`：204 passed、0 failed。
+- [x] STABLE audit：9 passed、0 failed。
 - [x] `git diff --check` 無錯誤。
 - [x] 所有 JavaScript／MJS 通過 `node --check`。
 
@@ -46,9 +46,16 @@
 
 ## 畫面清理
 
-- [x] 主畫面無 Phase 標章、內部 state、FPS 或 Pointer Lock 診斷卡。
-- [x] 結局畫面不顯示 checkpoint seed 或動畫 phase ID。
+- [x] 主畫面無編號階段標章、內部 state、FPS 或 Pointer Lock 診斷卡。
+- [x] 結局畫面不顯示 checkpoint seed 或動畫內部識別。
 - [x] KOSMOS TOOLKIT、探真拓知酷、鍵鼠操作、ATTITUDE、ALT、VIEW 與循環圖仍可讀。
+
+## 產品識別
+
+- [x] 啟動畫面與 HUD 顯示「Project Aorta：大動脈計畫室」。
+- [x] 副標完整顯示為「RBC RACER」。
+- [x] 狀態與版本完整顯示為 `STABLE`、`Version：1.1（20260715）`。
+- [x] npm、測試、CI、快取鍵與現行文件不再使用廢止的編號發布階段。
 
 ## 桌面瀏覽器
 
@@ -61,5 +68,5 @@
 
 ## 發布邊界
 
-- [x] Phase 11 實作與發布紀錄已推送 GitHub。
-- [x] `main` 的 GitHub Pages workflow 通過並完成部署。
+- [ ] STABLE 1.1 實作與發布紀錄已推送 GitHub。
+- [ ] `main` 的 GitHub Pages workflow 通過並完成部署。

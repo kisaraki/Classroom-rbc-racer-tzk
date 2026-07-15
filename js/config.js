@@ -8,6 +8,15 @@ function deepFreeze(value) {
 }
 
 export const GAME_CONFIG = deepFreeze({
+  app: {
+    name: "Project Aorta：大動脈計畫室",
+    subtitle: "RBC RACER",
+    status: "STABLE",
+    version: "1.1",
+    releaseDate: "20260715",
+    displayVersion: "Version：1.1（20260715）"
+  },
+
   game: {
     initialLevelId: 1,
     totalLevelCount: 4

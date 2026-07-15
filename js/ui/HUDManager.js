@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../config.js?v=phase11-r4";
-import { CutsceneRenderer } from "../cutscenes/CutsceneRenderer.js?v=phase11-r4";
-import { createFlightInstrumentSnapshot } from "./FlightInstrumentModel.js?v=phase11-r4";
-import { MessageOverlay } from "./MessageOverlay.js?v=phase11-r4";
-import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase11-r4";
+import { GAME_CONFIG } from "../config.js?v=stable-v1.1-20260715-r2";
+import { CutsceneRenderer } from "../cutscenes/CutsceneRenderer.js?v=stable-v1.1-20260715-r2";
+import { createFlightInstrumentSnapshot } from "./FlightInstrumentModel.js?v=stable-v1.1-20260715-r2";
+import { MessageOverlay } from "./MessageOverlay.js?v=stable-v1.1-20260715-r2";
+import { MiniMapRenderer } from "./MiniMapRenderer.js?v=stable-v1.1-20260715-r2";
 
 const EMPTY_STATUSES = Object.freeze([]);
 

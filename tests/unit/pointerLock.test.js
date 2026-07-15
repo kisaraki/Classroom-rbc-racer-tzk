@@ -1,7 +1,7 @@
-import { GameClock } from "../../js/core/GameClock.js?v=phase01-real-clock";
-import { GameSession } from "../../js/core/GameSession.js?v=phase11-r4";
+import { GameClock } from "../../js/core/GameClock.js?v=stable-v1.1-20260715-r2";
+import { GameSession } from "../../js/core/GameSession.js?v=stable-v1.1-20260715-r2";
 import { GAME_STATES } from "../../js/core/GameStateMachine.js";
-import { PointerLockController } from "../../js/input/PointerLockController.js?v=phase11-r4";
+import { PointerLockController } from "../../js/input/PointerLockController.js?v=stable-v1.1-20260715-r2";
 import {
   assertDeepEqual,
   assertEqual

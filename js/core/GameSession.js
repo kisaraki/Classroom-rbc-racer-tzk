@@ -1,9 +1,9 @@
-import { GameClock } from "./GameClock.js?v=phase01-real-clock";
-import { GAME_CONFIG } from "../config.js?v=phase11-r4";
+import { GameClock } from "./GameClock.js?v=stable-v1.1-20260715-r2";
+import { GAME_CONFIG } from "../config.js?v=stable-v1.1-20260715-r2";
 import {
   GAME_STATES,
   GameStateMachine
-} from "./GameStateMachine.js?v=phase11-r4";
+} from "./GameStateMachine.js?v=stable-v1.1-20260715-r2";
 
 function assertDurationSeconds(value) {
   if (!Number.isFinite(value)) {

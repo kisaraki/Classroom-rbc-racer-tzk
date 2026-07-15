@@ -6,25 +6,28 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E">
     <meta
       name="description"
-      content="RBC Racer Phase 11 circulation, cumulative hazards, gas exchange, and timeout ending"
+      content="Project Aorta：大動脈計畫室，RBC RACER 血液循環教育遊戲正式穩定版"
     >
-    <title>RBC Racer | Phase 11</title>
-    <link rel="stylesheet" href="./css/main.css?v=phase11-r4">
-    <link rel="stylesheet" href="./css/hud.css?v=phase11-r4">
-    <link rel="stylesheet" href="./css/menu.css?v=phase11-r4">
-    <link rel="stylesheet" href="./css/cutscene.css?v=phase11-r4">
+    <title>Project Aorta：大動脈計畫室 | RBC RACER</title>
+    <link rel="stylesheet" href="./css/main.css?v=stable-v1.1-20260715-r2">
+    <link rel="stylesheet" href="./css/hud.css?v=stable-v1.1-20260715-r2">
+    <link rel="stylesheet" href="./css/menu.css?v=stable-v1.1-20260715-r2">
+    <link rel="stylesheet" href="./css/cutscene.css?v=stable-v1.1-20260715-r2">
   </head>
   <body>
     <main
       id="game-root"
       class="game-root"
       data-game-state="BOOT"
+      data-release-status="STABLE"
+      data-release-version="1.1"
+      data-release-date="20260715"
       data-intoxicated="false"
       data-malaria-visual-active="false"
     >
       <canvas
         id="game-canvas"
-        aria-label="RBC Racer 第一關體循環的腹部及下肢血管"
+        aria-label="Project Aorta：大動脈計畫室，RBC RACER 第一關體循環的腹部及下肢血管"
         tabindex="0"
       ></canvas>
       <div class="screen-vignette" aria-hidden="true"></div>
@@ -35,7 +38,14 @@
 
       <section id="game-hud" class="game-hud" aria-label="遊戲狀態">
         <header class="hud-brand">
-          <span class="hud-brand__name">RBC / RACER</span>
+          <span class="hud-brand__identity">
+            <strong data-product-name>Project Aorta：大動脈計畫室</strong>
+            <small data-product-subtitle>RBC RACER</small>
+          </span>
+          <span class="hud-brand__release">
+            <b data-product-status>STABLE</b>
+            <small data-display-version>Version：1.1（20260715）</small>
+          </span>
         </header>
 
         <section class="circulation-card" aria-labelledby="circulation-title">
@@ -273,6 +283,11 @@
       >
         <div id="overlay-index" class="overlay-index" aria-hidden="true">O₂</div>
         <div class="overlay-panel">
+          <div class="overlay-product" aria-label="正式產品資訊">
+            <span data-product-name>Project Aorta：大動脈計畫室</span>
+            <strong data-product-subtitle>RBC RACER</strong>
+            <small><b data-product-status>STABLE</b> · <span data-display-version>Version：1.1（20260715）</span></small>
+          </div>
           <p id="overlay-kicker" class="overlay-kicker">
             紅血球循環任務
           </p>
@@ -313,11 +328,11 @@
       </section>
 
       <noscript class="noscript-message">
-        RBC Racer 需要啟用 JavaScript ES Modules。
+        Project Aorta：大動脈計畫室需要啟用 JavaScript ES Modules。
       </noscript>
     </main>
 
-    <script src="./js/entryGuard.js?v=phase11-r4"></script>
-    <script type="module" src="./js/main.js?v=phase11-r4"></script>
+    <script src="./js/entryGuard.js?v=stable-v1.1-20260715-r2"></script>
+    <script type="module" src="./js/main.js?v=stable-v1.1-20260715-r2"></script>
   </body>
 </html>

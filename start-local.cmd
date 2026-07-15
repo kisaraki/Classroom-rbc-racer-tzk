@@ -4,13 +4,13 @@ cd /d "%~dp0"
 
 where py >nul 2>nul
 if not errorlevel 1 (
-  start "RBC Racer Local Server" /min py -3 -m http.server 8000 --bind 127.0.0.1
+  start "Project Aorta Local Server" /min py -3 -m http.server 8000 --bind 127.0.0.1
   goto open_game
 )
 
 where python >nul 2>nul
 if not errorlevel 1 (
-  start "RBC Racer Local Server" /min python -m http.server 8000 --bind 127.0.0.1
+  start "Project Aorta Local Server" /min python -m http.server 8000 --bind 127.0.0.1
   goto open_game
 )
 

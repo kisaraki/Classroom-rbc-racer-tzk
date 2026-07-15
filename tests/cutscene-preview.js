@@ -1,9 +1,9 @@
-import { GAME_CONFIG } from "../js/config.js?v=phase11-r4";
+import { GAME_CONFIG } from "../js/config.js?v=stable-v1.1-20260715-r2";
 import {
   CUTSCENE_TYPES,
   CutsceneManager
-} from "../js/cutscenes/CutsceneManager.js?v=phase11-r4";
-import { CutsceneRenderer } from "../js/cutscenes/CutsceneRenderer.js?v=phase11-r4";
+} from "../js/cutscenes/CutsceneManager.js?v=stable-v1.1-20260715-r2";
+import { CutsceneRenderer } from "../js/cutscenes/CutsceneRenderer.js?v=stable-v1.1-20260715-r2";
 
 const parameters = new URLSearchParams(window.location.search);
 const requestedType = (parameters.get("type") ?? "TRANSFER").toUpperCase();

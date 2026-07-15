@@ -1,11 +1,11 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
-import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase11-r4";
+import { GAME_CONFIG } from "../../js/config.js?v=stable-v1.1-20260715-r2";
+import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=stable-v1.1-20260715-r2";
 import {
   INTOXICATION_EVENTS,
   isIntoxicationActionAllowed,
   STATUS_EFFECT_EVENTS,
   StatusEffectManager
-} from "../../js/systems/StatusEffectManager.js?v=phase11-r4";
+} from "../../js/systems/StatusEffectManager.js?v=stable-v1.1-20260715-r2";
 import {
   assertApproximately,
   assertEqual,

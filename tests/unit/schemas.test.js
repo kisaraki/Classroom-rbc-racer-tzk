@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
+import { GAME_CONFIG } from "../../js/config.js?v=stable-v1.1-20260715-r2";
 import {
   assembleLevel,
   LEVELS
-} from "../../js/data/levels.js?v=phase11-r4";
+} from "../../js/data/levels.js?v=stable-v1.1-20260715-r2";
 import {
   createEntityState,
   createLevelCheckpoint,
@@ -13,7 +13,7 @@ import {
   isPlayerState,
   RBC_COLOR_STATES,
   toggleRbcColorState
-} from "../../js/data/schemas.js?v=phase11-r4";
+} from "../../js/data/schemas.js?v=stable-v1.1-20260715-r2";
 import {
   assert,
   assertApproximately,
@@ -21,6 +21,18 @@ import {
 } from "./TestHarness.js";
 
 export function registerSchemaTests(harness) {
+  harness.test("STABLE release identity is centralized", () => {
+    assertEqual(GAME_CONFIG.app.name, "Project Aorta：大動脈計畫室");
+    assertEqual(GAME_CONFIG.app.subtitle, "RBC RACER");
+    assertEqual(GAME_CONFIG.app.status, "STABLE");
+    assertEqual(GAME_CONFIG.app.version, "1.1");
+    assertEqual(GAME_CONFIG.app.releaseDate, "20260715");
+    assertEqual(
+      GAME_CONFIG.app.displayVersion,
+      "Version：1.1（20260715）"
+    );
+  });
+
   harness.test("player and checkpoint factories satisfy their schemas", () => {
     const player = createPlayerState();
     const checkpoint = createLevelCheckpoint(
@@ -87,7 +99,7 @@ export function registerSchemaTests(harness) {
     assertEqual(level.sections.length, tuning.sectionRatios.length);
   });
 
-  harness.test("Phase 11 retains four complete data-driven levels", () => {
+  harness.test("STABLE release retains four complete data-driven levels", () => {
     assertEqual(LEVELS.length, GAME_CONFIG.game.totalLevelCount);
     assertEqual(LEVELS.map((level) => level.id).join(","), "1,2,3,4");
 

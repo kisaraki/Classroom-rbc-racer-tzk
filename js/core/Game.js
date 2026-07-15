@@ -10,42 +10,42 @@ import {
   SRGBColorSpace,
   WebGLRenderer
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase11-r4";
+import { GAME_CONFIG } from "../config.js?v=stable-v1.1-20260715-r2";
 import {
   CUTSCENE_TYPES,
   CutsceneManager
-} from "../cutscenes/CutsceneManager.js?v=phase11-r4";
-import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase11-r4";
+} from "../cutscenes/CutsceneManager.js?v=stable-v1.1-20260715-r2";
+import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=stable-v1.1-20260715-r2";
 import {
   createLevelCheckpoint
-} from "../data/schemas.js?v=phase11-r4";
-import { CameraController } from "../input/CameraController.js?v=phase11-r4";
-import { InputController } from "../input/InputController.js?v=phase11-r4";
-import { PointerLockController } from "../input/PointerLockController.js?v=phase11-r4";
-import { PlayerRBC } from "../player/PlayerRBC.js?v=phase11-r4";
-import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=phase11-r4";
-import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase11-r4";
-import { EntityManager } from "../systems/EntityManager.js?v=phase11-r4";
+} from "../data/schemas.js?v=stable-v1.1-20260715-r2";
+import { CameraController } from "../input/CameraController.js?v=stable-v1.1-20260715-r2";
+import { InputController } from "../input/InputController.js?v=stable-v1.1-20260715-r2";
+import { PointerLockController } from "../input/PointerLockController.js?v=stable-v1.1-20260715-r2";
+import { PlayerRBC } from "../player/PlayerRBC.js?v=stable-v1.1-20260715-r2";
+import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=stable-v1.1-20260715-r2";
+import { CollisionSystem } from "../systems/CollisionSystem.js?v=stable-v1.1-20260715-r2";
+import { EntityManager } from "../systems/EntityManager.js?v=stable-v1.1-20260715-r2";
 import {
   canCompleteLevel,
   QTE_EVENTS,
   QTE_OUTCOMES,
   QTE_PHASES,
   QTESystem
-} from "../systems/QTESystem.js?v=phase11-r4";
-import { StatusEffectManager } from "../systems/StatusEffectManager.js?v=phase11-r4";
-import { HUDManager } from "../ui/HUDManager.js?v=phase11-r4";
+} from "../systems/QTESystem.js?v=stable-v1.1-20260715-r2";
+import { StatusEffectManager } from "../systems/StatusEffectManager.js?v=stable-v1.1-20260715-r2";
+import { HUDManager } from "../ui/HUDManager.js?v=stable-v1.1-20260715-r2";
 import { SeededRandom } from "../utils/SeededRandom.js";
-import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase11-r4";
-import { VesselTrack } from "../world/VesselTrack.js?v=phase11-r4";
+import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=stable-v1.1-20260715-r2";
+import { VesselTrack } from "../world/VesselTrack.js?v=stable-v1.1-20260715-r2";
 import { GameLoop } from "./GameLoop.js";
-import { GameSession } from "./GameSession.js?v=phase11-r4";
-import { GAME_STATES } from "./GameStateMachine.js?v=phase11-r4";
-import { LevelManager } from "./LevelManager.js?v=phase11-r4";
+import { GameSession } from "./GameSession.js?v=stable-v1.1-20260715-r2";
+import { GAME_STATES } from "./GameStateMachine.js?v=stable-v1.1-20260715-r2";
+import { LevelManager } from "./LevelManager.js?v=stable-v1.1-20260715-r2";
 import {
   createLevelStartPlayerState,
   createRetryPlayerState
-} from "./RunProgression.js?v=phase11-r4";
+} from "./RunProgression.js?v=stable-v1.1-20260715-r2";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);
@@ -256,7 +256,9 @@ export class Game {
     this.#root.dataset.rbcLabelHeight = String(
       GAME_CONFIG.playerModel.label.planeHeight
     );
-    this.#root.dataset.phase = "11";
+    this.#root.dataset.releaseStatus = GAME_CONFIG.app.status;
+    this.#root.dataset.releaseVersion = GAME_CONFIG.app.version;
+    this.#root.dataset.releaseDate = GAME_CONFIG.app.releaseDate;
     this.#root.dataset.proceduralAssets = "true";
     this.#root.dataset.entityBatchCount = String(
       this.entityManager.batchCount

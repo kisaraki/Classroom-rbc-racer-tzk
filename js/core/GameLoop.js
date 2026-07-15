@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase11-r4";
+import { GAME_CONFIG } from "../config.js?v=stable-v1.1-20260715-r2";
 
 function assertFunction(value, label) {
   if (typeof value !== "function") {

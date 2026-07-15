@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase11-r4";
+import { GAME_CONFIG } from "../config.js?v=stable-v1.1-20260715-r2";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 

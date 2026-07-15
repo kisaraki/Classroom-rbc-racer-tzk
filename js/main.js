@@ -1,11 +1,29 @@
-import { GAME_CONFIG } from "./config.js?v=phase11-r4";
+import { GAME_CONFIG } from "./config.js?v=stable-v1.1-20260715-r2";
 import {
   getDeviceSupport,
   showUnsupportedMobileDevice
-} from "./core/DeviceSupport.js?v=phase11-r4";
+} from "./core/DeviceSupport.js?v=stable-v1.1-20260715-r2";
 
 const gameRoot = document.querySelector("#game-root");
 const deviceSupport = getDeviceSupport(window.navigator);
+const release = GAME_CONFIG.app;
+
+document.title = release.name + " | " + release.subtitle;
+document.querySelectorAll("[data-product-name]").forEach((element) => {
+  element.textContent = release.name;
+});
+document.querySelectorAll("[data-product-subtitle]").forEach((element) => {
+  element.textContent = release.subtitle;
+});
+document.querySelectorAll("[data-product-status]").forEach((element) => {
+  element.textContent = release.status;
+});
+document.querySelectorAll("[data-display-version]").forEach((element) => {
+  element.textContent = release.displayVersion;
+});
+gameRoot.dataset.releaseStatus = release.status;
+gameRoot.dataset.releaseVersion = release.version;
+gameRoot.dataset.releaseDate = release.releaseDate;
 
 if (!deviceSupport.supported) {
   showUnsupportedMobileDevice(document);
@@ -17,7 +35,7 @@ if (!deviceSupport.supported) {
 
   try {
     const { Game } = await import(
-      "./core/Game.js?v=phase11-r4"
+      "./core/Game.js?v=stable-v1.1-20260715-r2"
     );
     const game = new Game();
     game.start();

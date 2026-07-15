@@ -1,4 +1,4 @@
-import { InputController } from "../../js/input/InputController.js?v=phase11-r4";
+import { InputController } from "../../js/input/InputController.js?v=stable-v1.1-20260715-r2";
 import {
   assert,
   assertApproximately,
