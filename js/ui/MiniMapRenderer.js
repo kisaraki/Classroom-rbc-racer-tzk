@@ -328,7 +328,7 @@ export class MiniMapRenderer {
       viewBox: "0 0 " + config.viewBoxWidth + " " + config.viewBoxHeight,
       preserveAspectRatio: "xMidYMid meet",
       role: "img",
-      "aria-label": "血液循環圖，心臟輪廓包含四腔室，玩家位置沿第一關路徑連續移動"
+      "aria-label": "血液循環圖，心臟輪廓包含四個心臟腔室，玩家位置沿目前關卡路徑連續移動"
     });
     const heartLayer = createSvgElement(documentRef, "g", {
       class: "circulation-map__heart"

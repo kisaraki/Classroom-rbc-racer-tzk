@@ -68,8 +68,8 @@ function validateLevelDefinition(tuning, semanticDefinition) {
 
 export const LEVEL_SEMANTICS = deepFreeze({
   1: {
-    name: "體循環－下半身",
-    hudLabel: "SYSTEMIC / LOWER",
+    name: "體循環（腹部及下肢）",
+    hudLabel: "體循環 / SYSTEMIC",
     circulationType: "SYSTEMIC",
     minimapPathId: "systemic-lower-circulation-path",
     gasExchangeType: "OXYGEN_TO_TISSUE_CARBON_DIOXIDE_FROM_TISSUE",
@@ -92,17 +92,17 @@ export const LEVEL_SEMANTICS = deepFreeze({
       },
       {
         id: "descending-aorta",
-        locationLabel: "降主動脈",
+        locationLabel: "主動脈分支（腹部及下肢）",
         minimapSegmentId: "descending-aorta"
       },
       {
         id: "lower-body-arteriole",
-        locationLabel: "下半身小動脈",
+        locationLabel: "腹部及下肢的小動脈",
         minimapSegmentId: "lower-body-arteriole"
       },
       {
         id: "tissue-capillary",
-        locationLabel: "組織微血管",
+        locationLabel: "腹部及下肢的微血管網",
         minimapSegmentId: "tissue-capillary",
         gasExchangeZone: "TISSUE"
       },
@@ -125,7 +125,7 @@ export const LEVEL_SEMANTICS = deepFreeze({
   },
   2: {
     name: "肺循環",
-    hudLabel: "PULMONARY",
+    hudLabel: "肺循環 / PULMONARY",
     circulationType: "PULMONARY",
     minimapPathId: "pulmonary-circulation-path",
     gasExchangeType: "CARBON_DIOXIDE_TO_ALVEOLI_OXYGEN_FROM_ALVEOLI",
@@ -165,8 +165,8 @@ export const LEVEL_SEMANTICS = deepFreeze({
     ]
   },
   3: {
-    name: "體循環－上半身與腦",
-    hudLabel: "SYSTEMIC / UPPER",
+    name: "體循環（頭部、胸部及上肢）",
+    hudLabel: "體循環 / SYSTEMIC",
     circulationType: "SYSTEMIC",
     minimapPathId: "systemic-upper-circulation-path",
     gasExchangeType: "OXYGEN_TO_TISSUE_CARBON_DIOXIDE_FROM_TISSUE",
@@ -194,12 +194,12 @@ export const LEVEL_SEMANTICS = deepFreeze({
       },
       {
         id: "upper-body-arteriole",
-        locationLabel: "上半身小動脈",
+        locationLabel: "頭部、胸部及上肢的小動脈",
         minimapSegmentId: "upper-body-arteriole"
       },
       {
         id: "brain-upper-capillary",
-        locationLabel: "腦／上半身微血管",
+        locationLabel: "頭部、胸部及上肢的微血管網",
         minimapSegmentId: "brain-upper-capillary",
         gasExchangeZone: "TISSUE"
       },
@@ -221,8 +221,8 @@ export const LEVEL_SEMANTICS = deepFreeze({
     ]
   },
   4: {
-    name: "高風險肺循環",
-    hudLabel: "PULMONARY / HIGH RISK",
+    name: "肺循環（高危險關卡）",
+    hudLabel: "肺循環 / PULMONARY",
     circulationType: "PULMONARY",
     minimapPathId: "high-risk-pulmonary-circulation-path",
     gasExchangeType: "CARBON_DIOXIDE_TO_ALVEOLI_OXYGEN_FROM_ALVEOLI",

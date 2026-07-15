@@ -16,9 +16,9 @@ const EXPECTED_ROUTE_LABELS = Object.freeze({
   1: [
     "左心室",
     "主動脈",
-    "降主動脈",
-    "下半身小動脈",
-    "組織微血管",
+    "主動脈分支（腹部及下肢）",
+    "腹部及下肢的小動脈",
+    "腹部及下肢的微血管網",
     "小靜脈",
     "下大靜脈",
     "右心房／右心室"
@@ -34,8 +34,8 @@ const EXPECTED_ROUTE_LABELS = Object.freeze({
     "左心室",
     "主動脈",
     "頸動脈／鎖骨下動脈",
-    "上半身小動脈",
-    "腦／上半身微血管",
+    "頭部、胸部及上肢的小動脈",
+    "頭部、胸部及上肢的微血管網",
     "小靜脈",
     "上大靜脈",
     "右心房／右心室"
@@ -182,7 +182,7 @@ export function registerLevelManagerTests(harness) {
     });
   });
 
-  harness.test("systemic tissue has 10 events and lung has 20", () => {
+  harness.test("systemic capillaries have 10 events and pulmonary capillaries have 20", () => {
     LEVELS.forEach((level) => {
       const expectedCount =
         GAME_CONFIG.qte.opportunityCountByRegion[

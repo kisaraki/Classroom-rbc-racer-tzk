@@ -12,20 +12,22 @@ performance acceptance, documentation, and GitHub Pages deployment.
 
 The complete run contains:
 
-- Level 1 lower-body systemic circulation, Level 2 pulmonary circulation,
-  Level 3 brain and upper-body systemic circulation, and Level 4 high-risk
-  pulmonary circulation.
+- Level 1 systemic circulation through the abdomen and lower limbs, Level 2
+  pulmonary circulation, Level 3 systemic circulation through the head, chest,
+  and upper limbs, and Level 4 pulmonary circulation with a high-risk gameplay
+  modifier.
 - Shared managers and systems for every route. Level-specific behavior remains
   data in `js/config.js` and `js/data/levels.js` rather than class forks.
-- Gas-exchange opportunities only inside tissue or lung capillary sections.
-  Systemic tissue routes contain 10 evenly spaced opportunities; pulmonary
-  lung routes contain 20.
+- Gas-exchange opportunities only inside systemic capillary beds or pulmonary
+  alveolar capillaries. Systemic routes contain 10 evenly spaced
+  opportunities; pulmonary routes contain 20.
 - One completed gas QTE is enough to mark the exchange successful and remove
   every remaining opportunity. If all opportunities fail, the route still
   permits progression with the configured score penalties.
-- Successful exchange toggles the RBC body between its original red and a
-  red-purple deoxygenated state. The state is preserved across route changes
-  and checkpoints while still receiving subtle vessel-color reflection.
+- Successful exchange toggles the RBC body between its original red
+  oxygenated-blood state (充氧血) and a red-purple deoxygenated-blood state
+  (減氧血). The state is preserved across route changes and checkpoints while
+  still receiving subtle vessel-color reflection.
 - Absolute QTE, status-effect, cooldown, cutscene, and real-clock deadlines.
   These continue through Pointer Lock release, pause, and tab interruption;
   world simulation does not catch up after a hidden tab returns.
@@ -45,8 +47,8 @@ manual matrix is in `tests/phase-10-manual-test-checklist.md`.
 | Arrow keys | Move in the vessel's local cross-section |
 | Z | Raise BP and increase speed; remains active during low-BP stasis |
 | X | Lower BP and decrease speed; ignored during low-BP stasis |
-| O | Add oxygen during an active gas-exchange QTE |
-| C | Remove carbon dioxide during an active gas-exchange QTE |
+| O | Perform the oxygen step during an active gas-exchange QTE |
+| C | Perform the carbon-dioxide step during an active gas-exchange QTE |
 | Mouse | Change view yaw and pitch without moving the RBC |
 | Esc | Release Pointer Lock and pause world simulation |
 
@@ -64,6 +66,44 @@ WASD, mouse buttons, the wheel, and trackpad gestures do not control the RBC.
 Phones and tablets are intentionally detected and refused before Three.js is
 loaded. No package installation, transpilation, bundling, backend, database,
 CDN, framework, or runtime build step is required.
+
+## Biology Terminology
+
+Traditional Chinese circulation terminology follows
+`選修生物(Ⅲ)備課用書_03_CH2_循環與消化(114f640061).pdf`, identified by
+SHA-256
+`0CE4CBA49040595EAD5E8202AFB87236148469822C1B25A7DB4B277777E51D14`.
+The canonical project vocabulary and textbook page evidence are recorded in
+`CIRCULATION_TERMINOLOGY.md`.
+
+Player-visible labels use `體循環`, `肺循環`, `充氧血`, `減氧血`,
+`微血管`, and `肺泡微血管`. Stable internal English identifiers such as
+`SYSTEMIC`, `PULMONARY`, `TISSUE`, `LUNG`, `oxygenated`, and
+`deoxygenated` remain implementation contracts and must map to those
+textbook terms.
+
+## Rebuild and AI Handoff
+
+The repository includes the complete contracts needed for a clean-machine
+restore, maintenance handoff, or an explicitly requested clean-room rebuild:
+
+- `classroom-rbc-racer-tzk.md`: version 3.1 master game, architecture, medical,
+  acceptance, and rebuild specification.
+- `CIRCULATION_TERMINOLOGY.md`: textbook-backed Traditional Chinese
+  circulation terminology and internal-ID mappings.
+- `codex-devp-cmd.md`: mode-based RESTORE / MAINTAIN / REBUILD instructions for
+  another AI, Codex version, or developer.
+- `TECHNICAL_DECISIONS.md`: resolved timing, route, QTE, BP, checkpoint, and
+  data-ownership decisions.
+- `PHASE_REPORT_TEMPLATE.md` and `reports/`: verification format and historical
+  Phase 00-10 evidence.
+
+For an existing or freshly cloned completed repository, run
+`npm run test:phase10` and preserve the implementation. Do not replay Phase
+00-10 unless the source is genuinely unavailable or the user explicitly asks
+for a clean-room rebuild. Presentation files, screenshots, recordings, browser
+profiles, and other non-runtime evidence belong in a sibling `../deliverables/`
+directory rather than this GitHub Pages deployment root.
 
 ## Live Site
 

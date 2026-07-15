@@ -21,7 +21,7 @@ function createElement(documentRef, className, text = "") {
 const CUTSCENE_COPY = Object.freeze({
   TRANSFER: {
     kicker: "HEART CHAMBER TRANSFER",
-    title: "心腔輸送帶",
+    title: "心房至心室輸送帶",
     copy: "血流以絕對時間通過心房至心室，REAL CLOCK 與狀態期限持續運行。"
   },
   RECYCLE: {
@@ -37,11 +37,11 @@ const CUTSCENE_COPY = Object.freeze({
   STROKE: {
     kicker: "CEREBRAL VESSEL EVENT",
     title: "中風 / STROKE",
-    copy: "第三關腦循環 Wound 已觸發專屬中風結局。"
+    copy: "第三關體循環中的腦部血管 Wound 已觸發專屬中風結局。"
   },
   VICTORY: {
     kicker: "OXYGEN PARADE",
-    title: "四循環完成",
+    title: "四關循環任務完成",
     copy: "紅血球車隊進入鮮紅血管，揮舞 O₂ 旗幟完成勝利遊街。"
   }
 });

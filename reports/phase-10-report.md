@@ -39,7 +39,7 @@
 | 項目 | 結果 | 相關檔案 |
 | --- | --- | --- |
 | 組織 10 次、肺 20 次交換機會 | 完成 | `js/config.js`、`js/data/levels.js` |
-| 僅組織／肺觸發且無終點保底 | 完成 | `js/data/schemas.js`、`js/systems/QTESystem.js` |
+| 僅體微血管／肺泡微血管觸發且無終點保底 | 完成 | `js/data/schemas.js`、`js/systems/QTESystem.js` |
 | 任一次成功、全部失敗仍可通過 | 完成 | `js/systems/QTESystem.js`、`js/core/Game.js` |
 | RBC 紅／紅紫切換及環境反光 | 完成 | `js/player/PlayerRBC.js`、`js/config.js` |
 | 跨關及 checkpoint 顏色保存 | 完成 | `js/core/RunProgression.js`、`js/data/schemas.js` |

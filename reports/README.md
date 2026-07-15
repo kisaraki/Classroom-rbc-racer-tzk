@@ -2,6 +2,8 @@
 
 本目錄只存放已實際執行之開發階段結果報告。
 
+循環系統繁體中文術語以倉庫根目錄的 `CIRCULATION_TERMINOLOGY.md` 為準。2026-07-15 的術語校準只修正名稱，不改寫各階段的數值、測試結果或歷史行為。
+
 命名方式：
 
 ```text
@@ -9,6 +11,12 @@ phase-00-report.md
 phase-01-report.md
 ...
 phase-10-report.md
+```
+
+Phase 10 後的維護或校準使用日期加主題命名，例如：
+
+```text
+2026-07-15-circulation-terminology-report.md
 ```
 
 每份報告必須依根目錄的 `PHASE_REPORT_TEMPLATE.md` 撰寫，並包含：

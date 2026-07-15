@@ -508,7 +508,7 @@ export const GAME_CONFIG = deepFreeze({
     routes: [
       {
         id: "systemic-lower-circulation-path",
-        label: "體循環－下半身",
+        label: "體循環（腹部及下肢）",
         vesselIds: [
           "left-ventricle-to-tissues",
           "tissues-to-right-atrium",
@@ -526,7 +526,7 @@ export const GAME_CONFIG = deepFreeze({
       },
       {
         id: "systemic-upper-circulation-path",
-        label: "體循環－上半身與腦",
+        label: "體循環（頭部、胸部及上肢）",
         vesselIds: [
           "left-ventricle-to-brain",
           "brain-to-right-atrium",
@@ -535,7 +535,7 @@ export const GAME_CONFIG = deepFreeze({
       },
       {
         id: "high-risk-pulmonary-circulation-path",
-        label: "高風險肺循環",
+        label: "肺循環（高危險關卡）",
         vesselIds: [
           "right-ventricle-to-lungs",
           "lungs-to-left-atrium",

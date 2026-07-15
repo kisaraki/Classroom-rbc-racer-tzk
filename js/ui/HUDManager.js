@@ -234,9 +234,9 @@ export class HUDManager {
     this.#elements.overlayIndex.textContent = "10";
     this.#elements.overlayKicker.textContent =
       "Phase 10 / Final circulation build";
-    this.#elements.overlayTitle.textContent = "完整循環啟航";
+    this.#elements.overlayTitle.textContent = "血液循環任務啟航";
     this.#elements.overlayCopy.textContent =
-      "四關會自動銜接心腔輸送帶，失敗時依原因播放回收、墜落或中風結局；完成第四關後進入 O₂ 旗幟勝利遊街。";
+      "四關會自動銜接心房至心室輸送帶，失敗時依原因播放回收、墜落或中風結局；完成第四關後進入 O₂ 旗幟勝利遊街。";
     this.#elements.overlayAction.textContent =
       "開始遊戲並鎖定滑鼠視角";
     this.#setActions({ primary: true });
@@ -266,7 +266,7 @@ export class HUDManager {
     this.#elements.overlayCopy.textContent = pausedFromState === "QTE"
       ? "世界位移已停止，但氣體交換與 REAL CLOCK 的絕對倒數仍持續。"
       : pausedFromState === "TRANSFER_CUTSCENE"
-        ? "心腔輸送帶仍依絕對時間運行；完成後會自動載入下一關或勝利遊街。"
+        ? "心房至心室輸送帶仍依絕對時間運行；完成後會自動載入下一關或勝利遊街。"
         : "世界位移已停止；REAL CLOCK、酒精與瘧原蟲的絕對期限及動畫仍繼續。";
     this.#elements.overlayAction.textContent = "點擊恢復遊戲";
     this.#setActions({ primary: true });
@@ -390,7 +390,7 @@ export class HUDManager {
         ? "Vessel Rupture"
         : "紅血球已回收";
     this.#elements.overlayCopy.textContent = stroke
-      ? "腦循環 Wound 觸發中風結局。本關 checkpoint seed " +
+      ? "體循環中的腦部血管 Wound 觸發中風結局。本關 checkpoint seed " +
         checkpointSeed + " 將保持不變。"
       : fellIntoWound
         ? "Wound 為致命障礙。本關會使用相同 checkpoint seed " +

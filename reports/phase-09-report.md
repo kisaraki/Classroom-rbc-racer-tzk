@@ -38,7 +38,7 @@
 | --- | --- | --- |
 | 絕對時間過場狀態模型 | 完成 | `js/cutscenes/CutsceneManager.js`、`js/config.js` |
 | 程序化過場畫面 | 完成 | `js/cutscenes/CutsceneRenderer.js`、`css/cutscene.css` |
-| 四關心腔語意 | 完成 | `js/data/levels.js`、`js/data/schemas.js` |
+| 四關心房至心室語意 | 完成 | `js/data/levels.js`、`js/data/schemas.js` |
 | 自動跨關與第四關勝利 | 完成 | `js/core/Game.js`、`js/core/LevelManager.js` |
 | Stroke 與 Victory 狀態 | 完成 | `js/core/GameStateMachine.js`、`js/core/GameSession.js` |
 | 本關重試與整輪重開 | 完成 | `js/core/RunProgression.js`、`js/core/Game.js` |
@@ -99,7 +99,7 @@
 | --- | --- | --- | --- | --- |
 | P09 正式入口 | 載入本機與 Pages 根網址 | `P09`、READY、Level 1 checkpoint | phase 09、HP 100、Score 0、seed 1380074241 | PASS |
 | Three.js 場景 | 讀取正式入口 diagnostics | 場景初始化且無 console error | 22 draw calls、16,302 triangles | PASS |
-| 心腔輸送帶 | 預覽 TRANSFER 0.58 | 顯示心房、輸送帶、RBC、心室 | `CONVEYOR`，右心房至右心室構圖正常 | PASS |
+| 心房至心室輸送帶 | 預覽 TRANSFER 0.58 | 顯示心房、輸送帶、RBC、心室 | `CONVEYOR`，右心房至右心室構圖正常 | PASS |
 | 回收動畫 | 預覽 RECYCLE 0.72 | Spleen／Liver 工廠與分解碎片 | `DISASSEMBLY`，12 個程序化碎片 | PASS |
 | 墜落動畫 | 預覽 FALL 0.58 | 衝出血管、黑色翻滾剪影及深淵 | `TUMBLE` 構圖正常 | PASS |
 | 中風動畫 | 預覽 STROKE 0.75 | 黑場後顯示中風／STROKE | `DIAGNOSIS` 紅字正常 | PASS |
@@ -115,7 +115,7 @@
 
 | ID | 嚴重度 | 現象 | 重現步驟 | 原因 |
 | --- | --- | --- | --- | --- |
-| TEST-09-001 | P2 | 首次回歸為 168／169 | 加入 `level.transfer` schema 後執行舊測試 | 舊 assembler 測試 fixture 未提供心腔語意 |
+| TEST-09-001 | P2 | 首次回歸為 168／169 | 加入 `level.transfer` schema 後執行舊測試 | 舊 assembler 測試 fixture 未提供心房至心室語意 |
 | UI-09-002 | P2 | Victory RBC 與彩帶集中成單列 | 以 Chromium 預覽 Victory 0.58 | CSS `calc()` 使用不支援的 `%` 餘數運算式 |
 
 ---
@@ -153,7 +153,7 @@
 # 十、變更清單
 
 - 新增：`RunProgression`、`CutsceneRenderer`、Phase 09 cutscene／run progression 測試與預覽頁。
-- 修改：Game runtime 重建、自動跨關、狀態機、HUD 選單、四關心腔語意、集中過場設定、README 與 Pages workflow。
+- 修改：Game runtime 重建、自動跨關、狀態機、HUD 選單、四關心房至心室語意、集中過場設定、README 與 Pages workflow。
 - 刪除：Phase 08 的第一關終止式占位結算流程。
 - 實作提交：`9092c552819c9329b7d5de9773820e1bf1b0b844`。
 - GitHub Actions：`29381070025`，build 與 deploy 均成功。
