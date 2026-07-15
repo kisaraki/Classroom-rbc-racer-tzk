@@ -1,5 +1,5 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
-import { createFlightInstrumentSnapshot } from "../../js/ui/FlightInstrumentModel.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
+import { createFlightInstrumentSnapshot } from "../../js/ui/FlightInstrumentModel.js?v=phase11-r4";
 import {
   assertApproximately,
   assertEqual,

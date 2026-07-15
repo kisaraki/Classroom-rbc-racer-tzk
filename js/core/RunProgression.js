@@ -1,9 +1,9 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 import {
   createPlayerState,
   isLevelCheckpoint,
   RBC_COLOR_STATES
-} from "../data/schemas.js?v=phase10-final-r1";
+} from "../data/schemas.js?v=phase11-r4";
 
 export function createLevelStartPlayerState({
   levelId,

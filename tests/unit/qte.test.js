@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
-import { GameSession } from "../../js/core/GameSession.js?v=phase10-final-r1";
-import { GAME_STATES } from "../../js/core/GameStateMachine.js?v=phase10-final-r1";
-import { LEVELS } from "../../js/data/levels.js?v=phase10-final-r1";
-import { GAS_EXCHANGE_STATUS } from "../../js/data/schemas.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
+import { GameSession } from "../../js/core/GameSession.js?v=phase11-r4";
+import { GAME_STATES } from "../../js/core/GameStateMachine.js?v=phase11-r4";
+import { LEVELS } from "../../js/data/levels.js?v=phase11-r4";
+import { GAS_EXCHANGE_STATUS } from "../../js/data/schemas.js?v=phase11-r4";
 import {
   canCompleteLevel,
   QTE_ACTIONS,
@@ -11,7 +11,7 @@ import {
   QTE_PHASES,
   QTESystem,
   QTE_TRIGGER_TYPES
-} from "../../js/systems/QTESystem.js?v=phase10-final-r1";
+} from "../../js/systems/QTESystem.js?v=phase11-r4";
 import { assertEqual, assertThrows } from "./TestHarness.js";
 
 function createQte(level = LEVELS[0]) {
@@ -75,6 +75,27 @@ export function registerQteTests(harness) {
     assertEqual(qte.attempts, 1);
     assertEqual(qte.nextTriggerDistance, null);
     assertEqual(canCompleteLevel(qte.status), true);
+  });
+
+  harness.test("CO poisoning raises both gas exchange counts to nine", () => {
+    const level = LEVELS[0];
+    const qte = createQte(level);
+    assertEqual(qte.setCarbonMonoxidePoisoned(true), 9);
+    startOpportunity(qte, level, 0);
+
+    for (let index = 0; index < 9; index += 1) {
+      qte.recordAction(QTE_ACTIONS.OXYGEN, 1100);
+    }
+    for (let index = 0; index < 8; index += 1) {
+      qte.recordAction(QTE_ACTIONS.CARBON_DIOXIDE, 1100);
+    }
+
+    assertEqual(qte.phase, QTE_PHASES.INPUT);
+    const success = qte.recordAction(QTE_ACTIONS.CARBON_DIOXIDE, 1100);
+    assertEqual(success.outcome, QTE_OUTCOMES.SUCCESS);
+    assertEqual(qte.diagnostics.oxygenThreshold, 9);
+    assertEqual(qte.diagnostics.carbonDioxideThreshold, 9);
+    assertEqual(qte.diagnostics.carbonMonoxidePoisoned, true);
   });
 
   harness.test("one successful opportunity completes the whole exchange", () => {

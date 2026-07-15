@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
 import {
   CUTSCENE_TYPES,
   CutsceneManager
-} from "../../js/cutscenes/CutsceneManager.js?v=phase10-final-r1";
+} from "../../js/cutscenes/CutsceneManager.js?v=phase11-r4";
 import {
   assertApproximately,
   assertEqual,
@@ -10,7 +10,7 @@ import {
 } from "./TestHarness.js";
 
 export function registerCutsceneTests(harness) {
-  harness.test("all five Phase 09 cutscenes use configured absolute durations", () => {
+  harness.test("all Phase 11 cutscenes use configured absolute durations", () => {
     Object.values(CUTSCENE_TYPES).forEach((type) => {
       const manager = new CutsceneManager();
       const snapshot = manager.start(type, 1250, { levelId: 1 });
@@ -53,6 +53,15 @@ export function registerCutsceneTests(harness) {
     assertEqual(completed.progress, 1);
     assertEqual(completed.completed, true);
     assertEqual(completed.phase, "ABYSS");
+  });
+
+  harness.test("timeout cutscene ends at hepatic recycling", () => {
+    const manager = new CutsceneManager();
+    const started = manager.start(CUTSCENE_TYPES.TIMEOUT, 1000);
+    const completed = manager.update(started.expiresAtMs);
+
+    assertEqual(completed.phase, "HEPATIC_RECYCLE");
+    assertEqual(completed.completed, true);
   });
 
   harness.test("cutscene finish and reset clear transient state", () => {

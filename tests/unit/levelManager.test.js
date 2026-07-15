@@ -1,9 +1,9 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
-import { LevelManager } from "../../js/core/LevelManager.js?v=phase10-final-r1";
-import { LEVELS } from "../../js/data/levels.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
+import { LevelManager } from "../../js/core/LevelManager.js?v=phase11-r4";
+import { LEVELS } from "../../js/data/levels.js?v=phase11-r4";
 import { InputController } from "../../js/input/InputController.js";
 import { PlayerRBC } from "../../js/player/PlayerRBC.js";
-import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase10-final-r1";
+import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase11-r4";
 import {
   assert,
   assertApproximately,
@@ -158,7 +158,10 @@ export function registerLevelManagerTests(harness) {
   });
 
   harness.test("every gas event remains inside its configured exchange zone", () => {
+    const manager = new LevelManager();
+
     LEVELS.forEach((level) => {
+      manager.loadLevel(level.id);
       const exchangeSection = level.sections.find(
         (section) => section.gasExchangeZone !== undefined
       );
@@ -177,6 +180,15 @@ export function registerLevelManagerTests(harness) {
       assert(
         triggers.every(
           (distance, index) => index === 0 || distance > triggers[index - 1]
+        )
+      );
+      assert(
+        triggers.every(
+          (distance) =>
+            manager.getMinimapAnchorAtDistance(distance) ===
+            GAME_CONFIG.minimap.exchangeAnchorNodeByRegion[
+              level.gasExchange.region
+            ]
         )
       );
     });

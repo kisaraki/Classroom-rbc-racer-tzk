@@ -180,6 +180,28 @@
   background: var(--oxygen);
 }
 
+.game-overlay[data-mode="LOADING"] .overlay-panel::before {
+  height: 100%;
+  background: var(--oxygen);
+  box-shadow: 0 0 2rem rgba(169, 217, 239, 0.5);
+}
+
+.game-overlay[data-mode="LOADING"] .overlay-kicker {
+  color: var(--oxygen);
+}
+
+.game-overlay[data-mode="LOADING"] #overlay-action {
+  color: var(--button-ink);
+  background: var(--oxygen);
+  cursor: progress;
+  opacity: 0.72;
+}
+
+.game-overlay[data-mode="LOADING"] #overlay-action:hover {
+  filter: none;
+  transform: none;
+}
+
 .game-overlay[data-mode="ERROR"] .overlay-panel::before {
   height: 100%;
   background: var(--bp-high);
@@ -213,7 +235,8 @@
 
 .game-overlay[data-mode="GAME_OVER_FALL"] .overlay-panel::before,
 .game-overlay[data-mode="GAME_OVER_RECYCLE"] .overlay-panel::before,
-.game-overlay[data-mode="GAME_OVER_STROKE"] .overlay-panel::before {
+.game-overlay[data-mode="GAME_OVER_STROKE"] .overlay-panel::before,
+.game-overlay[data-mode="GAME_OVER_TIMEOUT"] .overlay-panel::before {
   height: 100%;
   background: var(--bp-high);
   box-shadow: 0 0 2rem rgba(255, 154, 77, 0.52);
@@ -221,7 +244,8 @@
 
 .game-overlay[data-mode="GAME_OVER_FALL"] .overlay-kicker,
 .game-overlay[data-mode="GAME_OVER_RECYCLE"] .overlay-kicker,
-.game-overlay[data-mode="GAME_OVER_STROKE"] .overlay-kicker {
+.game-overlay[data-mode="GAME_OVER_STROKE"] .overlay-kicker,
+.game-overlay[data-mode="GAME_OVER_TIMEOUT"] .overlay-kicker {
   color: var(--bp-high);
 }
 

@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 
 function deepFreeze(value) {
   if (value && typeof value === "object" && !Object.isFrozen(value)) {
@@ -43,13 +43,15 @@ export const ENTITY_TYPE_SEMANTICS = deepFreeze({
     displayName: "一氧化碳",
     label: "CO",
     category: ENTITY_CATEGORIES.DEBUFF,
-    modelKey: "carbonMonoxide"
+    modelKey: "carbonMonoxide",
+    counterKey: "carbonMonoxideCount"
   },
   malaria: {
     displayName: "瘧原蟲",
     label: "",
     category: ENTITY_CATEGORIES.DEBUFF,
     modelKey: "malaria",
+    counterKey: "malariaCount",
     trigger: ENTITY_TRIGGERS.MALARIA_HOOD
   },
   alcohol: {

@@ -135,7 +135,7 @@ await check("runtime deadlines do not use interval timers", async () => {
   );
 });
 
-await check("all tuning and Phase 10 limits are deep-frozen config", async () => {
+await check("all tuning and Phase 11 limits are deep-frozen config", async () => {
   assert(isDeepFrozen(GAME_CONFIG), "GAME_CONFIG is not deeply frozen");
   assert(
     GAME_CONFIG.qte.opportunityCountByRegion.TISSUE === 10 &&
@@ -145,6 +145,37 @@ await check("all tuning and Phase 10 limits are deep-frozen config", async () =>
   assert(
     GAME_CONFIG.performanceAcceptance.minimumFps === 30,
     "performance acceptance values are not centralized"
+  );
+  assert(
+    GAME_CONFIG.penalties.debuffMultiplier === 2 &&
+      GAME_CONFIG.bloodRupture.malariaCollisionInterval === 5 &&
+      GAME_CONFIG.bloodRupture.hoodDurationMultiplier === 3 &&
+      GAME_CONFIG.bloodRupture.bloodPressureMaximum === 60 &&
+      GAME_CONFIG.carbonMonoxidePoisoning.collisionTriggerCount === 10 &&
+      GAME_CONFIG.qte.carbonMonoxidePoisoningThreshold === 9,
+    "Phase 11 cumulative hazard values are not centralized"
+  );
+  assert(
+    GAME_CONFIG.collision.playerProfile.topOffsetY === 0 &&
+      GAME_CONFIG.collision.playerProfile.bottomOffsetY === -1.91 &&
+      GAME_CONFIG.collision.entityLabelCategories.join("|") ===
+        "BUFF|DEBUFF",
+    "visible collision profiles are not centralized"
+  );
+  const visibleBodyRadii = {
+    vitaminC: 0.77,
+    vitaminB12: 0.81,
+    iron: 0.8,
+    carbonMonoxide: 0.75,
+    malaria: 1.19,
+    alcohol: 1.08
+  };
+  assert(
+    Object.entries(visibleBodyRadii).every(
+      ([typeId, radius]) =>
+        GAME_CONFIG.entityTypes[typeId].collisionRadius === radius
+    ),
+    "buff or debuff visual-body collision radius drifted"
   );
   const qteSource = await read(path.join("js", "systems", "QTESystem.js"));
   assert(
@@ -174,6 +205,41 @@ await check("four routes share one core implementation", async () => {
     /Level\d+(?:Manager|System|Player)\.js$/i.test(file)
   );
   assert(forkedCore.length === 0, "level-specific core fork found");
+});
+
+await check("Phase 11 timeout and player-facing HUD replace development UI", async () => {
+  const index = await read("index.html");
+  const stateMachine = await read(
+    path.join("js", "core", "GameStateMachine.js")
+  );
+  const renderer = await read(
+    path.join("js", "cutscenes", "CutsceneRenderer.js")
+  );
+  const entryGuard = await read(path.join("js", "entryGuard.js"));
+  const pointerLock = await read(
+    path.join("js", "input", "PointerLockController.js")
+  );
+  const hud = await read(path.join("js", "ui", "HUDManager.js"));
+
+  assert(/GAME_OVER_TIMEOUT/.test(stateMachine), "timeout state is missing");
+  assert(/cutscene-rbc--shriveled/.test(renderer), "shriveled RBC ending is missing");
+  assert(/肝臟工廠/.test(renderer), "liver factory ending is missing");
+  assert(!/system-card|fps-value|pointer-value|state-value/.test(index),
+    "development diagnostics remain visible in the game entry");
+  assert(/malaria-steam/.test(index), "procedural malaria steam layer is missing");
+  assert(/entryGuard\.js/.test(index), "local-file entry guard is missing");
+  assert(
+    /LOCAL_FILE_BLOCKED/.test(entryGuard) && /start-local\.cmd/.test(entryGuard),
+    "local-file startup guidance is incomplete"
+  );
+  assert(
+    /requestTimeoutMs/.test(pointerLock) && /TimeoutError/.test(pointerLock),
+    "silent Pointer Lock requests have no timeout contract"
+  );
+  assert(
+    /showPointerLockPending/.test(hud),
+    "Pointer Lock startup has no immediate player feedback"
+  );
 });
 
 await check("Three.js r184 vendor hashes and MIT license match", async () => {
@@ -214,7 +280,7 @@ failures.forEach(({ name, message }) =>
   console.error("FAIL " + name + ": " + message)
 );
 console.log(
-  "Phase 10 audit: " +
+  "Phase 11 audit: " +
     passes.length +
     " passed, " +
     failures.length +

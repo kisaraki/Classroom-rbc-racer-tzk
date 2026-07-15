@@ -1,9 +1,15 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 
 export const INTOXICATION_EVENTS = Object.freeze({
   STARTED: "STARTED",
   UPDATED: "UPDATED",
   ENDED: "ENDED"
+});
+
+export const STATUS_EFFECT_EVENTS = Object.freeze({
+  BLOOD_RUPTURE_STARTED: "BLOOD_RUPTURE_STARTED",
+  CARBON_MONOXIDE_POISONING_STARTED:
+    "CARBON_MONOXIDE_POISONING_STARTED"
 });
 
 export const INTOXICATION_INPUT_CODES = Object.freeze([
@@ -80,6 +86,10 @@ export class StatusEffectManager {
   #failedInputCount = 0;
   #executedInputCount = 0;
   #droppedInputCount = 0;
+  #bloodRuptureStartedAtMs = null;
+  #bloodRuptureExpiresAtMs = null;
+  #lastMalariaMilestone = 0;
+  #carbonMonoxidePoisoned = false;
 
   constructor({
     config = GAME_CONFIG,
@@ -112,6 +122,22 @@ export class StatusEffectManager {
     return this.#inputQueue.length;
   }
 
+  get isBloodRuptureActive() {
+    return this.#bloodRuptureExpiresAtMs !== null;
+  }
+
+  get bloodRuptureStartedAtMs() {
+    return this.#bloodRuptureStartedAtMs;
+  }
+
+  get bloodRuptureExpiresAtMs() {
+    return this.#bloodRuptureExpiresAtMs;
+  }
+
+  get isCarbonMonoxidePoisoned() {
+    return this.#carbonMonoxidePoisoned;
+  }
+
   get currentSway() {
     if (!this.#intoxicated) {
       return 0;
@@ -142,7 +168,62 @@ export class StatusEffectManager {
       queuedInputCount: this.#queuedInputCount,
       failedInputCount: this.#failedInputCount,
       executedInputCount: this.#executedInputCount,
-      droppedInputCount: this.#droppedInputCount
+      droppedInputCount: this.#droppedInputCount,
+      bloodRuptureActive: this.isBloodRuptureActive,
+      bloodRuptureStartedAtMs: this.#bloodRuptureStartedAtMs,
+      bloodRuptureExpiresAtMs: this.#bloodRuptureExpiresAtMs,
+      lastMalariaMilestone: this.#lastMalariaMilestone,
+      carbonMonoxidePoisoned: this.#carbonMonoxidePoisoned
+    });
+  }
+
+  tryStartBloodRupture(malariaCount, nowMs) {
+    if (!Number.isInteger(malariaCount) || malariaCount < 0) {
+      throw new TypeError("malariaCount must be a non-negative integer.");
+    }
+
+    assertTimestamp(nowMs);
+    const interval = this.#config.bloodRupture.malariaCollisionInterval;
+    const milestone = Math.floor(malariaCount / interval);
+
+    if (milestone === 0 || milestone <= this.#lastMalariaMilestone) {
+      return null;
+    }
+
+    this.#lastMalariaMilestone = milestone;
+    this.#bloodRuptureStartedAtMs = nowMs;
+    this.#bloodRuptureExpiresAtMs =
+      nowMs +
+      this.#config.malaria.obstructionDurationSeconds *
+        this.#config.bloodRupture.hoodDurationMultiplier *
+        this.#config.timing.millisecondsPerSecond;
+
+    return Object.freeze({
+      type: STATUS_EFFECT_EVENTS.BLOOD_RUPTURE_STARTED,
+      milestone,
+      expiresAtMs: this.#bloodRuptureExpiresAtMs
+    });
+  }
+
+  tryStartCarbonMonoxidePoisoning(carbonMonoxideCount) {
+    if (!Number.isInteger(carbonMonoxideCount) || carbonMonoxideCount < 0) {
+      throw new TypeError(
+        "carbonMonoxideCount must be a non-negative integer."
+      );
+    }
+
+    if (
+      this.#carbonMonoxidePoisoned ||
+      carbonMonoxideCount <
+        this.#config.carbonMonoxidePoisoning.collisionTriggerCount
+    ) {
+      return null;
+    }
+
+    this.#carbonMonoxidePoisoned = true;
+    return Object.freeze({
+      type: STATUS_EFFECT_EVENTS.CARBON_MONOXIDE_POISONING_STARTED,
+      collisionCount: carbonMonoxideCount
     });
   }
 
@@ -239,6 +320,16 @@ export class StatusEffectManager {
     }
 
     this.#lastNowMs = nowMs;
+    let bloodRuptureEnded = false;
+
+    if (
+      this.#bloodRuptureExpiresAtMs !== null &&
+      nowMs >= this.#bloodRuptureExpiresAtMs
+    ) {
+      this.#bloodRuptureStartedAtMs = null;
+      this.#bloodRuptureExpiresAtMs = null;
+      bloodRuptureEnded = true;
+    }
 
     if (!this.#intoxicated) {
       return Object.freeze({
@@ -247,7 +338,8 @@ export class StatusEffectManager {
         bpOverride: null,
         executedActions: Object.freeze([]),
         droppedActions: Object.freeze([]),
-        sway: 0
+        sway: 0,
+        bloodRuptureEnded
       });
     }
 
@@ -264,7 +356,8 @@ export class StatusEffectManager {
         bpOverride: this.#config.bp.initial,
         executedActions: Object.freeze([]),
         droppedActions: Object.freeze(droppedActions),
-        sway: 0
+        sway: 0,
+        bloodRuptureEnded
       });
     }
 
@@ -311,7 +404,8 @@ export class StatusEffectManager {
       bpOverride,
       executedActions: Object.freeze(executedActions),
       droppedActions: Object.freeze(droppedActions),
-      sway: this.currentSway
+      sway: this.currentSway,
+      bloodRuptureEnded
     });
   }
 
@@ -359,6 +453,10 @@ export class StatusEffectManager {
     this.#failedInputCount = 0;
     this.#executedInputCount = 0;
     this.#droppedInputCount = 0;
+    this.#bloodRuptureStartedAtMs = null;
+    this.#bloodRuptureExpiresAtMs = null;
+    this.#lastMalariaMilestone = 0;
+    this.#carbonMonoxidePoisoned = false;
   }
 
   #finishIntoxication() {

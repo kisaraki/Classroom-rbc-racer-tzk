@@ -1,6 +1,6 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
-import { LEVELS } from "../data/levels.js?v=phase10-final-r1";
-import { isLevelData } from "../data/schemas.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
+import { LEVELS } from "../data/levels.js?v=phase11-r4";
+import { isLevelData } from "../data/schemas.js?v=phase11-r4";
 
 function requireDistance(distanceAlongTrack) {
   if (!Number.isFinite(distanceAlongTrack)) {
@@ -127,6 +127,18 @@ export class LevelManager {
       (section.minimapEndProgress - section.minimapStartProgress) *
         localProgress
     );
+  }
+
+  getMinimapAnchorAtDistance(distanceAlongTrack) {
+    const region = this.getSectionAtDistance(
+      distanceAlongTrack
+    ).gasExchangeZone;
+
+    if (!region) {
+      return null;
+    }
+
+    return GAME_CONFIG.minimap.exchangeAnchorNodeByRegion[region] ?? null;
   }
 
   isAtStart(distanceAlongTrack) {

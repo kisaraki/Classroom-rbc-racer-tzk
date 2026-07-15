@@ -1,6 +1,6 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
-import { GameClock } from "../core/GameClock.js?v=phase10-final-r1";
-import { GAS_EXCHANGE_STATUS } from "../data/schemas.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
+import { GameClock } from "../core/GameClock.js?v=phase11-r4";
+import { GAS_EXCHANGE_STATUS } from "../data/schemas.js?v=phase11-r4";
 
 export const QTE_ACTIONS = Object.freeze({
   OXYGEN: "KeyO",
@@ -74,6 +74,9 @@ export class QTESystem {
   #resultExpiresAtMs = null;
   #activeOpportunityIndex = null;
   #lastOutcome = null;
+  #oxygenThreshold;
+  #carbonDioxideThreshold;
+  #carbonMonoxidePoisoned = false;
 
   constructor({
     level,
@@ -120,6 +123,9 @@ export class QTESystem {
       config.oxygenThreshold <= 0 ||
       !Number.isInteger(config.carbonDioxideThreshold) ||
       config.carbonDioxideThreshold <= 0 ||
+      !Number.isInteger(config.carbonMonoxidePoisoningThreshold) ||
+      config.carbonMonoxidePoisoningThreshold <=
+        Math.max(config.oxygenThreshold, config.carbonDioxideThreshold) ||
       !Number.isFinite(config.successScore) ||
       !Number.isFinite(config.failureScore)
     ) {
@@ -129,6 +135,8 @@ export class QTESystem {
     this.#level = level;
     this.#config = config;
     this.#clock = clock;
+    this.#oxygenThreshold = config.oxygenThreshold;
+    this.#carbonDioxideThreshold = config.carbonDioxideThreshold;
   }
 
   get phase() {
@@ -201,8 +209,9 @@ export class QTESystem {
         nextOpportunityIndex === null ? null : nextOpportunityIndex + 1,
       oxygenCount: this.#oxygenCount,
       carbonDioxideCount: this.#carbonDioxideCount,
-      oxygenThreshold: this.#config.oxygenThreshold,
-      carbonDioxideThreshold: this.#config.carbonDioxideThreshold,
+      oxygenThreshold: this.#oxygenThreshold,
+      carbonDioxideThreshold: this.#carbonDioxideThreshold,
+      carbonMonoxidePoisoned: this.#carbonMonoxidePoisoned,
       qteExpiresAtMs: this.#qteExpiresAtMs,
       resultExpiresAtMs: this.#resultExpiresAtMs,
       activeTriggerType:
@@ -253,6 +262,21 @@ export class QTESystem {
     });
   }
 
+  setCarbonMonoxidePoisoned(active) {
+    if (typeof active !== "boolean") {
+      throw new TypeError("CO poisoning mode requires a boolean.");
+    }
+
+    this.#carbonMonoxidePoisoned = active;
+    const threshold = active
+      ? this.#config.carbonMonoxidePoisoningThreshold
+      : null;
+    this.#oxygenThreshold = threshold ?? this.#config.oxygenThreshold;
+    this.#carbonDioxideThreshold =
+      threshold ?? this.#config.carbonDioxideThreshold;
+    return this.#oxygenThreshold;
+  }
+
   recordAction(action, nowMs) {
     if (!Object.values(QTE_ACTIONS).includes(action)) {
       throw new RangeError("Unknown QTE action: " + action);
@@ -272,8 +296,8 @@ export class QTESystem {
     }
 
     if (
-      this.#oxygenCount >= this.#config.oxygenThreshold &&
-      this.#carbonDioxideCount >= this.#config.carbonDioxideThreshold
+      this.#oxygenCount >= this.#oxygenThreshold &&
+      this.#carbonDioxideCount >= this.#carbonDioxideThreshold
     ) {
       return this.#finish(QTE_OUTCOMES.SUCCESS, nowMs);
     }
@@ -327,6 +351,7 @@ export class QTESystem {
     this.#resultExpiresAtMs = null;
     this.#activeOpportunityIndex = null;
     this.#lastOutcome = null;
+    this.setCarbonMonoxidePoisoned(false);
   }
 
   #finish(outcome, resultStartedAtMs) {

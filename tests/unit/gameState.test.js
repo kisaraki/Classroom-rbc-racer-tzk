@@ -1,11 +1,13 @@
 import {
   GameLoop,
   getSimulationDeltaSeconds
-} from "../../js/core/GameLoop.js?v=phase10-final-r1";
+} from "../../js/core/GameLoop.js?v=phase11-r4";
 import {
   GAME_STATES,
   GameStateMachine
-} from "../../js/core/GameStateMachine.js?v=phase10-final-r1";
+} from "../../js/core/GameStateMachine.js?v=phase11-r4";
+import { GameClock } from "../../js/core/GameClock.js?v=phase11-r4";
+import { GameSession } from "../../js/core/GameSession.js?v=phase11-r4";
 import {
   assertEqual,
   assertThrows
@@ -124,6 +126,62 @@ export function registerGameStateTests(harness) {
     );
     assertEqual(stateMachine.state, GAME_STATES.GAME_OVER_STROKE);
     assertEqual(stateMachine.isWorldRunning, false);
+  });
+
+  harness.test("timeout ends play, QTE, stasis, and paused attempts", () => {
+    ["PLAYING", "QTE", "LOW_BP_STASIS", "PAUSED"].forEach((mode) => {
+      const stateMachine = new GameStateMachine();
+      stateMachine.start();
+
+      if (mode === "QTE") {
+        stateMachine.enterQte();
+      } else if (mode === "LOW_BP_STASIS" || mode === "PAUSED") {
+        stateMachine.enterLowBloodPressureStasis();
+      }
+      if (mode === "PAUSED") {
+        stateMachine.pause();
+      }
+
+      assertEqual(stateMachine.enterTimeoutGameOver(), true);
+      assertEqual(stateMachine.state, GAME_STATES.GAME_OVER_TIMEOUT);
+      assertEqual(stateMachine.pausedFromState, null);
+    });
+  });
+
+  harness.test("GameSession deadline exposes timeout without pausing the clock", () => {
+    let nowMs = 1000;
+    const session = new GameSession({
+      durationSeconds: 5,
+      clock: new GameClock({ nowProvider: () => nowMs })
+    });
+
+    session.prepareForPointerLock();
+    assertEqual(session.hasTimedOut, false);
+    nowMs = 6000;
+    assertEqual(session.hasTimedOut, true);
+    assertEqual(session.enterTimeoutGameOver(), true);
+    assertEqual(session.state, GAME_STATES.GAME_OVER_TIMEOUT);
+  });
+
+  harness.test("deadline-bound movement keeps only the pre-timeout frame slice", () => {
+    let nowMs = 1000;
+    const session = new GameSession({
+      durationSeconds: 5,
+      clock: new GameClock({ nowProvider: () => nowMs })
+    });
+    session.prepareForPointerLock();
+
+    assertEqual(session.getDeadlineBoundDeltaSeconds(0.02, 5990), 0.02);
+    assertEqual(session.getDeadlineBoundDeltaSeconds(0.02, 6000), 0.02);
+    assertEqual(
+      session.getDeadlineBoundDeltaSeconds(0.02, 6010).toFixed(3),
+      "0.010"
+    );
+    assertEqual(session.getDeadlineBoundDeltaSeconds(0.02, 6030), 0);
+    assertThrows(
+      () => session.getDeadlineBoundDeltaSeconds(-0.01, 6000),
+      RangeError
+    );
   });
 
   harness.test("victory is accepted only after the final transfer completes", () => {

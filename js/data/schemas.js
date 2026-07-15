@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 
 export const GAS_EXCHANGE_STATUS = Object.freeze({
   PENDING: "PENDING",
@@ -27,6 +27,8 @@ export const PLAYER_STATE_SCHEMA = Object.freeze({
   bp: "finite number",
   score: "finite number",
   alcoholCount: "non-negative integer",
+  malariaCount: "non-negative integer",
+  carbonMonoxideCount: "non-negative integer",
   currentLevel: "configured level id",
   distanceAlongTrack: "finite number",
   previousDistanceAlongTrack: "finite number",
@@ -183,6 +185,8 @@ export function isPlayerState(value) {
     isFiniteNumber(value.bp) &&
     isFiniteNumber(value.score) &&
     isNonNegativeInteger(value.alcoholCount) &&
+    isNonNegativeInteger(value.malariaCount) &&
+    isNonNegativeInteger(value.carbonMonoxideCount) &&
     isConfiguredLevelId(value.currentLevel) &&
     isFiniteNumber(value.distanceAlongTrack) &&
     isFiniteNumber(value.previousDistanceAlongTrack) &&
@@ -205,6 +209,8 @@ export function createPlayerState(overrides = {}) {
     bp: GAME_CONFIG.bp.initial,
     score: GAME_CONFIG.score.initial,
     alcoholCount: 0,
+    malariaCount: 0,
+    carbonMonoxideCount: 0,
     currentLevel: GAME_CONFIG.game.initialLevelId,
     distanceAlongTrack: 0,
     previousDistanceAlongTrack: 0,

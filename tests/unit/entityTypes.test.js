@@ -1,10 +1,10 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
 import {
   ENTITY_CATEGORIES,
   ENTITY_TYPES,
   GENERAL_SPAWN_TYPE_IDS,
   getEntityType
-} from "../../js/data/entityTypes.js?v=phase10-final-r1";
+} from "../../js/data/entityTypes.js?v=phase11-r4";
 import {
   assert,
   assertDeepEqual,
@@ -63,5 +63,20 @@ export function registerEntityTypeTests(harness) {
       { id: "alcohol", scoreDelta: -1, hpDelta: -1 },
       { id: "wound", scoreDelta: -200, hpDelta: 0 }
     ]);
+  });
+
+  harness.test("buff and debuff radii cover their pulsing visual bodies", () => {
+    const expectedBodyRadii = {
+      vitaminC: 0.77,
+      vitaminB12: 0.81,
+      iron: 0.8,
+      carbonMonoxide: 0.75,
+      malaria: 1.19,
+      alcohol: 1.08
+    };
+
+    Object.entries(expectedBodyRadii).forEach(([typeId, radius]) => {
+      assertEqual(getEntityType(typeId).tuning.collisionRadius, radius);
+    });
   });
 }

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node ./tests/run-tests.mjs",
-    "test:audit": "node ./tests/phase-10-audit.mjs",
-    "test:phase10": "npm test && npm run test:audit"
+    "test:audit": "node ./tests/phase-11-audit.mjs",
+    "test:phase11": "npm test && npm run test:audit"
   }
 }

@@ -1,10 +1,11 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 
 export const CUTSCENE_TYPES = Object.freeze({
   TRANSFER: "TRANSFER",
   RECYCLE: "RECYCLE",
   FALL: "FALL",
   STROKE: "STROKE",
+  TIMEOUT: "TIMEOUT",
   VICTORY: "VICTORY"
 });
 

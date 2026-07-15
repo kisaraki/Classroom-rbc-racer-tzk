@@ -9,6 +9,7 @@ export const GAME_STATES = Object.freeze({
   GAME_OVER_RECYCLE: "GAME_OVER_RECYCLE",
   GAME_OVER_FALL: "GAME_OVER_FALL",
   GAME_OVER_STROKE: "GAME_OVER_STROKE",
+  GAME_OVER_TIMEOUT: "GAME_OVER_TIMEOUT",
   VICTORY: "VICTORY"
 });
 
@@ -22,7 +23,14 @@ const PAUSABLE_STATES = new Set([
 const GAME_OVER_STATES = new Set([
   GAME_STATES.GAME_OVER_RECYCLE,
   GAME_STATES.GAME_OVER_FALL,
-  GAME_STATES.GAME_OVER_STROKE
+  GAME_STATES.GAME_OVER_STROKE,
+  GAME_STATES.GAME_OVER_TIMEOUT
+]);
+
+const TIMEOUT_ELIGIBLE_STATES = new Set([
+  GAME_STATES.PLAYING,
+  GAME_STATES.QTE,
+  GAME_STATES.LOW_BP_STASIS
 ]);
 
 export class GameStateMachine {
@@ -167,6 +175,20 @@ export class GameStateMachine {
     }
 
     this.#state = gameOverState;
+    return true;
+  }
+
+  enterTimeoutGameOver() {
+    const effectiveState = this.#state === GAME_STATES.PAUSED
+      ? this.#pausedFromState
+      : this.#state;
+
+    if (!TIMEOUT_ELIGIBLE_STATES.has(effectiveState)) {
+      return false;
+    }
+
+    this.#state = GAME_STATES.GAME_OVER_TIMEOUT;
+    this.#pausedFromState = null;
     return true;
   }
 }

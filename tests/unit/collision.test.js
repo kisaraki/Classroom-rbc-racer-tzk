@@ -1,18 +1,19 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
 import {
   ENTITY_TRIGGERS,
   getEntityType
-} from "../../js/data/entityTypes.js?v=phase10-final-r1";
+} from "../../js/data/entityTypes.js?v=phase11-r4";
 import {
   createEntityState,
   createPlayerState
-} from "../../js/data/schemas.js?v=phase10-final-r1";
+} from "../../js/data/schemas.js?v=phase11-r4";
 import {
   CollisionSystem,
   isCrossSectionHit,
+  isEntityLabelHit,
   isSweptLongitudinalHit
-} from "../../js/systems/CollisionSystem.js?v=phase10-final-r1";
-import { applyEntityScoreEffect } from "../../js/systems/ScoreSystem.js?v=phase10-final-r1";
+} from "../../js/systems/CollisionSystem.js?v=phase11-r4";
+import { applyEntityScoreEffect } from "../../js/systems/ScoreSystem.js?v=phase11-r4";
 import {
   assertEqual,
   assertThrows
@@ -68,6 +69,69 @@ export function registerCollisionTests(harness) {
     assertEqual(entity.consumed, false);
   });
 
+  harness.test("player collision spans the reticle to the RBC lower edge", () => {
+    const player = createMovingPlayer();
+    const profile = GAME_CONFIG.collision.playerProfile;
+    const lowerBodyHit = createEntity("malaria", {
+      lateralY: profile.bottomOffsetY + 0.1
+    });
+    const aboveReticle = createEntity("malaria", {
+      lateralY:
+        profile.topOffsetY + lowerBodyHit.collisionRadius + 0.01
+    });
+    const belowBody = createEntity("malaria", {
+      lateralY:
+        profile.bottomOffsetY - lowerBodyHit.collisionRadius - 0.01
+    });
+
+    assertEqual(isCrossSectionHit(player, lowerBodyHit), true);
+    assertEqual(isCrossSectionHit(player, aboveReticle), false);
+    assertEqual(isCrossSectionHit(player, belowBody), false);
+  });
+
+  harness.test("buff and debuff label panels are collision surfaces", () => {
+    const player = createMovingPlayer();
+    const labelledTypeIds = [
+      "vitaminC",
+      "vitaminB12",
+      "iron",
+      "carbonMonoxide",
+      "alcohol"
+    ];
+
+    labelledTypeIds.forEach((typeId) => {
+      const type = getEntityType(typeId);
+      const entity = createEntity(typeId, {
+        lateralX:
+          player.collisionRadius + type.tuning.collisionRadius + 0.05,
+        lateralY: -1.2
+      });
+
+      assertEqual(isEntityLabelHit(player, entity), true);
+      assertEqual(isCrossSectionHit(player, entity), true);
+    });
+
+    const malaria = createEntity("malaria", {
+      lateralX:
+        player.collisionRadius +
+        getEntityType("malaria").tuning.collisionRadius +
+        0.05,
+      lateralY: -1.2
+    });
+    const wound = createEntity("wound", {
+      lateralX:
+        player.collisionRadius +
+        getEntityType("wound").tuning.collisionRadius +
+        0.05,
+      lateralY: -1.2
+    });
+
+    assertEqual(isEntityLabelHit(player, malaria), false);
+    assertEqual(isCrossSectionHit(player, malaria), false);
+    assertEqual(isEntityLabelHit(player, wound), false);
+    assertEqual(isCrossSectionHit(player, wound), false);
+  });
+
   harness.test("buff score applies while HP remains clamped to max", () => {
     const player = createMovingPlayer({ hp: GAME_CONFIG.hp.max });
     const change = applyEntityScoreEffect(
@@ -112,7 +176,7 @@ export function registerCollisionTests(harness) {
     assertEqual(result.playerDepleted, true);
     assertEqual(result.collisionCount, 1);
     assertEqual(result.events[0].typeId, "malaria");
-    assertEqual(result.scoreDelta, -3);
+    assertEqual(result.scoreDelta, -6);
     assertEqual(result.hpDelta, -2);
     assertEqual(player.hp, GAME_CONFIG.hp.min);
     assertEqual(malaria.consumed, true);
@@ -139,8 +203,8 @@ export function registerCollisionTests(harness) {
       result.events.map((event) => event.entityId).join("|"),
       "a-id|z-id|far"
     );
-    assertEqual(result.scoreDelta, -3);
-    assertEqual(result.hpDelta, -3);
+    assertEqual(result.scoreDelta, -6);
+    assertEqual(result.hpDelta, -6);
     assertEqual(player.alcoholCount, 3);
   });
 
@@ -153,8 +217,21 @@ export function registerCollisionTests(harness) {
     assertEqual(result.collisionCount, 1);
     assertEqual(result.triggers[0], ENTITY_TRIGGERS.MALARIA_HOOD);
     assertEqual(ignored.consumed, true);
-    assertEqual(player.score, -3);
-    assertEqual(player.hp, GAME_CONFIG.hp.initial - 3);
+    assertEqual(player.score, -6);
+    assertEqual(player.hp, GAME_CONFIG.hp.initial - 6);
+    assertEqual(player.malariaCount, 1);
+    assertEqual(player.carbonMonoxideCount, 0);
+  });
+
+  harness.test("debuff multiplier doubles CO deductions and tracks collisions", () => {
+    const player = createMovingPlayer();
+    const carbonMonoxide = createEntity("carbonMonoxide");
+    const result = new CollisionSystem().resolve(player, [carbonMonoxide]);
+
+    assertEqual(result.scoreDelta, -4);
+    assertEqual(result.hpDelta, -4);
+    assertEqual(player.carbonMonoxideCount, 1);
+    assertEqual(GAME_CONFIG.penalties.debuffMultiplier, 2);
   });
 
   harness.test("collision helpers reject invalid window values", () => {

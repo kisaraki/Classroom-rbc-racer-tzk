@@ -77,6 +77,10 @@ export const GAME_CONFIG = deepFreeze({
     initial: 0
   },
 
+  penalties: {
+    debuffMultiplier: 2
+  },
+
   bp: {
     initial: 100,
     min: 50,
@@ -125,6 +129,10 @@ export const GAME_CONFIG = deepFreeze({
     overlayCopy:
       "本遊戲需要鍵盤、滑鼠與 Pointer Lock，手機或平板無法提供完整操作，因此已停止啟動。請改用桌上型或筆記型電腦。",
     overlayNote: "未建立 Three.js 場景，也未啟動遊戲計時器。"
+  },
+
+  pointerLock: {
+    requestTimeoutMs: 1500
   },
 
   track: {
@@ -240,7 +248,7 @@ export const GAME_CONFIG = deepFreeze({
     hood: {
       pivotPosition: [0, -1.08, -2.24],
       meshPosition: [0, 0, -0.18],
-      meshScale: [1.08, 0.2, 0.66],
+      meshScale: [1.42, 0.24, 0.92],
       hingeOffset: [0, -0.04, 0.64],
       closedAngleRadians: 0,
       renderOrder: 11
@@ -277,6 +285,10 @@ export const GAME_CONFIG = deepFreeze({
   minimap: {
     viewBoxWidth: 360,
     viewBoxHeight: 300,
+    exchangeAnchorNodeByRegion: {
+      TISSUE: "tissues",
+      LUNG: "lungs"
+    },
     vesselStrokeWidth: 4,
     activeVesselStrokeWidth: 6,
     routeStrokeWidth: 1,
@@ -553,6 +565,11 @@ export const GAME_CONFIG = deepFreeze({
 
   collision: {
     window: 0.75,
+    playerProfile: {
+      topOffsetY: 0,
+      bottomOffsetY: -1.91
+    },
+    entityLabelCategories: ["BUFF", "DEBUFF"],
     categoryPriority: {
       FATAL: 0,
       DEBUFF: 1,
@@ -578,37 +595,37 @@ export const GAME_CONFIG = deepFreeze({
       baseWeight: 18,
       scoreDelta: 1,
       hpDelta: 1,
-      collisionRadius: 0.5
+      collisionRadius: 0.77
     },
     vitaminB12: {
       baseWeight: 14,
       scoreDelta: 1,
       hpDelta: 1,
-      collisionRadius: 0.5
+      collisionRadius: 0.81
     },
     iron: {
       baseWeight: 14,
       scoreDelta: 1,
       hpDelta: 1,
-      collisionRadius: 0.5
+      collisionRadius: 0.8
     },
     carbonMonoxide: {
       baseWeight: 20,
       scoreDelta: -2,
       hpDelta: -2,
-      collisionRadius: 0.55
+      collisionRadius: 0.75
     },
     malaria: {
       baseWeight: 10,
       scoreDelta: -3,
       hpDelta: -3,
-      collisionRadius: 0.7
+      collisionRadius: 1.19
     },
     alcohol: {
       baseWeight: 16,
       scoreDelta: -1,
       hpDelta: -1,
-      collisionRadius: 0.55
+      collisionRadius: 1.08
     },
     wound: {
       scoreDelta: -200,
@@ -1510,8 +1527,9 @@ export const GAME_CONFIG = deepFreeze({
     resultDisplayMs: 800,
     oxygenThreshold: 3,
     carbonDioxideThreshold: 3,
+    carbonMonoxidePoisoningThreshold: 9,
     successScore: 10,
-    failureScore: -3,
+    failureScore: -6,
     opportunityCountByRegion: {
       TISSUE: 10,
       LUNG: 20
@@ -1553,10 +1571,23 @@ export const GAME_CONFIG = deepFreeze({
     hoodRollAmplitude: 0.12,
     hoodOffsetFrequency: 11,
     hoodOffsetAmplitude: 0.025,
-    minimumScreenCoverage: 0.4,
-    maximumScreenCoverage: 0.65,
-    combinedMaximumCoverage: 0.55,
-    restoreDurationSeconds: 0.4
+    minimumScreenCoverage: 0.52,
+    maximumScreenCoverage: 0.82,
+    combinedMaximumCoverage: 0.72,
+    restoreDurationSeconds: 0.4,
+    steamBlurPixels: 8,
+    steamOpacity: 0.72,
+    steamDriftSeconds: 6
+  },
+
+  bloodRupture: {
+    malariaCollisionInterval: 5,
+    hoodDurationMultiplier: 3,
+    bloodPressureMaximum: 60
+  },
+
+  carbonMonoxidePoisoning: {
+    collisionTriggerCount: 10
   },
 
   wound: {
@@ -1583,6 +1614,7 @@ export const GAME_CONFIG = deepFreeze({
       RECYCLE: 5.2,
       FALL: 4.8,
       STROKE: 3.8,
+      TIMEOUT: 5.6,
       VICTORY: 7.5
     },
     timelines: {
@@ -1605,6 +1637,11 @@ export const GAME_CONFIG = deepFreeze({
         { id: "IMPACT", endProgress: 0.22 },
         { id: "BLACKOUT", endProgress: 0.62 },
         { id: "DIAGNOSIS", endProgress: 1 }
+      ],
+      TIMEOUT: [
+        { id: "DEHYDRATION", endProgress: 0.24 },
+        { id: "LIVER_CONVEYOR", endProgress: 0.78 },
+        { id: "HEPATIC_RECYCLE", endProgress: 1 }
       ],
       VICTORY: [
         { id: "ARTERIAL_ENTRY", endProgress: 0.2 },

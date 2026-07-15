@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
 import {
   assembleLevel,
   LEVELS
-} from "../../js/data/levels.js?v=phase10-final-r1";
+} from "../../js/data/levels.js?v=phase11-r4";
 import {
   createEntityState,
   createLevelCheckpoint,
@@ -13,7 +13,7 @@ import {
   isPlayerState,
   RBC_COLOR_STATES,
   toggleRbcColorState
-} from "../../js/data/schemas.js?v=phase10-final-r1";
+} from "../../js/data/schemas.js?v=phase11-r4";
 import {
   assert,
   assertApproximately,
@@ -87,7 +87,7 @@ export function registerSchemaTests(harness) {
     assertEqual(level.sections.length, tuning.sectionRatios.length);
   });
 
-  harness.test("Phase 10 retains four complete data-driven levels", () => {
+  harness.test("Phase 11 retains four complete data-driven levels", () => {
     assertEqual(LEVELS.length, GAME_CONFIG.game.totalLevelCount);
     assertEqual(LEVELS.map((level) => level.id).join(","), "1,2,3,4");
 

@@ -1,13 +1,13 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 import {
   ENTITY_CATEGORIES,
   getEntityType
-} from "../data/entityTypes.js?v=phase10-final-r1";
+} from "../data/entityTypes.js?v=phase11-r4";
 import {
   isEntityState,
   isPlayerState
-} from "../data/schemas.js?v=phase10-final-r1";
-import { ScoreSystem } from "./ScoreSystem.js?v=phase10-final-r1";
+} from "../data/schemas.js?v=phase11-r4";
+import { ScoreSystem } from "./ScoreSystem.js?v=phase11-r4";
 
 export function isSweptLongitudinalHit(
   playerState,
@@ -38,13 +38,169 @@ export function isSweptLongitudinalHit(
   );
 }
 
-export function isCrossSectionHit(playerState, entityState) {
-  const deltaX = entityState.lateralX - playerState.lateralX;
-  const deltaY = entityState.lateralY - playerState.lateralY;
-  const combinedRadius =
-    entityState.collisionRadius + playerState.collisionRadius;
+function requireFinite(value, label) {
+  if (!Number.isFinite(value)) {
+    throw new TypeError(label + " must be finite.");
+  }
+
+  return value;
+}
+
+function distanceToInterval(value, minimum, maximum) {
+  if (value < minimum) {
+    return minimum - value;
+  }
+
+  return value > maximum ? value - maximum : 0;
+}
+
+function distanceBetweenIntervals(
+  firstMinimum,
+  firstMaximum,
+  secondMinimum,
+  secondMaximum
+) {
+  if (firstMaximum < secondMinimum) {
+    return secondMinimum - firstMaximum;
+  }
+
+  return secondMaximum < firstMinimum
+    ? firstMinimum - secondMaximum
+    : 0;
+}
+
+function createPlayerCollisionCapsule(
+  playerState,
+  config = GAME_CONFIG
+) {
+  const profile = config.collision.playerProfile;
+  const topOffsetY = requireFinite(
+    profile?.topOffsetY,
+    "Player collision top offset"
+  );
+  const bottomOffsetY = requireFinite(
+    profile?.bottomOffsetY,
+    "Player collision bottom offset"
+  );
+  const radius = requireFinite(
+    playerState.collisionRadius,
+    "Player collision radius"
+  );
+
+  if (
+    radius <= 0 ||
+    topOffsetY <= bottomOffsetY ||
+    topOffsetY - bottomOffsetY < radius * 2
+  ) {
+    throw new RangeError(
+      "Player collision profile must contain the collision diameter."
+    );
+  }
+
+  return Object.freeze({
+    x: playerState.lateralX,
+    minimumY: playerState.lateralY + bottomOffsetY + radius,
+    maximumY: playerState.lateralY + topOffsetY - radius,
+    radius
+  });
+}
+
+function isEntityBodyHit(capsule, entityState) {
+  const deltaX = entityState.lateralX - capsule.x;
+  const deltaY = distanceToInterval(
+    entityState.lateralY,
+    capsule.minimumY,
+    capsule.maximumY
+  );
+  const combinedRadius = entityState.collisionRadius + capsule.radius;
 
   return deltaX * deltaX + deltaY * deltaY <= combinedRadius * combinedRadius;
+}
+
+function shouldCollideWithEntityLabel(type, config) {
+  return (
+    type?.label.length > 0 &&
+    config.collision.entityLabelCategories.includes(type.category)
+  );
+}
+
+function isEntityLabelHitByCapsule(
+  capsule,
+  entityState,
+  type,
+  config
+) {
+  if (!shouldCollideWithEntityLabel(type, config)) {
+    return false;
+  }
+
+  const label = config.entityVisuals.label;
+  const halfWidth = requireFinite(
+    label?.spriteWidth,
+    "Entity label width"
+  ) / 2;
+  const halfHeight = requireFinite(
+    label?.spriteHeight,
+    "Entity label height"
+  ) / 2;
+  const offsetY = requireFinite(
+    label?.offsetY,
+    "Entity label offset"
+  );
+
+  if (halfWidth <= 0 || halfHeight <= 0) {
+    throw new RangeError("Entity label collision dimensions must be positive.");
+  }
+
+  const horizontalDistance = distanceToInterval(
+    capsule.x,
+    entityState.lateralX - halfWidth,
+    entityState.lateralX + halfWidth
+  );
+  const labelCenterY = entityState.lateralY + offsetY;
+  const verticalDistance = distanceBetweenIntervals(
+    capsule.minimumY,
+    capsule.maximumY,
+    labelCenterY - halfHeight,
+    labelCenterY + halfHeight
+  );
+
+  return (
+    horizontalDistance * horizontalDistance +
+      verticalDistance * verticalDistance <=
+    capsule.radius * capsule.radius
+  );
+}
+
+export function isEntityLabelHit(
+  playerState,
+  entityState,
+  config = GAME_CONFIG
+) {
+  return isEntityLabelHitByCapsule(
+    createPlayerCollisionCapsule(playerState, config),
+    entityState,
+    getEntityType(entityState.typeId),
+    config
+  );
+}
+
+export function isCrossSectionHit(
+  playerState,
+  entityState,
+  config = GAME_CONFIG
+) {
+  const capsule = createPlayerCollisionCapsule(playerState, config);
+
+  return (
+    isEntityBodyHit(capsule, entityState) ||
+    isEntityLabelHitByCapsule(
+      capsule,
+      entityState,
+      getEntityType(entityState.typeId),
+      config
+    )
+  );
 }
 
 export function compareCollisionCandidates(
@@ -115,7 +271,7 @@ export class CollisionSystem {
             entity,
             this.config.collision.window
           ) &&
-          isCrossSectionHit(playerState, entity)
+          isCrossSectionHit(playerState, entity, this.config)
         );
       })
       .map((entity) => {

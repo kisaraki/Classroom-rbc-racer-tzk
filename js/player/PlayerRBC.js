@@ -13,13 +13,13 @@ import {
   Vector2,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 import {
   createPlayerState,
   isLevelCheckpoint,
   RBC_COLOR_STATES,
   toggleRbcColorState
-} from "../data/schemas.js?v=phase10-final-r1";
+} from "../data/schemas.js?v=phase11-r4";
 import {
   clampBloodPressure,
   getSpeedForBloodPressure,
@@ -29,7 +29,7 @@ import { clampLateralOffset } from "../world/TrackMath.js";
 import {
   createRbcLabelTexture,
   HoodController
-} from "./HoodController.js?v=phase10-final-r1";
+} from "./HoodController.js?v=phase11-r4";
 
 function createBiconcaveGeometry(modelConfig) {
   const profile = [];
@@ -109,7 +109,12 @@ export class PlayerRBC {
   } = {}) {
     this.config = config;
     this.state = createPlayerState(stateOverrides);
-    this.speed = getSpeedForBloodPressure(this.state.bp, config);
+    this.bloodPressureMaximum = config.bp.max;
+    this.speed = getSpeedForBloodPressure(
+      this.state.bp,
+      config,
+      this.bloodPressureMaximum
+    );
     this.hitWall = false;
     this.worldGroup = new Group();
     this.worldGroup.name = "player-rbc-world-model";
@@ -192,7 +197,10 @@ export class PlayerRBC {
 
     this.hoodController = new HoodController({
       config: modelConfig,
-      palette: config.palette
+      palette: config.palette,
+      malariaConfig: config.malaria,
+      bloodRuptureConfig: config.bloodRupture,
+      timingConfig: config.timing
     });
     this.cockpitGroup.add(this.hoodController.group);
 
@@ -251,16 +259,48 @@ export class PlayerRBC {
       this.state.bp,
       adjustmentAxis,
       deltaSeconds,
-      this.config
+      this.config,
+      this.bloodPressureMaximum
     );
-    this.speed = getSpeedForBloodPressure(this.state.bp, this.config);
+    this.speed = getSpeedForBloodPressure(
+      this.state.bp,
+      this.config,
+      this.bloodPressureMaximum
+    );
     return this.state.bp;
   }
 
   setBloodPressure(bp) {
-    this.state.bp = clampBloodPressure(bp, this.config);
-    this.speed = getSpeedForBloodPressure(this.state.bp, this.config);
+    this.state.bp = clampBloodPressure(
+      bp,
+      this.config,
+      this.bloodPressureMaximum
+    );
+    this.speed = getSpeedForBloodPressure(
+      this.state.bp,
+      this.config,
+      this.bloodPressureMaximum
+    );
     return this.state.bp;
+  }
+
+  setBloodPressureMaximum(maximum) {
+    this.bloodPressureMaximum = clampBloodPressure(
+      maximum,
+      this.config,
+      this.config.bp.max
+    );
+    this.state.bp = clampBloodPressure(
+      this.state.bp,
+      this.config,
+      this.bloodPressureMaximum
+    );
+    this.speed = getSpeedForBloodPressure(
+      this.state.bp,
+      this.config,
+      this.bloodPressureMaximum
+    );
+    return this.bloodPressureMaximum;
   }
 
   completeGasExchange() {
@@ -349,7 +389,12 @@ export class PlayerRBC {
       currentLevel: checkpoint.levelId,
       rbcColorState: checkpoint.rbcColorState
     });
-    this.speed = getSpeedForBloodPressure(this.state.bp, this.config);
+    this.bloodPressureMaximum = this.config.bp.max;
+    this.speed = getSpeedForBloodPressure(
+      this.state.bp,
+      this.config,
+      this.bloodPressureMaximum
+    );
     this.hitWall = false;
     this.hoodController.reset();
     this.#syncBaseBodyColor();

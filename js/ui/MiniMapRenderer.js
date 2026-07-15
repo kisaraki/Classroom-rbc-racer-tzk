@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
@@ -161,6 +161,18 @@ export function validateMinimapConfig(config = GAME_CONFIG.minimap) {
     nodesById.set(node.id, node);
   });
 
+  const exchangeAnchors = config.exchangeAnchorNodeByRegion;
+  if (
+    !exchangeAnchors ||
+    !["TISSUE", "LUNG"].every(
+      (region) => nodesById.has(exchangeAnchors[region])
+    )
+  ) {
+    throw new RangeError(
+      "Minimap exchange regions must reference configured nodes."
+    );
+  }
+
   const heartOutline = config.heartOutline;
   const chamberNodeIds = heartOutline.chamberNodeIds;
   if (
@@ -257,6 +269,31 @@ export function calculateMarkerPoint(pathElement, progress) {
   return { x: point.x, y: point.y, progress: clampedProgress };
 }
 
+export function resolveMarkerPoint(
+  pathElement,
+  progress,
+  anchorNodeId = null,
+  nodes = GAME_CONFIG.minimap.nodes
+) {
+  const clampedProgress = clampMinimapProgress(progress);
+
+  if (anchorNodeId === null) {
+    return calculateMarkerPoint(pathElement, clampedProgress);
+  }
+
+  const anchor = nodes.find((node) => node.id === anchorNodeId);
+  if (!anchor) {
+    throw new RangeError("Unknown minimap anchor node: " + anchorNodeId);
+  }
+
+  return {
+    x: anchor.x,
+    y: anchor.y,
+    progress: clampedProgress,
+    anchorNodeId
+  };
+}
+
 export class MiniMapRenderer {
   #host;
   #config;
@@ -265,6 +302,7 @@ export class MiniMapRenderer {
   #marker;
   #currentRouteId = "";
   #progress = 0;
+  #anchorNodeId = null;
 
   constructor(root = globalThis.document, config = GAME_CONFIG.minimap) {
     validateMinimapConfig(config);
@@ -290,7 +328,11 @@ export class MiniMapRenderer {
     return this.#progress;
   }
 
-  update(routeId, progress) {
+  get anchorNodeId() {
+    return this.#anchorNodeId;
+  }
+
+  update(routeId, progress, anchorNodeId = null) {
     if (routeId !== this.#currentRouteId) {
       this.#activateRoute(routeId);
     }
@@ -301,7 +343,12 @@ export class MiniMapRenderer {
       throw new RangeError("Unknown minimap route: " + routeId);
     }
 
-    const point = calculateMarkerPoint(path, progress);
+    const point = resolveMarkerPoint(
+      path,
+      progress,
+      anchorNodeId,
+      this.#config.nodes
+    );
     const precision = this.#config.playerMarker.coordinatePrecision;
 
     this.#marker.setAttribute(
@@ -313,12 +360,14 @@ export class MiniMapRenderer {
         ")"
     );
     this.#progress = point.progress;
+    this.#anchorNodeId = anchorNodeId;
     this.#host.dataset.routeId = routeId;
     this.#host.dataset.progress = point.progress.toFixed(
       GAME_CONFIG.hud.minimapProgressPrecision
     );
     this.#host.dataset.markerX = point.x.toFixed(precision);
     this.#host.dataset.markerY = point.y.toFixed(precision);
+    this.#host.dataset.anchorNodeId = anchorNodeId ?? "";
   }
 
   #build(documentRef) {

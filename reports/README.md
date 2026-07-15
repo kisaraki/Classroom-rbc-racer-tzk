@@ -10,10 +10,10 @@
 phase-00-report.md
 phase-01-report.md
 ...
-phase-10-report.md
+phase-11-report.md
 ```
 
-Phase 10 後的維護或校準使用日期加主題命名，例如：
+完成目前最高 Phase 後的維護或校準使用日期加主題命名，例如：
 
 ```text
 2026-07-15-circulation-terminology-report.md

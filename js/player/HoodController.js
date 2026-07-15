@@ -9,7 +9,7 @@ import {
   UnsignedByteType,
   Group
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 
 const RBC_GLYPHS = Object.freeze({
   R: [
@@ -127,6 +127,7 @@ export class HoodController {
     config = GAME_CONFIG.playerModel,
     palette = GAME_CONFIG.palette,
     malariaConfig = GAME_CONFIG.malaria,
+    bloodRuptureConfig = GAME_CONFIG.bloodRupture,
     timingConfig = GAME_CONFIG.timing
   } = {}) {
     const cockpit = config.cockpit;
@@ -134,6 +135,7 @@ export class HoodController {
 
     this.closedAngleRadians = hood.closedAngleRadians;
     this.malariaConfig = malariaConfig;
+    this.bloodRuptureConfig = bloodRuptureConfig;
     this.timingConfig = timingConfig;
     this.obstructionStartedAtMs = null;
     this.obstructionExpiresAtMs = null;
@@ -207,15 +209,33 @@ export class HoodController {
   }
 
   triggerBasicObstruction(nowMs) {
+    return this.#triggerObstruction(
+      nowMs,
+      this.malariaConfig.obstructionDurationSeconds
+    );
+  }
+
+  triggerBloodRupture(nowMs) {
+    return this.#triggerObstruction(
+      nowMs,
+      this.malariaConfig.obstructionDurationSeconds *
+        this.bloodRuptureConfig.hoodDurationMultiplier
+    );
+  }
+
+  #triggerObstruction(nowMs, durationSeconds) {
     if (!Number.isFinite(nowMs)) {
       throw new TypeError("Malaria obstruction requires an absolute time.");
     }
 
     this.obstructionStartedAtMs = nowMs;
-    this.obstructionExpiresAtMs =
+    const requestedExpiry =
       nowMs +
-      this.malariaConfig.obstructionDurationSeconds *
-        this.timingConfig.millisecondsPerSecond;
+      durationSeconds * this.timingConfig.millisecondsPerSecond;
+    this.obstructionExpiresAtMs = Math.max(
+      this.obstructionExpiresAtMs ?? 0,
+      requestedExpiry
+    );
     this.restoreStartedAtMs = null;
     this.restoreExpiresAtMs = null;
     this.#syncCoverageScale();

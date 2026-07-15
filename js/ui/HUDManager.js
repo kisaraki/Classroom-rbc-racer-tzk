@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
-import { CutsceneRenderer } from "../cutscenes/CutsceneRenderer.js?v=phase10-final-r1";
-import { createFlightInstrumentSnapshot } from "./FlightInstrumentModel.js?v=phase10-final-r1";
-import { MessageOverlay } from "./MessageOverlay.js?v=phase10-final-r1";
-import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
+import { CutsceneRenderer } from "../cutscenes/CutsceneRenderer.js?v=phase11-r4";
+import { createFlightInstrumentSnapshot } from "./FlightInstrumentModel.js?v=phase11-r4";
+import { MessageOverlay } from "./MessageOverlay.js?v=phase11-r4";
+import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase11-r4";
 
 const EMPTY_STATUSES = Object.freeze([]);
 
@@ -39,9 +39,6 @@ export class HUDManager {
       clockCard: requireElement(root, ".clock-card"),
       timerValue: requireElement(root, "#timer-value"),
       timerCaption: requireElement(root, "#timer-caption"),
-      stateValue: requireElement(root, "#state-value"),
-      fpsValue: requireElement(root, "#fps-value"),
-      pointerValue: requireElement(root, "#pointer-value"),
       circulationTitle: requireElement(root, "#circulation-title"),
       circulationRouteCode: requireElement(root, "#circulation-route-code"),
       statusPanel: requireElement(root, "#status-panel"),
@@ -111,7 +108,8 @@ export class HUDManager {
       nodeCount: this.#minimap.nodeCount,
       vesselCount: this.#minimap.vesselCount,
       routeId: this.#minimap.currentRouteId,
-      progress: this.#minimap.progress
+      progress: this.#minimap.progress,
+      anchorNodeId: this.#minimap.anchorNodeId
     });
   }
 
@@ -123,6 +121,7 @@ export class HUDManager {
     hp,
     maxHp,
     bp,
+    bpMaximum = GAME_CONFIG.bp.max,
     score,
     level,
     levelCount,
@@ -132,12 +131,12 @@ export class HUDManager {
     speed,
     distance,
     trackLength,
+    timerRemainingSeconds,
     realClockElapsedSeconds,
     state,
-    fps,
-    pointerLocked,
     minimapPathId,
     minimapProgress,
+    minimapAnchorNodeId,
     lateralX,
     lateralY,
     collisionRadius,
@@ -154,7 +153,7 @@ export class HUDManager {
       Math.max(
         0,
         (bp - GAME_CONFIG.bp.min) /
-          (GAME_CONFIG.bp.max - GAME_CONFIG.bp.min)
+          (bpMaximum - GAME_CONFIG.bp.min)
       )
     );
 
@@ -165,7 +164,10 @@ export class HUDManager {
       String(hpRatio)
     );
     this.#elements.bpValue.textContent =
-      bp.toFixed(valuePrecision) + " mmHg";
+      bp.toFixed(valuePrecision) +
+      " / " +
+      bpMaximum.toFixed(valuePrecision) +
+      " mmHg";
     this.#elements.bpMeter.style.setProperty(
       "--meter-fill",
       String(bpRatio)
@@ -188,9 +190,9 @@ export class HUDManager {
       " / " +
       trackLength.toFixed(GAME_CONFIG.hud.distancePrecision);
     this.#elements.timerValue.textContent =
-      realClockElapsedSeconds === null
+      timerRemainingSeconds === null
         ? "--.- s"
-        : "T+" + realClockElapsedSeconds.toFixed(
+        : timerRemainingSeconds.toFixed(
             GAME_CONFIG.hud.timerPrecision
           ) + " s";
     this.#elements.clockCard.dataset.active = String(
@@ -198,14 +200,8 @@ export class HUDManager {
     );
     this.#elements.timerCaption.textContent =
       realClockElapsedSeconds === null
-        ? "STARTS ON CLICK"
-        : "CONTINUES IN PAUSE";
-    this.#elements.stateValue.textContent = state;
-    this.#elements.fpsValue.textContent =
-      fps.toFixed(GAME_CONFIG.hud.fpsPrecision);
-    this.#elements.pointerValue.textContent = pointerLocked
-      ? "LOCKED"
-      : "RELEASED";
+        ? "點擊開始計時"
+        : "暫停時仍繼續計時";
     this.#elements.hud.dataset.state = state;
     this.#updateFlightInstruments({
       lateralX,
@@ -215,7 +211,11 @@ export class HUDManager {
       viewYaw,
       viewPitch
     });
-    this.#minimap.update(minimapPathId, minimapProgress);
+    this.#minimap.update(
+      minimapPathId,
+      minimapProgress,
+      minimapAnchorNodeId
+    );
     this.#updateStatuses(statuses, clockNowMs);
     this.#messageOverlay.update(clockNowMs);
   }
@@ -231,12 +231,11 @@ export class HUDManager {
   showReady() {
     this.#elements.overlay.hidden = false;
     this.#elements.overlay.dataset.mode = "READY";
-    this.#elements.overlayIndex.textContent = "10";
-    this.#elements.overlayKicker.textContent =
-      "Phase 10 / Final circulation build";
+    this.#elements.overlayIndex.textContent = "O₂";
+    this.#elements.overlayKicker.textContent = "紅血球循環任務";
     this.#elements.overlayTitle.textContent = "血液循環任務啟航";
     this.#elements.overlayCopy.textContent =
-      "四關會自動銜接心房至心室輸送帶，失敗時依原因播放回收、墜落或中風結局；完成第四關後進入 O₂ 旗幟勝利遊街。";
+      "依序完成四段體循環與肺循環，在時限內抵達並完成氣體交換。";
     this.#elements.overlayAction.textContent =
       "開始遊戲並鎖定滑鼠視角";
     this.#setActions({ primary: true });
@@ -248,10 +247,10 @@ export class HUDManager {
     this.#elements.overlayIndex.textContent =
       String(level.id).padStart(2, "0");
     this.#elements.overlayKicker.textContent =
-      "Level " + String(level.id).padStart(2, "0") + " / Ready";
+      "第 " + level.id + " 關準備";
     this.#elements.overlayTitle.textContent = level.name;
     this.#elements.overlayCopy.textContent =
-      "前一關已完成並保存 HP、Score 與新 checkpoint。點擊後從 " +
+      "前一關已完成，生命與分數已保留。點擊後從 " +
       level.start.locationLabel +
       " 繼續循環。";
     this.#elements.overlayAction.textContent = "繼續並鎖定滑鼠視角";
@@ -261,13 +260,13 @@ export class HUDManager {
   showPaused(pausedFromState = null) {
     this.#elements.overlay.hidden = false;
     this.#elements.overlay.dataset.mode = "PAUSED";
-    this.#elements.overlayKicker.textContent = "World simulation stopped";
+    this.#elements.overlayKicker.textContent = "遊戲已暫停";
     this.#elements.overlayTitle.textContent = "點擊恢復遊戲";
     this.#elements.overlayCopy.textContent = pausedFromState === "QTE"
-      ? "世界位移已停止，但氣體交換與 REAL CLOCK 的絕對倒數仍持續。"
+      ? "車輛移動已停止，但氣體交換與任務倒數仍持續。"
       : pausedFromState === "TRANSFER_CUTSCENE"
         ? "心房至心室輸送帶仍依絕對時間運行；完成後會自動載入下一關或勝利遊街。"
-        : "世界位移已停止；REAL CLOCK、酒精與瘧原蟲的絕對期限及動畫仍繼續。";
+        : "車輛移動已停止；任務倒數與異常狀態期限仍繼續。";
     this.#elements.overlayAction.textContent = "點擊恢復遊戲";
     this.#setActions({ primary: true });
   }
@@ -276,10 +275,22 @@ export class HUDManager {
     this.#elements.overlay.hidden = true;
   }
 
+  showPointerLockPending() {
+    this.#elements.overlay.hidden = false;
+    this.#elements.overlay.dataset.mode = "LOADING";
+    this.#elements.overlayKicker.textContent = "正在啟動遊戲";
+    this.#elements.overlayTitle.textContent = "正在鎖定滑鼠";
+    this.#elements.overlayCopy.textContent =
+      "請允許瀏覽器的滑鼠鎖定要求；完成後會立即進入血管。";
+    this.#elements.overlayAction.textContent = "等待瀏覽器回應";
+    this.#setActions({ primary: true });
+    this.#elements.overlayAction.disabled = true;
+  }
+
   showPointerLockError(message) {
     this.#elements.overlay.hidden = false;
     this.#elements.overlay.dataset.mode = "ERROR";
-    this.#elements.overlayKicker.textContent = "Pointer Lock unavailable";
+    this.#elements.overlayKicker.textContent = "滑鼠視角無法啟用";
     this.#elements.overlayTitle.textContent = "無法鎖定滑鼠";
     this.#elements.overlayCopy.textContent = message;
     this.#elements.overlayAction.textContent = "重試滑鼠鎖定";
@@ -315,7 +326,7 @@ export class HUDManager {
     this.#elements.qtePanel.dataset.outcome = diagnostics.lastOutcome ?? "";
     this.#elements.qtePanel.dataset.status = diagnostics.status;
     this.#elements.qteAttempt.textContent =
-      "ATTEMPT " + attempt + " / " + diagnostics.opportunityCount;
+      "第 " + attempt + " / " + diagnostics.opportunityCount + " 次";
     this.#elements.qteInstruction.textContent =
       (
         GAME_CONFIG.qte.durationMs /
@@ -371,11 +382,14 @@ export class HUDManager {
     this.#cutsceneRenderer.hide();
   }
 
-  showGameOver({ mode, levelId, checkpointSeed }) {
+  showGameOver({ mode, levelId }) {
     const fellIntoWound = mode === "FALL";
     const stroke = mode === "STROKE";
+    const timedOut = mode === "TIMEOUT";
     this.#elements.overlay.hidden = false;
-    this.#elements.overlay.dataset.mode = stroke
+    this.#elements.overlay.dataset.mode = timedOut
+      ? "GAME_OVER_TIMEOUT"
+      : stroke
       ? "GAME_OVER_STROKE"
       : fellIntoWound
         ? "GAME_OVER_FALL"
@@ -383,21 +397,23 @@ export class HUDManager {
     this.#elements.overlayIndex.textContent =
       String(levelId).padStart(2, "0");
     this.#elements.overlayKicker.textContent =
-      "Level " + String(levelId).padStart(2, "0") + " / Mission failed";
-    this.#elements.overlayTitle.textContent = stroke
+      "第 " + levelId + " 關任務失敗";
+    this.#elements.overlayTitle.textContent = timedOut
+      ? "時間耗盡"
+      : stroke
       ? "中風 / Stroke"
       : fellIntoWound
         ? "Vessel Rupture"
         : "紅血球已回收";
-    this.#elements.overlayCopy.textContent = stroke
-      ? "體循環中的腦部血管 Wound 觸發中風結局。本關 checkpoint seed " +
-        checkpointSeed + " 將保持不變。"
+    this.#elements.overlayCopy.textContent = timedOut
+      ? "紅血球未能在時限內抵達，已乾扁並送往肝臟工廠回收。"
+      : stroke
+      ? "腦部血管破口造成中風，請重新挑戰本關。"
       : fellIntoWound
-        ? "Wound 為致命障礙。本關會使用相同 checkpoint seed " +
-          checkpointSeed + " 重建障礙序列。"
+        ? "撞上血管破口會直接衝出血管，請重新挑戰本關。"
         : "HP 已降至零。重試時 HP 至少恢復為 " +
           GAME_CONFIG.checkpoint.retryMinimumHp +
-          "，Score 回到本關 checkpoint。";
+          "，分數回到本關起點。";
     this.#elements.overlayAction.textContent = "重新挑戰本關";
     this.#elements.overlayRestartAction.textContent = "從第一關重新開始";
     this.#elements.overlayMenuAction.textContent = "回到主選單";
@@ -408,15 +424,14 @@ export class HUDManager {
     this.#elements.overlay.hidden = false;
     this.#elements.overlay.dataset.mode = "VICTORY";
     this.#elements.overlayIndex.textContent = "O₂";
-    this.#elements.overlayKicker.textContent =
-      "Four routes complete / Final statistics";
+    this.#elements.overlayKicker.textContent = "四段循環完成 / 任務統計";
     this.#elements.overlayTitle.textContent = "循環任務成功";
     this.#elements.overlayCopy.textContent =
-      "Score " + summary.score +
+      "分數 " + summary.score +
       " / HP " + summary.hp +
       " / 氣體交換成功 " + summary.gasExchangeSuccessCount +
-      " / Wound 閃避 " + summary.woundDodgedCount +
-      " / REAL CLOCK " + summary.elapsedSeconds.toFixed(1) + " 秒。";
+      " / 血管破口閃避 " + summary.woundDodgedCount +
+      " / 總時間 " + summary.elapsedSeconds.toFixed(1) + " 秒。";
     this.#elements.overlayAction.textContent = "從第一關重新開始";
     this.#elements.overlayMenuAction.textContent = "回到主選單";
     this.#setActions({ primary: true, menu: true });
@@ -507,12 +522,12 @@ export class HUDManager {
     const activeIds = new Set();
 
     statuses.forEach((status) => {
-      const remainingSeconds = getStatusRemainingSeconds(
-        status.expiresAtMs,
-        nowMs
-      );
+      const persistent = status.expiresAtMs === null;
+      const remainingSeconds = persistent
+        ? null
+        : getStatusRemainingSeconds(status.expiresAtMs, nowMs);
 
-      if (remainingSeconds <= 0) {
+      if (!persistent && remainingSeconds <= 0) {
         return;
       }
 
@@ -527,8 +542,11 @@ export class HUDManager {
 
       elements.item.dataset.tone = status.tone ?? "CAUTION";
       elements.label.textContent = status.label;
-      elements.remaining.textContent =
-        remainingSeconds.toFixed(GAME_CONFIG.hud.statusTimePrecision) + " s";
+      elements.remaining.textContent = persistent
+        ? "持續中"
+        : remainingSeconds.toFixed(
+            GAME_CONFIG.hud.statusTimePrecision
+          ) + " s";
     });
 
     this.#statusElements.forEach((elements, statusId) => {

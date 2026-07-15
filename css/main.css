@@ -106,6 +106,54 @@ output {
     repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 255, 255, 0.035) 4px);
 }
 
+.malaria-steam {
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse at 18% 28%, rgba(255, 249, 235, 0.34), transparent 34%),
+    radial-gradient(ellipse at 78% 64%, rgba(230, 239, 224, 0.3), transparent 38%),
+    repeating-radial-gradient(circle at 54% 46%, rgba(255, 255, 255, 0.09) 0 0.4rem, transparent 0.55rem 2.8rem);
+  backdrop-filter: blur(var(--malaria-steam-blur, 8px)) saturate(0.62) contrast(0.88);
+  transition: opacity 180ms ease-out;
+  pointer-events: none;
+}
+
+.malaria-steam i {
+  position: absolute;
+  width: 46vw;
+  aspect-ratio: 1.8;
+  border-radius: 50%;
+  opacity: 0.46;
+  background: radial-gradient(ellipse, rgba(255, 255, 247, 0.72), rgba(229, 237, 220, 0.18) 48%, transparent 72%);
+  filter: blur(1.8rem);
+  animation: malaria-steam-drift var(--malaria-steam-drift, 6s) ease-in-out infinite alternate;
+}
+
+.malaria-steam i:nth-child(1) {
+  top: 8%;
+  left: -12%;
+}
+
+.malaria-steam i:nth-child(2) {
+  top: 42%;
+  right: -10%;
+  animation-delay: -2s;
+  animation-direction: alternate-reverse;
+}
+
+.malaria-steam i:nth-child(3) {
+  bottom: -8%;
+  left: 22%;
+  animation-delay: -4s;
+}
+
+.game-root[data-malaria-visual-active="true"] .malaria-steam {
+  opacity: var(--malaria-steam-opacity, 0.72);
+}
+
 @keyframes intoxication-distortion {
   0% {
     transform: scale(1.012) translateX(-0.22rem) skewX(-0.16deg);
@@ -127,6 +175,20 @@ output {
 
   100% {
     transform: translateX(0.18rem);
+  }
+}
+
+@keyframes malaria-steam-drift {
+  0% {
+    transform: translate3d(-8%, 8%, 0) scale(0.86);
+  }
+
+  50% {
+    transform: translate3d(18%, -12%, 0) scale(1.18);
+  }
+
+  100% {
+    transform: translate3d(42%, 6%, 0) scale(0.94);
   }
 }
 

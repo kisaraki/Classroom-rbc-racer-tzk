@@ -3,13 +3,13 @@ import {
   PerspectiveCamera,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
 import {
   createLevelCheckpoint,
   RBC_COLOR_STATES
-} from "../../js/data/schemas.js?v=phase10-final-r1";
+} from "../../js/data/schemas.js?v=phase11-r4";
 import { InputController } from "../../js/input/InputController.js";
-import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase10-final-r1";
+import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase11-r4";
 import {
   assert,
   assertApproximately,
@@ -299,6 +299,29 @@ export function registerPlayerRbcTests(harness) {
     player.dispose();
   });
 
+  harness.test("blood rupture triples hood obstruction and caps BP at 60", () => {
+    const player = new PlayerRBC();
+    const hood = player.hoodController;
+
+    assertEqual(hood.triggerBloodRupture(1000), 16000);
+    assertEqual(hood.update(15999), true);
+    assertEqual(hood.update(16000), false);
+    player.setBloodPressure(GAME_CONFIG.bp.max);
+    assertEqual(
+      player.setBloodPressureMaximum(
+        GAME_CONFIG.bloodRupture.bloodPressureMaximum
+      ),
+      60
+    );
+    assertEqual(player.state.bp, 60);
+    player.adjustBloodPressure(1, 10);
+    assertEqual(player.state.bp, 60);
+    player.setBloodPressureMaximum(GAME_CONFIG.bp.max);
+    player.adjustBloodPressure(1, 1);
+    assertEqual(player.state.bp, 78);
+    player.dispose();
+  });
+
   harness.test("malaria flutter derives from the original transform", () => {
     const player = new PlayerRBC();
     const hood = player.hoodController;
@@ -356,7 +379,7 @@ export function registerPlayerRbcTests(harness) {
     player.dispose();
   });
 
-  harness.test("malaria and intoxication overlap caps hood coverage at 55 percent", () => {
+  harness.test("malaria and intoxication overlap uses the configured coverage cap", () => {
     const player = new PlayerRBC();
     const hood = player.hoodController;
     const baseScale = hood.mesh.scale.x;

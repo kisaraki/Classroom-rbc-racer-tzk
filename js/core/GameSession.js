@@ -1,8 +1,9 @@
 import { GameClock } from "./GameClock.js?v=phase01-real-clock";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 import {
   GAME_STATES,
   GameStateMachine
-} from "./GameStateMachine.js?v=phase10-final-r1";
+} from "./GameStateMachine.js?v=phase11-r4";
 
 function assertDurationSeconds(value) {
   if (!Number.isFinite(value)) {
@@ -62,6 +63,36 @@ export class GameSession {
     return this.#deadlineMs === null
       ? null
       : this.#clock.remainingSeconds(this.#deadlineMs);
+  }
+
+  get hasTimedOut() {
+    return (
+      this.#deadlineMs !== null &&
+      this.#clock.hasExpired(this.#deadlineMs)
+    );
+  }
+
+  getDeadlineBoundDeltaSeconds(deltaSeconds, nowMs = this.#clock.nowMs) {
+    if (!Number.isFinite(deltaSeconds) || deltaSeconds < 0) {
+      throw new RangeError(
+        "deltaSeconds must be finite and non-negative."
+      );
+    }
+
+    if (!Number.isFinite(nowMs)) {
+      throw new TypeError("nowMs must be a finite number.");
+    }
+
+    if (this.#deadlineMs === null) {
+      return deltaSeconds;
+    }
+
+    const overshootSeconds = Math.max(
+      0,
+      (nowMs - this.#deadlineMs) /
+        GAME_CONFIG.timing.millisecondsPerSecond
+    );
+    return Math.max(0, deltaSeconds - overshootSeconds);
   }
 
   prepareForPointerLock() {
@@ -129,5 +160,9 @@ export class GameSession {
 
   enterGameOver(gameOverState) {
     return this.#stateMachine.enterGameOver(gameOverState);
+  }
+
+  enterTimeoutGameOver() {
+    return this.#stateMachine.enterTimeoutGameOver();
   }
 }

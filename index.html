@@ -6,13 +6,13 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E">
     <meta
       name="description"
-      content="RBC Racer Phase 10 final circulation, gas exchange, compatibility, and deployment build"
+      content="RBC Racer Phase 11 circulation, cumulative hazards, gas exchange, and timeout ending"
     >
-    <title>RBC Racer | Phase 10 Final Build</title>
-    <link rel="stylesheet" href="./css/main.css?v=phase10-final-r1">
-    <link rel="stylesheet" href="./css/hud.css?v=phase10-final-r1">
-    <link rel="stylesheet" href="./css/menu.css?v=phase10-final-r1">
-    <link rel="stylesheet" href="./css/cutscene.css?v=phase10-final-r1">
+    <title>RBC Racer | Phase 11</title>
+    <link rel="stylesheet" href="./css/main.css?v=phase11-r4">
+    <link rel="stylesheet" href="./css/hud.css?v=phase11-r4">
+    <link rel="stylesheet" href="./css/menu.css?v=phase11-r4">
+    <link rel="stylesheet" href="./css/cutscene.css?v=phase11-r4">
   </head>
   <body>
     <main
@@ -20,6 +20,7 @@
       class="game-root"
       data-game-state="BOOT"
       data-intoxicated="false"
+      data-malaria-visual-active="false"
     >
       <canvas
         id="game-canvas"
@@ -28,24 +29,22 @@
       ></canvas>
       <div class="screen-vignette" aria-hidden="true"></div>
       <div class="screen-grain" aria-hidden="true"></div>
+      <div class="malaria-steam" aria-hidden="true">
+        <i></i><i></i><i></i>
+      </div>
 
       <section id="game-hud" class="game-hud" aria-label="遊戲狀態">
         <header class="hud-brand">
-          <span class="hud-brand__phase">P10</span>
           <span class="hud-brand__name">RBC / RACER</span>
-          <span class="hud-brand__status">
-            <i aria-hidden="true"></i>
-            <span id="state-value">READY</span>
-          </span>
         </header>
 
         <section class="circulation-card" aria-labelledby="circulation-title">
           <header class="circulation-card__header">
             <div>
-              <span>Circulation map</span>
-              <strong id="circulation-title">體循環 / SYSTEMIC</strong>
+              <span>血液循環圖</span>
+              <strong id="circulation-title">體循環</strong>
             </div>
-            <b id="circulation-route-code">ROUTE 01</b>
+            <b id="circulation-route-code">第 1 關</b>
           </header>
           <div id="circulation-map" class="circulation-map"></div>
           <footer class="circulation-card__legend" aria-label="循環圖圖例">
@@ -115,10 +114,10 @@
           aria-labelledby="status-panel-title"
         >
           <header>
-            <span>Condition monitor</span>
-            <strong id="status-panel-title">STATUS</strong>
+            <span>生理狀態監測</span>
+            <strong id="status-panel-title">目前狀態</strong>
           </header>
-          <p id="status-empty">NO ACTIVE CONDITIONS</p>
+          <p id="status-empty">目前無異常狀態</p>
           <div id="status-list" class="status-list" data-count="0"></div>
           <section class="status-toolkit" aria-labelledby="toolkit-title">
             <div class="status-toolkit__brand">
@@ -138,15 +137,10 @@
         <aside class="clock-card" data-active="false" aria-label="絕對計時器">
           <span class="clock-card__signal" aria-hidden="true"></span>
           <div>
-            <span>Real clock</span>
+            <span>任務計時</span>
             <strong id="timer-value">--.- s</strong>
           </div>
-          <small id="timer-caption">STARTS ON CLICK</small>
-        </aside>
-
-        <aside class="system-card" aria-label="系統診斷">
-          <span>VIEW <strong id="pointer-value">RELEASED</strong></span>
-          <span>FPS <strong id="fps-value">0</strong></span>
+          <small id="timer-caption">點擊開始計時</small>
         </aside>
 
         <section
@@ -215,7 +209,7 @@
               <span>Gas exchange protocol</span>
               <strong id="qte-title">氣體交換</strong>
             </div>
-            <b id="qte-attempt">ATTEMPT --</b>
+            <b id="qte-attempt">第 -- 次</b>
           </header>
           <p id="qte-instruction" class="qte-panel__instruction">
             倒數結束前分別按滿 O 與 C，不必交替。
@@ -248,8 +242,8 @@
           aria-live="polite"
           hidden
         >
-          <p id="central-message-kicker">Navigation</p>
-          <strong id="central-message-title">ROUTE SYNCHRONIZED</strong>
+          <p id="central-message-kicker">循環導航</p>
+          <strong id="central-message-title">循環圖已同步</strong>
           <p id="central-message-copy">循環圖已與紅血球位置同步。</p>
         </section>
 
@@ -277,14 +271,14 @@
         data-mode="READY"
         aria-labelledby="overlay-title"
       >
-        <div id="overlay-index" class="overlay-index" aria-hidden="true">10</div>
+        <div id="overlay-index" class="overlay-index" aria-hidden="true">O₂</div>
         <div class="overlay-panel">
           <p id="overlay-kicker" class="overlay-kicker">
-            Phase 10 / Final circulation build
+            紅血球循環任務
           </p>
           <h1 id="overlay-title">血液循環任務啟航</h1>
           <p id="overlay-copy" class="overlay-copy">
-            四關將自動銜接心房至心室輸送帶，並依結果進入回收、墜落、中風或 O₂ 旗幟勝利遊街。
+            四關將依序完成體循環與肺循環；請在時限內抵達，並完成組織或肺部的氣體交換。
           </p>
           <div class="overlay-controls" aria-label="核心操作">
             <span><b>↑↓←→ / 十字</b> BODY</span>
@@ -313,7 +307,7 @@
             </button>
           </div>
           <p class="overlay-note">
-            Pointer Lock 僅會在此次點擊後請求，頁面不會自動鎖定滑鼠。
+            點擊開始後滑鼠會控制視線；按 ESC 可解除滑鼠控制並暫停。
           </p>
         </div>
       </section>
@@ -323,6 +317,7 @@
       </noscript>
     </main>
 
-    <script type="module" src="./js/main.js?v=phase10-final-r1"></script>
+    <script src="./js/entryGuard.js?v=phase11-r4"></script>
+    <script type="module" src="./js/main.js?v=phase11-r4"></script>
   </body>
 </html>

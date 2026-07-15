@@ -1,7 +1,7 @@
 import { GameClock } from "../../js/core/GameClock.js?v=phase01-real-clock";
-import { GameSession } from "../../js/core/GameSession.js?v=phase10-final-r1";
+import { GameSession } from "../../js/core/GameSession.js?v=phase11-r4";
 import { GAME_STATES } from "../../js/core/GameStateMachine.js";
-import { PointerLockController } from "../../js/input/PointerLockController.js";
+import { PointerLockController } from "../../js/input/PointerLockController.js?v=phase11-r4";
 import {
   assertDeepEqual,
   assertEqual
@@ -140,18 +140,41 @@ export function registerPointerLockTests(harness) {
     }
   );
 
-  harness.test("unsupported Pointer Lock reports a typed error", async () => {
-    const documentRef = new FakePointerLockDocument();
-    const errors = [];
-    const target = createTarget(undefined);
-    const controller = new PointerLockController({
-      documentRef,
-      targetElement: target,
-      onError: (error) => errors.push(error)
-    });
+  harness.test(
+    "unsupported and silent Pointer Lock requests report typed errors",
+    async () => {
+      const documentRef = new FakePointerLockDocument();
+      const errors = [];
+      const target = createTarget(undefined);
+      const controller = new PointerLockController({
+        documentRef,
+        targetElement: target,
+        onError: (error) => errors.push(error)
+      });
 
-    assertEqual(await controller.request(), false);
-    assertEqual(errors.length, 1);
-    assertEqual(errors[0].name, "NotSupportedError");
-  });
+      assertEqual(await controller.request(), false);
+      assertEqual(errors.length, 1);
+      assertEqual(errors[0].name, "NotSupportedError");
+
+      const silentErrors = [];
+      const silentController = new PointerLockController({
+        documentRef: new FakePointerLockDocument(),
+        targetElement: createTarget(() => undefined),
+        onError: (error) => silentErrors.push(error),
+        requestTimeoutMs: 1200
+      });
+
+      assertEqual(await silentController.request(1000), true);
+      assertEqual(silentController.isRequestPending, true);
+      assertEqual(silentController.requestExpiresAtMs, 2200);
+      assertEqual(silentController.update(2199), false);
+      assertEqual(silentErrors.length, 0);
+      assertEqual(silentController.update(2200), true);
+      assertEqual(silentController.isRequestPending, false);
+      assertEqual(silentErrors.length, 1);
+      assertEqual(silentErrors[0].name, "TimeoutError");
+      assertEqual(silentController.update(5000), false);
+      assertEqual(silentErrors.length, 1);
+    }
+  );
 }

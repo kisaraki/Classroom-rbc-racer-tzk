@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 
 function assertFiniteNumber(value, label) {
   if (!Number.isFinite(value)) {
@@ -6,16 +6,36 @@ function assertFiniteNumber(value, label) {
   }
 }
 
-export function clampBloodPressure(bp, config = GAME_CONFIG) {
+function requireBloodPressureMaximum(maximum, config) {
+  assertFiniteNumber(maximum, "bloodPressureMaximum");
+
+  if (maximum < config.bp.min || maximum > config.bp.max) {
+    throw new RangeError(
+      "bloodPressureMaximum must remain inside configured BP bounds."
+    );
+  }
+
+  return maximum;
+}
+
+export function clampBloodPressure(
+  bp,
+  config = GAME_CONFIG,
+  maximum = config.bp.max
+) {
   assertFiniteNumber(bp, "bp");
-  return Math.min(config.bp.max, Math.max(config.bp.min, bp));
+  return Math.min(
+    requireBloodPressureMaximum(maximum, config),
+    Math.max(config.bp.min, bp)
+  );
 }
 
 export function updateBloodPressure(
   bp,
   adjustmentAxis,
   deltaSeconds,
-  config = GAME_CONFIG
+  config = GAME_CONFIG,
+  maximum = config.bp.max
 ) {
   assertFiniteNumber(bp, "bp");
   assertFiniteNumber(adjustmentAxis, "adjustmentAxis");
@@ -28,12 +48,17 @@ export function updateBloodPressure(
   const normalizedAxis = Math.min(1, Math.max(-1, adjustmentAxis));
   return clampBloodPressure(
     bp + normalizedAxis * config.bp.changeRate * deltaSeconds,
-    config
+    config,
+    maximum
   );
 }
 
-export function getSpeedForBloodPressure(bp, config = GAME_CONFIG) {
-  const clampedBp = clampBloodPressure(bp, config);
+export function getSpeedForBloodPressure(
+  bp,
+  config = GAME_CONFIG,
+  maximum = config.bp.max
+) {
+  const clampedBp = clampBloodPressure(bp, config, maximum);
   const calculatedSpeed =
     config.movement.minSpeed +
     (clampedBp - config.movement.bpOffset) *

@@ -1,8 +1,8 @@
 # RBC Racer 技術決策附錄
 
-**附錄版本：** 1.2
+**附錄版本：** 1.5
 
-**對應總案版本：** 3.1
+**對應總案版本：** 3.4
 
 **決策日期：** 2026-07-15
 
@@ -16,7 +16,7 @@
 
 本附錄將總案中的玩法需求轉換為可直接實作與測試的技術契約。
 
-若本附錄與舊版總案衝突，以 3.1 版總案及本附錄為準。循環系統繁體中文術語以 `CIRCULATION_TERMINOLOGY.md` 指定的台灣教材為準。醫學資料只用於校準循環方向、相對路徑與教育表述；遊戲時間、世界單位、BP、傷害和生成機率仍是遊戲化數值，不代表真實生理量測。
+若本附錄與舊版總案衝突，以 3.4 版總案及本附錄為準。循環系統繁體中文術語以 `CIRCULATION_TERMINOLOGY.md` 指定的台灣教材為準。醫學資料只用於校準循環方向、相對路徑與教育表述；遊戲時間、世界單位、BP、傷害和生成機率仍是遊戲化數值，不代表真實生理量測。
 
 ---
 
@@ -25,7 +25,7 @@
 | 編號 | 決策 |
 | --- | --- |
 | TD-001 | 所有前進位置統一使用世界單位 `distanceAlongTrack` |
-| TD-002 | 所有碰撞半徑統一使用 `collisionRadius`，縱向採掃掠判定 |
+| TD-002 | 實體本體半徑統一使用 `collisionRadius`；玩家截面與標示牌依可見輪廓，縱向採掃掠判定 |
 | TD-003 | 第一版使用多段 `TrackSection` 與固定半徑 `TubeGeometry` 組成變徑血管 |
 | TD-004 | 世界模擬可停止，但所有狀態倒數、冷卻與 QTE 截止時間持續運行 |
 | TD-005 | 第四關酒精總權重倍率為 `2.5 × 2 = 5`；安全 BP Wound 沿用指數公式 |
@@ -40,6 +40,14 @@
 | TD-014 | 氣體交換只在體微血管或肺泡微血管觸發，不在心臟、一般動脈或靜脈建立保底事件 |
 | TD-015 | 成功交換切換 RBC 紅／紅紫狀態，並由跨關資料與 checkpoint 保存 |
 | TD-016 | 玩家可見循環術語採教材的「充氧血／減氧血／微血管」；路線限定詞不得被描述為新的循環類型 |
+| TD-017 | 氣體交換區的小地圖標記鎖定組織／肺節點，區外才使用連續 SVG 路徑百分比 |
+| TD-018 | 一般 DEBUFF 的 Score 與 HP 負值乘 2，FATAL Wound 不套倍率 |
+| TD-019 | 每關每 5 隻瘧原蟲觸發 15 秒血球破裂與 BP 上限 60；每 10 次 CO 碰撞觸發持續性 CO 中毒與 O/C 各 9 次 |
+| TD-020 | 任務逾時只在尚未抵達終點時成立，跨 deadline 的 simulation delta 必須切在截止時間 |
+| TD-021 | 瘧原蟲頭罩期間以程序化蒸氣模糊全畫面，直到絕對期限與復原動畫完成 |
+| TD-022 | 玩家畫面移除 Phase、build 與系統診斷文字，內部 data attributes 仍可供自動驗證 |
+| TD-023 | 開始按鈕立即顯示 Pointer Lock 等待狀態；靜默失敗依集中期限轉為可重試錯誤，`file://` 則提供靜態伺服器指引 |
+| TD-024 | RBC 截面採十字線至機體下緣的垂直膠囊；增益／減益以完整本體與標示牌聯集判定碰撞 |
 
 ## 2.1 Three.js 版本鎖定
 
@@ -364,11 +372,13 @@ MIN_ENTITY_GAP = 2.5;
 
 | 對象 | `collisionRadius` |
 | --- | ---: |
-| Player RBC | 0.65 |
-| Vitamin C／B12／Iron | 0.50 |
-| CO | 0.55 |
-| Malaria | 0.70 |
-| Alcohol | 0.55 |
+| Player RBC 膠囊寬度半徑 | 0.55 |
+| Vitamin C | 0.77 |
+| Vitamin B12 | 0.81 |
+| Iron | 0.80 |
+| CO | 0.75 |
+| Malaria | 1.19 |
+| Alcohol | 1.08 |
 | Wound | 1.15 |
 
 ```javascript
@@ -379,6 +389,8 @@ MIN_WOUND_GAP = 45;
 ```
 
 縱向碰撞必須檢查玩家前一影格與目前影格之間的掃掠範圍，避免高速度或 0.1 秒 delta 上限造成穿透。
+
+玩家截面是外框從 `topOffsetY = 0` 到 `bottomOffsetY = -1.91` 的垂直膠囊，不得退回以十字線為圓心的單一圓。增益／減益本體先以各自半徑與膠囊判定；有標示牌者再以 `2.7 × 1.18`、向上位移 `1.35` 的矩形判定。兩者任一成立即消耗物件並套用效果。
 
 Wound 落後玩家 10 單位且未碰撞時，計為一次成功閃避並回收到物件池。
 
@@ -533,3 +545,49 @@ gasExchangeAttempts = 0;
 - 紅血球可通過極小血管；本案微血管半徑仍刻意放大，以維持第一人稱閃避玩法：[NCBI Bookshelf：Blood Groups and Red Cell Antigens](https://www.ncbi.nlm.nih.gov/books/NBK2263/)
 
 上述資料不支持把 5、1.5、3、1.5 分鐘解讀成真實循環時間；它們是依關卡長短、教育權重與遊戲節奏制定的基準。
+
+---
+
+# 十七、Phase 11 累積狀態與逾時契約
+
+## 17.1 小地圖交換節點
+
+交換區段由 `gasExchangeZone` 決定錨點，`TISSUE` 對應 `tissues`，`LUNG` 對應 `lungs`。進入交換區後，玩家標記必須固定在教學節點；離開區段才依 `minimapProgress` 沿 SVG 路線連續移動。進度值仍保留供診斷，不得以錯誤的全路徑百分比代表交換器官。
+
+## 17.2 減益與每關計數
+
+- `ENTITY_CATEGORIES.DEBUFF` 的負 Score 與負 HP 乘 `penalties.debuffMultiplier = 2`。
+- `FATAL` 類別的 Wound 不套一般減益倍率。
+- QTE 失敗分數直接集中為 `qte.failureScore = -6`。
+- `malariaCount`、`carbonMonoxideCount` 與 `alcoholCount` 都是每關狀態；跨關、重試與重新開始必須歸零。
+
+## 17.3 血球破裂
+
+瘧原蟲計數每達 5 的倍數就建立新的 15 秒絕對期限。頭罩時間為一般 5 秒的 3 倍，BP 動態上限為 60。期限在 PLAYING、QTE、LOW_BP_STASIS 與 PAUSED 中均持續；結束時恢復 BP 上限 180，但不補回目前 BP。
+
+## 17.4 CO 中毒
+
+同關 CO 計數達 10 後，狀態維持到本關結束。`QTESystem` 的氧氣與二氧化碳門檻都從 3 提升為 9；兩者必須分別達標，不得改成任意 18 次總按鍵。
+
+## 17.5 Time Out
+
+任務 deadline 到達時，只有 `distanceAlongTrack < trackLength` 才進入 `GAME_OVER_TIMEOUT`。若一幀跨越 deadline，simulation delta 必須扣除截止後時間，再更新最後位置；正好抵達終點視為成功。逾時可從 PLAYING、QTE、LOW_BP_STASIS 或其 PAUSED 包裝狀態進入，並播放程序化乾扁紅血球送往肝臟工廠過場。
+
+## 17.6 視覺與介面
+
+任何瘧原蟲頭罩效果與復原動畫期間，程序化 CSS 水蒸氣以 `backdrop-filter` 模糊全畫面；模糊、透明度與漂移時間由 `js/config.js` 注入 CSS variables。玩家畫面不顯示 Phase、build、FPS、Pointer Lock、內部 state、checkpoint seed 或 cutscene phase ID；必要資料可保留在不可見的 `data-*` 診斷屬性。
+
+## 17.7 啟動與 Pointer Lock 可靠性
+
+- 正式遊戲邏輯維持 JavaScript ES Modules；`js/entryGuard.js` 是唯一傳統 script，只在 `file://` 下提供傳輸層診斷，不得包含遊戲狀態、玩法或平衡數值。
+- 專案不得直接以 `file://` 執行。入口需在 module 載入前顯示明確錯誤，並引導使用 `start-local.cmd` 或本機靜態伺服器。
+- 點擊開始按鈕後必須先同步切換為等待畫面，再要求 Pointer Lock，避免瀏覽器延遲回應時看似無效。
+- Pointer Lock 的靜默失敗使用 `GAME_CONFIG.pointerLock.requestTimeoutMs` 建立絕對期限；期限到達後顯示可重試錯誤。
+- `pointerlockchange`、`pointerlockerror`、靜默逾時及未支援 API 都必須收斂至同一控制器；渲染迴圈只呼叫控制器的期限更新，不自行硬編碼逾時值。
+
+## 17.8 可見碰撞輪廓
+
+- RBC 玩家碰撞膠囊的外框上緣固定在十字線，下緣固定在第一人稱鼻罩的可見下緣；半徑仍保留較小值，避免回復成過大的車體。
+- 增益／減益本體半徑必須覆蓋程序化模型在最大 pulse 時的截面，不得只使用核心幾何半徑。
+- `BUFF`、`DEBUFF` 且具有非空白 `label` 的物件，其程序化標示牌是獨立碰撞面；瘧原蟲無牌面，Wound 不套用此分類規則。
+- 本體圓與標示牌矩形都和玩家膠囊進行截面距離測試，任一成立後仍沿用既有優先序、單次消耗與掃掠縱向判定。

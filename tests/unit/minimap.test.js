@@ -1,13 +1,14 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
-import { LEVELS } from "../../js/data/levels.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
+import { LEVELS } from "../../js/data/levels.js?v=phase11-r4";
 import {
   buildHeartOutlinePathData,
   buildRoutePathData,
   buildVesselPathData,
   calculateMarkerPoint,
   clampMinimapProgress,
+  resolveMarkerPoint,
   validateMinimapConfig
-} from "../../js/ui/MiniMapRenderer.js?v=phase10-final-r1";
+} from "../../js/ui/MiniMapRenderer.js?v=phase11-r4";
 import {
   assert,
   assertApproximately,
@@ -191,6 +192,28 @@ export function registerMinimapTests(harness) {
       y: 0,
       progress: 1
     });
+  });
+
+  harness.test("gas exchange anchors the marker to the teaching node", () => {
+    const path = {
+      getTotalLength: () => 100,
+      getPointAtLength: () => ({ x: 1, y: 2 })
+    };
+    const lungs = GAME_CONFIG.minimap.nodes.find(
+      (node) => node.id === "lungs"
+    );
+    const point = resolveMarkerPoint(path, 0.42, "lungs");
+
+    assertDeepEqual(point, {
+      x: lungs.x,
+      y: lungs.y,
+      progress: 0.42,
+      anchorNodeId: "lungs"
+    });
+    assertThrows(
+      () => resolveMarkerPoint(path, 0.5, "unknown-node"),
+      RangeError
+    );
   });
 
   harness.test("route construction rejects disconnected vessel curves", () => {

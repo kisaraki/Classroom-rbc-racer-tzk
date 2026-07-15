@@ -1,5 +1,5 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
-import { CUTSCENE_TYPES } from "./CutsceneManager.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
+import { CUTSCENE_TYPES } from "./CutsceneManager.js?v=phase11-r4";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);
@@ -20,27 +20,32 @@ function createElement(documentRef, className, text = "") {
 
 const CUTSCENE_COPY = Object.freeze({
   TRANSFER: {
-    kicker: "HEART CHAMBER TRANSFER",
+    kicker: "心臟腔室轉換",
     title: "心房至心室輸送帶",
-    copy: "血流以絕對時間通過心房至心室，REAL CLOCK 與狀態期限持續運行。"
+    copy: "紅血球正隨血流通過心房與心室，任務計時及狀態期限仍持續運行。"
   },
   RECYCLE: {
-    kicker: "SPLEEN / LIVER RECOVERY",
+    kicker: "脾臟與肝臟回收",
     title: "紅血球回收",
     copy: "HP 歸零，紅血球正送往脾臟與肝臟回收廠分解。"
   },
   FALL: {
-    kicker: "VESSEL RUPTURE",
+    kicker: "血管破口",
     title: "翻車墜落",
     copy: "車輛衝出血管破口，黑色剪影翻滾並墜入深淵。"
   },
   STROKE: {
-    kicker: "CEREBRAL VESSEL EVENT",
-    title: "中風 / STROKE",
-    copy: "第三關體循環中的腦部血管 Wound 已觸發專屬中風結局。"
+    kicker: "腦部血管事件",
+    title: "中風",
+    copy: "第三關體循環中的腦部血管破口已造成中風。"
+  },
+  TIMEOUT: {
+    kicker: "任務時間耗盡",
+    title: "乾扁血球回收",
+    copy: "紅血球未能在時限內抵達終點，已乾扁並送往肝臟工廠回收。"
   },
   VICTORY: {
-    kicker: "OXYGEN PARADE",
+    kicker: "充氧紅血球遊行",
     title: "四關循環任務完成",
     copy: "紅血球車隊進入鮮紅血管，揮舞 O₂ 旗幟完成勝利遊街。"
   }
@@ -84,7 +89,6 @@ export class CutsceneRenderer {
       snapshot.durationSeconds + "s"
     );
     this.#elements.progress.style.width = snapshot.progress * 100 + "%";
-    this.#elements.phase.textContent = snapshot.phase.replaceAll("_", " ");
   }
 
   hide() {
@@ -114,7 +118,6 @@ export class CutsceneRenderer {
     description.textContent = copy.copy;
     const stage = createElement(this.#document, "cutscene-stage");
     const footer = createElement(this.#document, "cutscene-footer");
-    const phase = createElement(this.#document, "cutscene-phase");
     const progressTrack = createElement(
       this.#document,
       "cutscene-progress-track"
@@ -123,12 +126,12 @@ export class CutsceneRenderer {
 
     header.append(kicker, title, description);
     progressTrack.append(progress);
-    footer.append(phase, progressTrack);
+    footer.append(progressTrack);
     this.#buildStage(type, stage, context);
     frame.append(header, stage, footer);
     this.#layer.replaceChildren(frame);
     this.#currentType = type;
-    this.#elements = { phase, progress };
+    this.#elements = { progress };
   }
 
   #buildStage(type, stage, context) {
@@ -140,6 +143,8 @@ export class CutsceneRenderer {
       this.#buildFall(stage);
     } else if (type === CUTSCENE_TYPES.STROKE) {
       this.#buildStroke(stage);
+    } else if (type === CUTSCENE_TYPES.TIMEOUT) {
+      this.#buildTimeout(stage);
     } else if (type === CUTSCENE_TYPES.VICTORY) {
       this.#buildVictory(stage);
     }
@@ -169,8 +174,8 @@ export class CutsceneRenderer {
     belt.append(createElement(this.#document, "cutscene-rbc", "RBC"));
     const factory = createElement(this.#document, "cutscene-factory");
     factory.append(
-      createElement(this.#document, "cutscene-factory__tower", "SPLEEN"),
-      createElement(this.#document, "cutscene-factory__tower", "LIVER")
+      createElement(this.#document, "cutscene-factory__tower", "脾臟"),
+      createElement(this.#document, "cutscene-factory__tower", "肝臟")
     );
     const fragments = createElement(this.#document, "cutscene-fragments");
     for (
@@ -194,7 +199,7 @@ export class CutsceneRenderer {
     stage.append(
       createElement(this.#document, "cutscene-vessel-rim"),
       createElement(this.#document, "cutscene-rbc cutscene-rbc--fall", "RBC"),
-      createElement(this.#document, "cutscene-abyss", "VESSEL RUPTURE")
+      createElement(this.#document, "cutscene-abyss", "血管破口")
     );
   }
 
@@ -202,9 +207,33 @@ export class CutsceneRenderer {
     stage.classList.add("cutscene-stage--stroke");
     stage.append(
       createElement(this.#document, "cutscene-stroke-flash"),
-      createElement(this.#document, "cutscene-stroke-label", "中風"),
-      createElement(this.#document, "cutscene-stroke-subtitle", "STROKE")
+      createElement(this.#document, "cutscene-stroke-label", "中風")
     );
+  }
+
+  #buildTimeout(stage) {
+    stage.classList.add("cutscene-stage--timeout");
+    const belt = createElement(this.#document, "cutscene-belt");
+    belt.append(
+      createElement(
+        this.#document,
+        "cutscene-rbc cutscene-rbc--shriveled",
+        "RBC"
+      )
+    );
+    const factory = createElement(
+      this.#document,
+      "cutscene-factory cutscene-factory--liver"
+    );
+    factory.append(
+      createElement(
+        this.#document,
+        "cutscene-factory__tower",
+        "肝臟工廠"
+      )
+    );
+    const heat = createElement(this.#document, "cutscene-timeout-heat");
+    stage.append(belt, factory, heat);
   }
 
   #buildVictory(stage) {

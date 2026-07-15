@@ -1,9 +1,9 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
-import { getStatusRemainingSeconds } from "../../js/ui/HUDManager.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
+import { getStatusRemainingSeconds } from "../../js/ui/HUDManager.js?v=phase11-r4";
 import {
   getMessageRemainingSeconds,
   MessageOverlay
-} from "../../js/ui/MessageOverlay.js?v=phase10-final-r1";
+} from "../../js/ui/MessageOverlay.js?v=phase11-r4";
 import {
   assertEqual,
   assertThrows

@@ -22,8 +22,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Run Phase 10 tests and compliance audit
-        run: npm run test:phase10
+      - name: Run Phase 11 tests and compliance audit
+        run: npm run test:phase11
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

@@ -1,7 +1,30 @@
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
+
 function createUnsupportedError() {
   const error = new Error("Pointer Lock API is not supported.");
   error.name = "NotSupportedError";
   return error;
+}
+
+function createTimeoutError() {
+  const error = new Error(
+    "The browser did not complete the Pointer Lock request."
+  );
+  error.name = "TimeoutError";
+  return error;
+}
+
+function getCurrentTimeMs() {
+  const performanceNow = globalThis.performance?.now?.();
+  return Number.isFinite(performanceNow) ? performanceNow : Date.now();
+}
+
+function requireTimestamp(nowMs) {
+  if (!Number.isFinite(nowMs) || nowMs < 0) {
+    throw new RangeError("Pointer Lock time must be finite and non-negative.");
+  }
+
+  return nowMs;
 }
 
 export class PointerLockController {
@@ -11,12 +34,15 @@ export class PointerLockController {
   #onError;
   #attached = false;
   #errorReportedForRequest = false;
+  #requestTimeoutMs;
+  #requestExpiresAtMs = null;
 
   constructor({
     documentRef,
     targetElement,
     onChange = () => {},
-    onError = () => {}
+    onError = () => {},
+    requestTimeoutMs = GAME_CONFIG.pointerLock.requestTimeoutMs
   }) {
     if (!documentRef || !targetElement) {
       throw new Error(
@@ -28,14 +54,27 @@ export class PointerLockController {
       throw new TypeError("Pointer Lock callbacks must be functions.");
     }
 
+    if (!Number.isFinite(requestTimeoutMs) || requestTimeoutMs <= 0) {
+      throw new RangeError("Pointer Lock timeout must be positive.");
+    }
+
     this.#document = documentRef;
     this.#targetElement = targetElement;
     this.#onChange = onChange;
     this.#onError = onError;
+    this.#requestTimeoutMs = requestTimeoutMs;
   }
 
   get isLocked() {
     return this.#document.pointerLockElement === this.#targetElement;
+  }
+
+  get isRequestPending() {
+    return this.#requestExpiresAtMs !== null;
+  }
+
+  get requestExpiresAtMs() {
+    return this.#requestExpiresAtMs;
   }
 
   attach() {
@@ -68,12 +107,15 @@ export class PointerLockController {
       "pointerlockerror",
       this.#handlePointerLockError
     );
+    this.#requestExpiresAtMs = null;
     this.#attached = false;
     return true;
   }
 
-  request() {
+  request(nowMs = getCurrentTimeMs()) {
+    requireTimestamp(nowMs);
     this.#errorReportedForRequest = false;
+    this.#requestExpiresAtMs = nowMs + this.#requestTimeoutMs;
 
     if (typeof this.#targetElement.requestPointerLock !== "function") {
       this.#reportError(createUnsupportedError());
@@ -101,6 +143,27 @@ export class PointerLockController {
     }
   }
 
+  update(nowMs) {
+    requireTimestamp(nowMs);
+
+    if (!this.isRequestPending) {
+      return false;
+    }
+
+    if (this.isLocked) {
+      this.#requestExpiresAtMs = null;
+      this.#onChange(true);
+      return false;
+    }
+
+    if (nowMs < this.#requestExpiresAtMs) {
+      return false;
+    }
+
+    this.#reportError(createTimeoutError());
+    return true;
+  }
+
   exit() {
     if (
       !this.isLocked ||
@@ -109,6 +172,7 @@ export class PointerLockController {
       return false;
     }
 
+    this.#requestExpiresAtMs = null;
     this.#document.exitPointerLock();
     return true;
   }
@@ -119,12 +183,14 @@ export class PointerLockController {
     }
 
     this.#errorReportedForRequest = true;
+    this.#requestExpiresAtMs = null;
     this.#onError(error);
   }
 
   #handlePointerLockChange = () => {
     if (this.isLocked) {
       this.#errorReportedForRequest = false;
+      this.#requestExpiresAtMs = null;
     }
 
     this.#onChange(this.isLocked);

@@ -10,42 +10,42 @@ import {
   SRGBColorSpace,
   WebGLRenderer
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 import {
   CUTSCENE_TYPES,
   CutsceneManager
-} from "../cutscenes/CutsceneManager.js?v=phase10-final-r1";
-import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase10-final-r1";
+} from "../cutscenes/CutsceneManager.js?v=phase11-r4";
+import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase11-r4";
 import {
   createLevelCheckpoint
-} from "../data/schemas.js?v=phase10-final-r1";
-import { CameraController } from "../input/CameraController.js?v=phase10-final-r1";
-import { InputController } from "../input/InputController.js?v=phase10-final-r1";
-import { PointerLockController } from "../input/PointerLockController.js";
-import { PlayerRBC } from "../player/PlayerRBC.js?v=phase10-final-r1";
-import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=phase10-final-r1";
-import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase10-final-r1";
-import { EntityManager } from "../systems/EntityManager.js?v=phase10-final-r1";
+} from "../data/schemas.js?v=phase11-r4";
+import { CameraController } from "../input/CameraController.js?v=phase11-r4";
+import { InputController } from "../input/InputController.js?v=phase11-r4";
+import { PointerLockController } from "../input/PointerLockController.js?v=phase11-r4";
+import { PlayerRBC } from "../player/PlayerRBC.js?v=phase11-r4";
+import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=phase11-r4";
+import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase11-r4";
+import { EntityManager } from "../systems/EntityManager.js?v=phase11-r4";
 import {
   canCompleteLevel,
   QTE_EVENTS,
   QTE_OUTCOMES,
   QTE_PHASES,
   QTESystem
-} from "../systems/QTESystem.js?v=phase10-final-r1";
-import { StatusEffectManager } from "../systems/StatusEffectManager.js?v=phase10-final-r1";
-import { HUDManager } from "../ui/HUDManager.js?v=phase10-final-r1";
+} from "../systems/QTESystem.js?v=phase11-r4";
+import { StatusEffectManager } from "../systems/StatusEffectManager.js?v=phase11-r4";
+import { HUDManager } from "../ui/HUDManager.js?v=phase11-r4";
 import { SeededRandom } from "../utils/SeededRandom.js";
-import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase10-final-r1";
-import { VesselTrack } from "../world/VesselTrack.js?v=phase10-final-r1";
+import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase11-r4";
+import { VesselTrack } from "../world/VesselTrack.js?v=phase11-r4";
 import { GameLoop } from "./GameLoop.js";
-import { GameSession } from "./GameSession.js?v=phase10-final-r1";
-import { GAME_STATES } from "./GameStateMachine.js?v=phase10-final-r1";
-import { LevelManager } from "./LevelManager.js?v=phase10-final-r1";
+import { GameSession } from "./GameSession.js?v=phase11-r4";
+import { GAME_STATES } from "./GameStateMachine.js?v=phase11-r4";
+import { LevelManager } from "./LevelManager.js?v=phase11-r4";
 import {
   createLevelStartPlayerState,
   createRetryPlayerState
-} from "./RunProgression.js?v=phase10-final-r1";
+} from "./RunProgression.js?v=phase11-r4";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);
@@ -105,6 +105,18 @@ export class Game {
     this.#window = windowRef;
     this.#root = requireElement(documentRef, "#game-root");
     this.#canvas = requireElement(documentRef, "#game-canvas");
+    this.#root.style.setProperty(
+      "--malaria-steam-blur",
+      GAME_CONFIG.malaria.steamBlurPixels + "px"
+    );
+    this.#root.style.setProperty(
+      "--malaria-steam-opacity",
+      String(GAME_CONFIG.malaria.steamOpacity)
+    );
+    this.#root.style.setProperty(
+      "--malaria-steam-drift",
+      GAME_CONFIG.malaria.steamDriftSeconds + "s"
+    );
     this.levelManager = new LevelManager();
     this.level = this.levelManager.currentLevel;
     this.#session = new GameSession({
@@ -244,7 +256,7 @@ export class Game {
     this.#root.dataset.rbcLabelHeight = String(
       GAME_CONFIG.playerModel.label.planeHeight
     );
-    this.#root.dataset.phase = "10";
+    this.#root.dataset.phase = "11";
     this.#root.dataset.proceduralAssets = "true";
     this.#root.dataset.entityBatchCount = String(
       this.entityManager.batchCount
@@ -370,20 +382,35 @@ export class Game {
   }
 
   #updateSimulation(deltaSeconds) {
-    this.#updateStatusEffects(this.#session.nowMs);
+    const nowMs = this.#session.nowMs;
+    const deadlineBoundDeltaSeconds =
+      this.#session.getDeadlineBoundDeltaSeconds(deltaSeconds, nowMs);
+    this.#updateStatusEffects(nowMs);
     const drivingInput = this.statusEffects.isIntoxicated
       ? this.statusEffects
       : this.input;
-    this.player.update(deltaSeconds, drivingInput, this.track);
-    this.entityManager.update(this.player.state, deltaSeconds);
+    this.player.update(
+      deadlineBoundDeltaSeconds,
+      drivingInput,
+      this.track
+    );
+
+    if (this.#checkForTimeout()) {
+      return;
+    }
+
+    this.entityManager.update(
+      this.player.state,
+      deadlineBoundDeltaSeconds
+    );
     const collisionResult = this.collisionSystem.resolve(
       this.player.state,
       this.entityManager.activeEntities
     );
     const enteredGameOver = this.#handleCollisionResult(collisionResult);
     this.entityManager.recycleConsumed();
-    this.gasToken.update(deltaSeconds);
-    this.track.update(deltaSeconds);
+    this.gasToken.update(deadlineBoundDeltaSeconds);
+    this.track.update(deadlineBoundDeltaSeconds);
     this.#simulationUpdateCount += 1;
 
     if (enteredGameOver) {
@@ -415,8 +442,12 @@ export class Game {
 
   #renderFrame(rawDeltaSeconds) {
     const clockNowMs = this.#session.nowMs;
+    this.#pointerLock.update(clockNowMs);
+    const timedOut = this.#checkForTimeout();
     this.#updateStatusEffects(clockNowMs);
-    this.#updateQte(clockNowMs);
+    if (!timedOut) {
+      this.#updateQte(clockNowMs);
+    }
     this.#updateCutscene(clockNowMs);
     this.#updateBloodPressureMechanisms(
       rawDeltaSeconds,
@@ -452,29 +483,34 @@ export class Game {
     );
     const minimapProgress =
       this.levelManager.getMinimapProgressAtDistance(distanceAlongTrack);
+    const minimapAnchorNodeId =
+      this.levelManager.getMinimapAnchorAtDistance(distanceAlongTrack);
     this.player.hoodController.update(clockNowMs);
 
     this.hud.update({
       hp: this.player.state.hp,
       maxHp: this.player.state.maxHp,
       bp: this.player.state.bp,
+      bpMaximum: this.player.bloodPressureMaximum,
       score: this.player.state.score,
       level: this.level.id,
       levelCount: GAME_CONFIG.game.totalLevelCount,
       circulationLabel: this.level.hudLabel,
-      routeCode: "ROUTE " + String(this.level.id).padStart(2, "0"),
+      routeCode: "第 " + this.level.id + " 關",
       location: this.levelManager.getLocationAtDistance(
         distanceAlongTrack
       ),
       speed: this.player.speed,
       distance: this.player.state.distanceAlongTrack,
       trackLength: this.track.trackLength,
+      timerRemainingSeconds,
       realClockElapsedSeconds,
       state: this.#session.state,
       fps: this.#fps,
       pointerLocked,
       minimapPathId: this.level.minimapPathId,
       minimapProgress,
+      minimapAnchorNodeId,
       lateralX: this.player.state.lateralX,
       lateralY: this.player.state.lateralY,
       collisionRadius: this.player.state.collisionRadius,
@@ -658,10 +694,10 @@ export class Game {
       this.#session.acquirePointerLock();
       this.hud.hideOverlay();
       this.hud.showMessage({
-        kicker: "Automatic level transition",
+        kicker: "循環路線自動銜接",
         title: "第 " + this.level.id + " 關已載入",
         copy:
-          "HP、Score 與 checkpoint 已保存，從 " +
+          "生命與分數已保留，從 " +
           this.level.start.locationLabel +
           " 繼續循環。",
         tone: "INFO",
@@ -727,6 +763,20 @@ export class Game {
       this.#session.state
     );
 
+    if (result.bloodRuptureEnded) {
+      this.player.setBloodPressureMaximum(GAME_CONFIG.bp.max);
+
+      if (this.#session.state === GAME_STATES.PLAYING) {
+        this.hud.showMessage({
+          kicker: "狀態解除",
+          title: "血球破裂狀態解除",
+          copy: "血壓調整上限已恢復。",
+          tone: "INFO",
+          nowMs
+        });
+      }
+    }
+
     if (result.bpOverride !== null) {
       this.player.setBloodPressure(result.bpOverride);
     }
@@ -744,7 +794,7 @@ export class Game {
 
     if (this.#session.state === GAME_STATES.PLAYING) {
       this.hud.showMessage({
-        kicker: "Status restored",
+        kicker: "狀態解除",
         title: "酒精中毒解除",
         copy: "延遲輸入已清除，血壓恢復為 100 mmHg。",
         tone: "INFO",
@@ -756,7 +806,11 @@ export class Game {
   #clearStatusEffects() {
     this.statusEffects.reset();
     this.player.state.alcoholCount = 0;
+    this.player.state.malariaCount = 0;
+    this.player.state.carbonMonoxideCount = 0;
+    this.player.setBloodPressureMaximum(GAME_CONFIG.bp.max);
     this.player.setBloodPressure(GAME_CONFIG.bp.initial);
+    this.qteSystem.setCarbonMonoxidePoisoned(false);
     this.input.resetDrivingControls();
     this.player.hoodController.reset();
   }
@@ -789,7 +843,7 @@ export class Game {
       if (wound) {
         this.#woundSpawnCount += 1;
         this.hud.showMessage({
-          kicker: "High blood pressure",
+          kicker: "高血壓風險",
           title: "高血壓警告",
           copy: "前方形成血管破口，請立即閃避。",
           tone: "CAUTION",
@@ -840,6 +894,13 @@ export class Game {
     this.#root.dataset.pointerLocked = String(pointerLocked);
     this.#root.dataset.pointerLockErrorName = this.#pointerLockErrorName;
     this.#root.dataset.pointerLockErrorMessage = this.#pointerLockErrorMessage;
+    this.#root.dataset.pointerLockRequestPending = String(
+      this.#pointerLock.isRequestPending
+    );
+    this.#root.dataset.pointerLockRequestExpiresAt =
+      this.#pointerLock.requestExpiresAtMs === null
+        ? ""
+        : String(this.#pointerLock.requestExpiresAtMs);
     this.#root.dataset.levelSection = currentSection.id;
     this.#root.dataset.location =
       this.levelManager.getLocationAtDistance(state.distanceAlongTrack);
@@ -869,6 +930,9 @@ export class Game {
     );
     this.#root.dataset.bp = state.bp.toFixed(
       GAME_CONFIG.hud.valuePrecision
+    );
+    this.#root.dataset.bpMaximum = String(
+      this.player.bloodPressureMaximum
     );
     this.#root.dataset.speed = this.player.speed.toFixed(
       GAME_CONFIG.hud.valuePrecision
@@ -914,6 +978,10 @@ export class Game {
       GAME_CONFIG.hud.valuePrecision
     );
     this.#root.dataset.alcoholCount = String(state.alcoholCount);
+    this.#root.dataset.malariaCount = String(state.malariaCount);
+    this.#root.dataset.carbonMonoxideCount = String(
+      state.carbonMonoxideCount
+    );
     const statusDiagnostics = this.statusEffects.diagnostics;
     this.#root.dataset.intoxicated = String(
       statusDiagnostics.intoxicated
@@ -945,6 +1013,16 @@ export class Game {
     );
     this.#root.dataset.intoxicationExecutedInputs = String(
       statusDiagnostics.executedInputCount
+    );
+    this.#root.dataset.bloodRuptureActive = String(
+      statusDiagnostics.bloodRuptureActive
+    );
+    this.#root.dataset.bloodRuptureExpiresAt =
+      statusDiagnostics.bloodRuptureExpiresAtMs === null
+        ? ""
+        : String(statusDiagnostics.bloodRuptureExpiresAtMs);
+    this.#root.dataset.carbonMonoxidePoisoned = String(
+      statusDiagnostics.carbonMonoxidePoisoned
     );
     this.#root.dataset.entityActiveCount = String(
       this.entityManager.activeCount
@@ -985,6 +1063,9 @@ export class Game {
       this.player.hoodController.animationDiagnostics;
     this.#root.dataset.malariaHoodRestoring = String(
       hoodDiagnostics.restoring
+    );
+    this.#root.dataset.malariaVisualActive = String(
+      hoodDiagnostics.active || hoodDiagnostics.restoring
     );
     this.#root.dataset.malariaHoodRestoreExpiresAt =
       hoodDiagnostics.restoreExpiresAtMs === null
@@ -1209,6 +1290,8 @@ export class Game {
     }
 
     let intoxicationStarted = false;
+    let bloodRuptureStarted = false;
+    let carbonMonoxidePoisoningStarted = false;
 
     if (result.events.some((event) => event.typeId === "alcohol")) {
       const event = this.statusEffects.tryStart(
@@ -1228,9 +1311,42 @@ export class Game {
       this.player.hoodController.triggerBasicObstruction(
         this.#session.nowMs
       );
+      const ruptureEvent = this.statusEffects.tryStartBloodRupture(
+        this.player.state.malariaCount,
+        this.#session.nowMs
+      );
+
+      if (ruptureEvent) {
+        bloodRuptureStarted = true;
+        this.player.hoodController.triggerBloodRupture(
+          this.#session.nowMs
+        );
+        this.player.setBloodPressureMaximum(
+          GAME_CONFIG.bloodRupture.bloodPressureMaximum
+        );
+      }
+    }
+
+    if (result.events.some((event) => event.typeId === "carbonMonoxide")) {
+      const poisoningEvent =
+        this.statusEffects.tryStartCarbonMonoxidePoisoning(
+          this.player.state.carbonMonoxideCount
+        );
+
+      if (poisoningEvent) {
+        carbonMonoxidePoisoningStarted = true;
+        this.qteSystem.setCarbonMonoxidePoisoned(true);
+      }
     }
 
     const primaryEvent = result.events[0];
+    const bloodRuptureDurationSeconds =
+      GAME_CONFIG.malaria.obstructionDurationSeconds *
+      GAME_CONFIG.bloodRupture.hoodDurationMultiplier;
+    const bloodRuptureBpMaximum =
+      GAME_CONFIG.bloodRupture.bloodPressureMaximum;
+    const poisonedQteThreshold =
+      GAME_CONFIG.qte.carbonMonoxidePoisoningThreshold;
     const deltaCopy =
       "Score " +
       this.#formatSigned(result.scoreDelta) +
@@ -1238,20 +1354,45 @@ export class Game {
       this.#formatSigned(result.hpDelta);
     this.hud.showMessage({
       kicker:
-        intoxicationStarted
-          ? "Status effect / 15 seconds"
-          : primaryEvent.category === "BUFF"
-          ? "Nutrient acquired"
-          : primaryEvent.category === "FATAL"
-            ? "Fatal collision"
-            : "Hazard contact",
-      title: intoxicationStarted ? "酒精中毒" : primaryEvent.displayName,
+        bloodRuptureStarted
+          ? "重大狀態 / " + bloodRuptureDurationSeconds + " 秒"
+          : carbonMonoxidePoisoningStarted
+            ? "累積性狀態"
+            : intoxicationStarted
+              ? "狀態效果 / " +
+                GAME_CONFIG.intoxication.durationSeconds +
+                " 秒"
+              : primaryEvent.category === "BUFF"
+                ? "營養物已吸收"
+                : primaryEvent.category === "FATAL"
+                  ? "致命碰撞"
+                  : "碰撞減益物",
+      title: bloodRuptureStarted
+        ? "血球破裂"
+        : carbonMonoxidePoisoningStarted
+          ? "CO 中毒"
+          : intoxicationStarted
+            ? "酒精中毒"
+            : primaryEvent.displayName,
       copy:
-        intoxicationStarted
-          ? "操作將延遲或失效，血壓每 400ms 波動並產生 S 型偏移。"
-          : result.collisionCount > 1
-          ? deltaCopy + " / " + result.collisionCount + " contacts"
-          : deltaCopy,
+        bloodRuptureStarted
+          ? "引擎蓋與水蒸氣將遮蔽視線，血壓上限暫時降為 " +
+            bloodRuptureBpMaximum +
+            " mmHg。"
+          : carbonMonoxidePoisoningStarted
+            ? "本關氣體交換時，O 與 C 必須各連打 " +
+              poisonedQteThreshold +
+              " 次。"
+            : intoxicationStarted
+              ? "操作將延遲或失效，血壓每 " +
+                GAME_CONFIG.intoxication.bpRandomIntervalMs +
+                "ms 波動並產生 S 型偏移。"
+              : result.collisionCount > 1
+                ? deltaCopy +
+                  " / 共碰撞 " +
+                  result.collisionCount +
+                  " 個物體"
+                : deltaCopy,
       tone: primaryEvent.category === "BUFF" ? "INFO" : "CAUTION",
       nowMs: this.#session.nowMs
     });
@@ -1259,13 +1400,18 @@ export class Game {
   }
 
   #enterGameOver(gameOverState, mode) {
-    if (!this.#session.enterGameOver(gameOverState)) {
+    const entered = gameOverState === GAME_STATES.GAME_OVER_TIMEOUT
+      ? this.#session.enterTimeoutGameOver()
+      : this.#session.enterGameOver(gameOverState);
+
+    if (!entered) {
       return false;
     }
 
     this.statusEffects.releaseActiveControls();
     this.input.reset();
     this.gasToken.hide();
+    this.player.hoodController.setQteMode(false);
     this.hud.hideMessage();
     this.hud.hideQte();
     this.hud.hideOverlay();
@@ -1282,6 +1428,24 @@ export class Game {
     return true;
   }
 
+  #checkForTimeout() {
+    if (this.#session.state === GAME_STATES.GAME_OVER_TIMEOUT) {
+      return true;
+    }
+
+    if (
+      !this.#session.hasTimedOut ||
+      this.levelManager.isAtEnd(this.player.state.distanceAlongTrack)
+    ) {
+      return false;
+    }
+
+    return this.#enterGameOver(
+      GAME_STATES.GAME_OVER_TIMEOUT,
+      CUTSCENE_TYPES.TIMEOUT
+    );
+  }
+
   #getStatuses(nowMs) {
     const statuses = [];
 
@@ -1291,6 +1455,29 @@ export class Game {
         label: "酒精中毒",
         tone: "DANGER",
         expiresAtMs: this.statusEffects.intoxicationExpiresAtMs
+      });
+    }
+
+    if (this.statusEffects.isBloodRuptureActive) {
+      statuses.push({
+        id: "blood-rupture",
+        label:
+          "血球破裂 / BP 上限 " +
+          GAME_CONFIG.bloodRupture.bloodPressureMaximum,
+        tone: "DANGER",
+        expiresAtMs: this.statusEffects.bloodRuptureExpiresAtMs
+      });
+    }
+
+    if (this.statusEffects.isCarbonMonoxidePoisoned) {
+      statuses.push({
+        id: "carbon-monoxide-poisoning",
+        label:
+          "CO 中毒 / O、C 各 " +
+          GAME_CONFIG.qte.carbonMonoxidePoisoningThreshold +
+          " 次",
+        tone: "DANGER",
+        expiresAtMs: null
       });
     }
 
@@ -1310,7 +1497,10 @@ export class Game {
       });
     }
 
-    if (this.player.hoodController.isBasicObstructionActive) {
+    if (
+      this.player.hoodController.isBasicObstructionActive &&
+      !this.statusEffects.isBloodRuptureActive
+    ) {
       statuses.push({
         id: "malaria-hood",
         label: "瘧原蟲頭罩遮蔽",
@@ -1325,7 +1515,7 @@ export class Game {
 
   #showLowBloodPressureWarning(nowMs) {
     this.hud.showMessage({
-      kicker: "Low blood pressure",
+      kicker: "低血壓風險",
       title: "低血壓警告",
       copy: "血流速度過慢，請按 Z 提高血壓",
       tone: "DANGER",
@@ -1540,7 +1730,8 @@ export class Game {
     if (
       this.#session.state === GAME_STATES.GAME_OVER_RECYCLE ||
       this.#session.state === GAME_STATES.GAME_OVER_FALL ||
-      this.#session.state === GAME_STATES.GAME_OVER_STROKE
+      this.#session.state === GAME_STATES.GAME_OVER_STROKE ||
+      this.#session.state === GAME_STATES.GAME_OVER_TIMEOUT
     ) {
       this.#retryCurrentLevel();
     } else if (this.#session.state === GAME_STATES.VICTORY) {
@@ -1567,7 +1758,8 @@ export class Game {
     }
 
     this.#session.prepareForPointerLock();
-    void this.#pointerLock.request();
+    this.hud.showPointerLockPending();
+    void this.#pointerLock.request(this.#session.nowMs);
   }
 
   #handlePointerLockChange = (pointerLocked) => {
@@ -1581,8 +1773,8 @@ export class Game {
         this.#showLowBloodPressureWarning(this.#session.nowMs);
       } else if (this.#session.state === GAME_STATES.PLAYING) {
         this.hud.showMessage({
-          kicker: "Navigation",
-          title: "ROUTE SYNCHRONIZED",
+          kicker: "循環導航",
+          title: "循環圖已同步",
           copy: "循環圖已與紅血球位置同步。",
           tone: "INFO",
           nowMs: this.#session.nowMs

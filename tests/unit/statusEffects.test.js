@@ -1,10 +1,11 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase10-final-r1";
-import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase11-r4";
+import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase11-r4";
 import {
   INTOXICATION_EVENTS,
   isIntoxicationActionAllowed,
+  STATUS_EFFECT_EVENTS,
   StatusEffectManager
-} from "../../js/systems/StatusEffectManager.js?v=phase10-final-r1";
+} from "../../js/systems/StatusEffectManager.js?v=phase11-r4";
 import {
   assertApproximately,
   assertEqual,
@@ -190,6 +191,39 @@ export function registerStatusEffectTests(harness) {
     assertEqual(manager.diagnostics.triggerCount, 0);
     assertEqual(manager.diagnostics.completionCount, 0);
     assertEqual(manager.currentSway, 0);
+  });
+
+  harness.test("every fifth malaria collision starts a 15-second blood rupture", () => {
+    const manager = new StatusEffectManager({ random: () => 0.5 });
+
+    assertEqual(manager.tryStartBloodRupture(4, 1000), null);
+    const first = manager.tryStartBloodRupture(5, 1000);
+    assertEqual(first.type, STATUS_EFFECT_EVENTS.BLOOD_RUPTURE_STARTED);
+    assertEqual(first.expiresAtMs, 16000);
+    assertEqual(manager.isBloodRuptureActive, true);
+    assertEqual(manager.tryStartBloodRupture(9, 2000), null);
+    const second = manager.tryStartBloodRupture(10, 3000);
+    assertEqual(second.expiresAtMs, 18000);
+    assertEqual(manager.update(17999, "PAUSED").bloodRuptureEnded, false);
+    assertEqual(manager.update(18000, "QTE").bloodRuptureEnded, true);
+    assertEqual(manager.isBloodRuptureActive, false);
+  });
+
+  harness.test("the tenth CO collision persists as poisoning until reset", () => {
+    const manager = new StatusEffectManager({ random: () => 0.5 });
+
+    assertEqual(manager.tryStartCarbonMonoxidePoisoning(9), null);
+    const event = manager.tryStartCarbonMonoxidePoisoning(10);
+    assertEqual(
+      event.type,
+      STATUS_EFFECT_EVENTS.CARBON_MONOXIDE_POISONING_STARTED
+    );
+    assertEqual(manager.isCarbonMonoxidePoisoned, true);
+    assertEqual(manager.tryStartCarbonMonoxidePoisoning(15), null);
+    manager.update(999999, "PAUSED");
+    assertEqual(manager.isCarbonMonoxidePoisoned, true);
+    manager.reset();
+    assertEqual(manager.isCarbonMonoxidePoisoned, false);
   });
 
   harness.test("status effects reject invalid time, input, and random samples", () => {

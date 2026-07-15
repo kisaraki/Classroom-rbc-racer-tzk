@@ -4,7 +4,7 @@ import {
   Quaternion,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
 
 export class CameraController {
   #targetElement;

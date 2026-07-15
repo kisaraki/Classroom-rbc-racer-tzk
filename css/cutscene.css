@@ -75,10 +75,7 @@
 
 .cutscene-footer {
   grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 13rem 1fr;
-  gap: 1rem;
-  align-items: center;
+  display: block;
   margin-top: 1.5rem;
 }
 
@@ -163,6 +160,54 @@
 
 .cutscene-stage--recycle .cutscene-belt .cutscene-rbc {
   animation-name: recycle-rbc;
+}
+
+.cutscene-stage--timeout {
+  background:
+    radial-gradient(circle at 70% 54%, rgba(214, 154, 80, 0.2), transparent 30%),
+    repeating-linear-gradient(0deg, rgba(255, 203, 135, 0.03) 0 0.18rem, transparent 0.18rem 1.8rem),
+    #120806;
+}
+
+.cutscene-stage--timeout .cutscene-belt {
+  right: 32%;
+  border-color: rgba(211, 169, 112, 0.62);
+  background: repeating-linear-gradient(90deg, rgba(93, 56, 33, 0.32) 0 2.2rem, rgba(211, 169, 112, 0.42) 2.2rem 2.45rem);
+}
+
+.cutscene-stage--timeout .cutscene-rbc--shriveled {
+  width: 4.3rem;
+  border-width: 0.3rem;
+  border-color: #a96850;
+  color: rgba(255, 237, 215, 0.68);
+  background: radial-gradient(ellipse, #4c201a 20%, #8c4637 24% 55%, #4b1d19 60%);
+  box-shadow: 0 0 1.4rem rgba(201, 126, 83, 0.24);
+  filter: saturate(0.55) contrast(1.3);
+  animation-name: timeout-rbc;
+}
+
+.cutscene-factory--liver {
+  right: 8%;
+}
+
+.cutscene-factory--liver .cutscene-factory__tower {
+  width: 9rem;
+  height: 15rem;
+  border-color: #c18455;
+  color: #ffe0ad;
+  background: linear-gradient(90deg, #2a120d, #8c462e 52%, #35160f);
+  writing-mode: horizontal-tb;
+}
+
+.cutscene-timeout-heat {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 18% 50%, transparent 0 12%, rgba(255, 201, 137, 0.09) 13%, transparent 18%),
+    radial-gradient(ellipse at 46% 45%, transparent 0 16%, rgba(255, 201, 137, 0.07) 17%, transparent 23%);
+  filter: blur(0.6rem);
+  animation: timeout-heat calc(var(--cutscene-duration) / 3) ease-in-out infinite alternate;
+  pointer-events: none;
 }
 
 .cutscene-factory {
@@ -331,6 +376,17 @@
   0%, 16% { left: -2rem; opacity: 1; transform: translateY(-50%) scale(1); }
   72% { left: calc(100% - 3rem); opacity: 1; transform: translateY(-50%) scale(0.8); }
   82%, 100% { left: calc(100% - 2rem); opacity: 0; transform: translateY(-50%) scale(0.05); }
+}
+
+@keyframes timeout-rbc {
+  0%, 12% { left: -2rem; opacity: 1; transform: translateY(-50%) scale(1, 0.72) rotate(0); }
+  48% { left: 48%; opacity: 1; transform: translateY(-50%) scale(0.78, 0.48) rotate(350deg); }
+  80%, 100% { left: calc(100% - 2rem); opacity: 0; transform: translateY(-50%) scale(0.08, 0.03) rotate(760deg); }
+}
+
+@keyframes timeout-heat {
+  from { opacity: 0.35; translate: -1.5rem 0; }
+  to { opacity: 0.8; translate: 1.5rem -0.6rem; }
 }
 
 @keyframes fragment-scatter {

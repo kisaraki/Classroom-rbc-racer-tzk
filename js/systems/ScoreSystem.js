@@ -1,5 +1,5 @@
-import { GAME_CONFIG } from "../config.js?v=phase10-final-r1";
-import { isPlayerState } from "../data/schemas.js?v=phase10-final-r1";
+import { GAME_CONFIG } from "../config.js?v=phase11-r4";
+import { isPlayerState } from "../data/schemas.js?v=phase11-r4";
 
 function clamp(value, minimum, maximum) {
   return Math.min(maximum, Math.max(minimum, value));
@@ -30,14 +30,18 @@ export function applyEntityScoreEffect(
     throw new TypeError("A configured entity type is required.");
   }
 
+  const debuffMultiplier =
+    entityType.category === "DEBUFF"
+      ? config.penalties.debuffMultiplier
+      : 1;
   const requestedScoreDelta = getFiniteDelta(
     entityType.tuning.scoreDelta,
     "scoreDelta"
-  );
+  ) * debuffMultiplier;
   const requestedHpDelta = getFiniteDelta(
     entityType.tuning.hpDelta,
     "hpDelta"
-  );
+  ) * debuffMultiplier;
   const previousScore = playerState.score;
   const previousHp = playerState.hp;
 
