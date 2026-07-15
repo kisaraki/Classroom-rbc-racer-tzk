@@ -1,7 +1,7 @@
 import { Vector3 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase07-status-r2";
-import { ENTITY_TYPES } from "../../js/data/entityTypes.js?v=phase07-status-r2";
-import { ProceduralAssetFactory } from "../../js/world/ProceduralAssetFactory.js?v=phase07-status-r2";
+import { GAME_CONFIG } from "../../js/config.js?v=phase08-routes-r1";
+import { ENTITY_TYPES } from "../../js/data/entityTypes.js?v=phase08-routes-r1";
+import { ProceduralAssetFactory } from "../../js/world/ProceduralAssetFactory.js?v=phase08-routes-r1";
 import {
   assert,
   assertEqual

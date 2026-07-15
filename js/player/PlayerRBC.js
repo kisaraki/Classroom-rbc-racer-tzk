@@ -13,11 +13,11 @@ import {
   Vector2,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
+import { GAME_CONFIG } from "../config.js?v=phase08-routes-r1";
 import {
   createPlayerState,
   isLevelCheckpoint
-} from "../data/schemas.js?v=phase07-status-r2";
+} from "../data/schemas.js?v=phase08-routes-r1";
 import {
   clampBloodPressure,
   getSpeedForBloodPressure,
@@ -27,7 +27,7 @@ import { clampLateralOffset } from "../world/TrackMath.js";
 import {
   createRbcLabelTexture,
   HoodController
-} from "./HoodController.js?v=phase07-status-r2";
+} from "./HoodController.js?v=phase08-routes-r1";
 
 function createBiconcaveGeometry(modelConfig) {
   const profile = [];

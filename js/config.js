@@ -250,6 +250,21 @@ export const GAME_CONFIG = deepFreeze({
     messageDefaultDurationSeconds: 2.8
   },
 
+  flightInstruments: {
+    bodyReticleTravelXPercent: 8,
+    bodyReticleTravelYPercent: 7,
+    viewReticleTravelXPercent: 11,
+    viewReticleTravelYPercent: 9,
+    viewYawDisplayRangeRadians: Math.PI / 2,
+    attitudePanelTravelPercent: 40,
+    fullCircleDegrees: 360,
+    halfCircleDegrees: 180,
+    angleDegreesPerRadian: 180 / Math.PI,
+    altitudePrecision: 1,
+    coordinatePrecision: 2,
+    anglePrecision: 0
+  },
+
   minimap: {
     viewBoxWidth: 360,
     viewBoxHeight: 300,
@@ -489,6 +504,33 @@ export const GAME_CONFIG = deepFreeze({
           "left-ventricle-to-tissues",
           "tissues-to-right-atrium",
           "right-atrium-to-right-ventricle"
+        ]
+      },
+      {
+        id: "pulmonary-circulation-path",
+        label: "肺循環",
+        vesselIds: [
+          "right-ventricle-to-lungs",
+          "lungs-to-left-atrium",
+          "left-atrium-to-left-ventricle"
+        ]
+      },
+      {
+        id: "systemic-upper-circulation-path",
+        label: "體循環－上半身與腦",
+        vesselIds: [
+          "left-ventricle-to-brain",
+          "brain-to-right-atrium",
+          "right-atrium-to-right-ventricle"
+        ]
+      },
+      {
+        id: "high-risk-pulmonary-circulation-path",
+        label: "高風險肺循環",
+        vesselIds: [
+          "right-ventricle-to-lungs",
+          "lungs-to-left-atrium",
+          "left-atrium-to-left-ventricle"
         ]
       }
     ],
@@ -1182,8 +1224,23 @@ export const GAME_CONFIG = deepFreeze({
       highRisk: false,
       targetDriveSeconds: 90,
       trackLength: 900,
+      startDistance: 0,
+      endDistance: 900,
       seed: 0x52424302,
-      controlPoints: [],
+      controlPoints: [
+        [0, 0, 0],
+        [0, -3.8, -42.4],
+        [-18.8, -7.5, -122.4],
+        [-39.6, -3.8, -207.2],
+        [-51.8, 18.8, -282.6],
+        [-42.4, 51.8, -367.3],
+        [-11.3, 75.4, -442.7],
+        [28.3, 69.7, -522.7],
+        [58.4, 42.4, -602.8],
+        [61.2, 9.4, -687.6],
+        [35.8, -11.3, -772.3],
+        [0, 0, -828.9]
+      ],
       gasTriggerRatios: {
         primary: 0.40,
         retry: 0.55,
@@ -1196,6 +1253,53 @@ export const GAME_CONFIG = deepFreeze({
         0.25,
         0.10
       ],
+      routeSections: [
+        {
+          startDistance: 0,
+          endDistance: 45,
+          radius: 6.5,
+          colorStartKey: "deoxygenatedBlue",
+          colorEndKey: "deoxygenatedBlue",
+          minimapStartProgress: 0,
+          minimapEndProgress: 0.05
+        },
+        {
+          startDistance: 45,
+          endDistance: 270,
+          radius: 5.0,
+          colorStartKey: "deoxygenatedBlue",
+          colorEndKey: "vesselVenous",
+          minimapStartProgress: 0.05,
+          minimapEndProgress: 0.30
+        },
+        {
+          startDistance: 270,
+          endDistance: 585,
+          radius: 3.4,
+          colorStartKey: "vesselVenous",
+          colorEndKey: "oxygenatedRed",
+          minimapStartProgress: 0.30,
+          minimapEndProgress: 0.65
+        },
+        {
+          startDistance: 585,
+          endDistance: 810,
+          radius: 5.0,
+          colorStartKey: "oxygenatedRed",
+          colorEndKey: "oxygenatedRed",
+          minimapStartProgress: 0.65,
+          minimapEndProgress: 0.90
+        },
+        {
+          startDistance: 810,
+          endDistance: 900,
+          radius: 6.5,
+          colorStartKey: "oxygenatedRed",
+          colorEndKey: "oxygenatedRed",
+          minimapStartProgress: 0.90,
+          minimapEndProgress: 1
+        }
+      ],
       multipliers: {
         buff: 1,
         debuff: 1,
@@ -1207,8 +1311,26 @@ export const GAME_CONFIG = deepFreeze({
       highRisk: false,
       targetDriveSeconds: 180,
       trackLength: 1800,
+      startDistance: 0,
+      endDistance: 1800,
       seed: 0x52424303,
-      controlPoints: [],
+      controlPoints: [
+        [0, 0, 0],
+        [0, 3.8, -51.2],
+        [17.1, 26.5, -161.1],
+        [36, 68.2, -293.7],
+        [26.5, 123.2, -445.3],
+        [-9.5, 175.3, -597],
+        [-52.1, 208.5, -748.6],
+        [-83.4, 197.1, -890.7],
+        [-94.8, 142.1, -1032.8],
+        [-77.7, 75.8, -1175],
+        [-45.5, 19, -1317.1],
+        [-11.4, -19, -1440.3],
+        [22.7, -30.3, -1549.2],
+        [45.5, -17.1, -1639.3],
+        [49.3, 0, -1686.6]
+      ],
       gasTriggerRatios: {
         primary: 0.56,
         retry: 0.65,
@@ -1224,6 +1346,80 @@ export const GAME_CONFIG = deepFreeze({
         0.15,
         0.05
       ],
+      routeSections: [
+        {
+          startDistance: 0,
+          endDistance: 54,
+          radius: 6.5,
+          colorStartKey: "oxygenatedRed",
+          colorEndKey: "oxygenatedRed",
+          minimapStartProgress: 0,
+          minimapEndProgress: 0.03
+        },
+        {
+          startDistance: 54,
+          endDistance: 270,
+          radius: 5.5,
+          colorStartKey: "oxygenatedRed",
+          colorEndKey: "vesselArterial",
+          minimapStartProgress: 0.03,
+          minimapEndProgress: 0.15
+        },
+        {
+          startDistance: 270,
+          endDistance: 630,
+          radius: 5.0,
+          colorStartKey: "vesselArterial",
+          colorEndKey: "transitionMagenta",
+          minimapStartProgress: 0.15,
+          minimapEndProgress: 0.35
+        },
+        {
+          startDistance: 630,
+          endDistance: 900,
+          radius: 4.0,
+          colorStartKey: "transitionMagenta",
+          colorEndKey: "vesselCapillary",
+          minimapStartProgress: 0.35,
+          minimapEndProgress: 0.50
+        },
+        {
+          startDistance: 900,
+          endDistance: 1260,
+          radius: 3.2,
+          colorStartKey: "vesselCapillary",
+          colorEndKey: "deoxygenatedBlue",
+          minimapStartProgress: 0.50,
+          minimapEndProgress: 0.70
+        },
+        {
+          startDistance: 1260,
+          endDistance: 1440,
+          radius: 3.8,
+          colorStartKey: "deoxygenatedBlue",
+          colorEndKey: "vesselVenous",
+          minimapStartProgress: 0.70,
+          minimapEndProgress: 0.80
+        },
+        {
+          startDistance: 1440,
+          endDistance: 1710,
+          radius: 5.5,
+          colorStartKey: "vesselVenous",
+          colorEndKey: "venousPurple",
+          minimapStartProgress: 0.80,
+          minimapEndProgress: 0.95
+        },
+        {
+          startDistance: 1710,
+          endDistance: 1800,
+          radius: 6.5,
+          colorStartKey: "venousPurple",
+          colorEndKey: "venousPurple",
+          minimapStartProgress: 0.95,
+          minimapEndProgress: 1
+        }
+      ],
       multipliers: {
         buff: 1,
         debuff: 1,
@@ -1235,8 +1431,23 @@ export const GAME_CONFIG = deepFreeze({
       highRisk: true,
       targetDriveSeconds: 90,
       trackLength: 900,
+      startDistance: 0,
+      endDistance: 900,
       seed: 0x52424304,
-      controlPoints: [],
+      controlPoints: [
+        [0, 0, 0],
+        [0, -3.8, -42.4],
+        [-18.8, -7.5, -122.4],
+        [-39.6, -3.8, -207.2],
+        [-51.8, 18.8, -282.6],
+        [-42.4, 51.8, -367.3],
+        [-11.3, 75.4, -442.7],
+        [28.3, 69.7, -522.7],
+        [58.4, 42.4, -602.8],
+        [61.2, 9.4, -687.6],
+        [35.8, -11.3, -772.3],
+        [0, 0, -828.9]
+      ],
       gasTriggerRatios: {
         primary: 0.40,
         retry: 0.55,
@@ -1248,6 +1459,53 @@ export const GAME_CONFIG = deepFreeze({
         0.35,
         0.25,
         0.10
+      ],
+      routeSections: [
+        {
+          startDistance: 0,
+          endDistance: 45,
+          radius: 6.5,
+          colorStartKey: "deoxygenatedBlue",
+          colorEndKey: "deoxygenatedBlue",
+          minimapStartProgress: 0,
+          minimapEndProgress: 0.05
+        },
+        {
+          startDistance: 45,
+          endDistance: 270,
+          radius: 5.0,
+          colorStartKey: "deoxygenatedBlue",
+          colorEndKey: "vesselVenous",
+          minimapStartProgress: 0.05,
+          minimapEndProgress: 0.30
+        },
+        {
+          startDistance: 270,
+          endDistance: 585,
+          radius: 3.4,
+          colorStartKey: "vesselVenous",
+          colorEndKey: "oxygenatedRed",
+          minimapStartProgress: 0.30,
+          minimapEndProgress: 0.65
+        },
+        {
+          startDistance: 585,
+          endDistance: 810,
+          radius: 5.0,
+          colorStartKey: "oxygenatedRed",
+          colorEndKey: "oxygenatedRed",
+          minimapStartProgress: 0.65,
+          minimapEndProgress: 0.90
+        },
+        {
+          startDistance: 810,
+          endDistance: 900,
+          radius: 6.5,
+          colorStartKey: "oxygenatedRed",
+          colorEndKey: "oxygenatedRed",
+          minimapStartProgress: 0.90,
+          minimapEndProgress: 1
+        }
       ],
       multipliers: {
         buff: 0.7,

@@ -1,31 +1,32 @@
 import { registerBloodPressureDrivingTests } from "./bloodPressureDriving.test.js";
-import { registerBloodPressureHazardTests } from "./bloodPressureHazards.test.js?v=phase07-status-r2";
+import { registerBloodPressureHazardTests } from "./bloodPressureHazards.test.js?v=phase08-routes-r1";
 import { registerCameraTests } from "./camera.test.js";
-import { registerCollisionTests } from "./collision.test.js?v=phase07-status-r2";
-import { registerDeviceSupportTests } from "./deviceSupport.test.js?v=phase07-status-r2";
-import { registerEntityManagerTests } from "./entityManager.test.js?v=phase07-status-r2";
-import { registerEntityTypeTests } from "./entityTypes.test.js?v=phase07-status-r2";
+import { registerCollisionTests } from "./collision.test.js?v=phase08-routes-r1";
+import { registerDeviceSupportTests } from "./deviceSupport.test.js?v=phase08-routes-r1";
+import { registerEntityManagerTests } from "./entityManager.test.js?v=phase08-routes-r1";
+import { registerEntityTypeTests } from "./entityTypes.test.js?v=phase08-routes-r1";
 import { TestHarness } from "./TestHarness.js";
 import { registerEventBusTests } from "./eventBus.test.js";
-import { registerGameStateTests } from "./gameState.test.js?v=phase07-status-r2";
-import { registerInputTests } from "./input.test.js?v=phase07-status-r2";
-import { registerHudTests } from "./hud.test.js?v=phase07-status-r2";
-import { registerLevelManagerTests } from "./levelManager.test.js?v=phase07-status-r2";
-import { registerMinimapTests } from "./minimap.test.js?v=phase07-status-r2";
-import { registerPlayerRbcTests } from "./playerRbc.test.js?v=phase07-status-r2";
-import { registerPointerLockTests } from "./pointerLock.test.js?v=phase07-status-r2";
-import { registerProceduralAssetTests } from "./proceduralAssets.test.js?v=phase07-status-r2";
-import { registerQteTests } from "./qte.test.js?v=phase07-status-r2";
-import { registerSchemaTests } from "./schemas.test.js?v=phase07-status-r2";
+import { registerFlightInstrumentTests } from "./flightInstruments.test.js?v=phase08-routes-r1";
+import { registerGameStateTests } from "./gameState.test.js?v=phase08-routes-r1";
+import { registerInputTests } from "./input.test.js?v=phase08-routes-r1";
+import { registerHudTests } from "./hud.test.js?v=phase08-routes-r1";
+import { registerLevelManagerTests } from "./levelManager.test.js?v=phase08-routes-r1";
+import { registerMinimapTests } from "./minimap.test.js?v=phase08-routes-r1";
+import { registerPlayerRbcTests } from "./playerRbc.test.js?v=phase08-routes-r1";
+import { registerPointerLockTests } from "./pointerLock.test.js?v=phase08-routes-r1";
+import { registerProceduralAssetTests } from "./proceduralAssets.test.js?v=phase08-routes-r1";
+import { registerQteTests } from "./qte.test.js?v=phase08-routes-r1";
+import { registerSchemaTests } from "./schemas.test.js?v=phase08-routes-r1";
 import { registerSeededRandomTests } from "./seededRandom.test.js";
-import { registerStatusEffectTests } from "./statusEffects.test.js?v=phase07-status-r2";
+import { registerStatusEffectTests } from "./statusEffects.test.js?v=phase08-routes-r1";
 import { registerTimingTests } from "./timing.test.js?v=phase01-real-clock";
 import { registerTrackMathTests } from "./trackMath.test.js";
 import { registerVendorTests } from "./vendor.test.js";
-import { registerVesselTrackTests } from "./vesselTrack.test.js?v=phase07-status-r2";
-import { registerWoundChanceTests } from "./woundChance.test.js?v=phase07-status-r2";
+import { registerVesselTrackTests } from "./vesselTrack.test.js?v=phase08-routes-r1";
+import { registerWoundChanceTests } from "./woundChance.test.js?v=phase08-routes-r1";
 
-export function createPhase07TestHarness() {
+export function createPhase08TestHarness() {
   const harness = new TestHarness();
 
   registerTrackMathTests(harness);
@@ -38,6 +39,7 @@ export function createPhase07TestHarness() {
   registerLevelManagerTests(harness);
   registerMinimapTests(harness);
   registerHudTests(harness);
+  registerFlightInstrumentTests(harness);
   registerVendorTests(harness);
   registerBloodPressureDrivingTests(harness);
   registerInputTests(harness);

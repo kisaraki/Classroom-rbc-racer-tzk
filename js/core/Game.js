@@ -10,34 +10,34 @@ import {
   SRGBColorSpace,
   WebGLRenderer
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
-import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase07-status-r2";
+import { GAME_CONFIG } from "../config.js?v=phase08-routes-r1";
+import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase08-routes-r1";
 import {
   createLevelCheckpoint
-} from "../data/schemas.js?v=phase07-status-r2";
-import { CameraController } from "../input/CameraController.js?v=phase07-status-r2";
-import { InputController } from "../input/InputController.js?v=phase07-status-r2";
+} from "../data/schemas.js?v=phase08-routes-r1";
+import { CameraController } from "../input/CameraController.js?v=phase08-routes-r1";
+import { InputController } from "../input/InputController.js?v=phase08-routes-r1";
 import { PointerLockController } from "../input/PointerLockController.js";
-import { PlayerRBC } from "../player/PlayerRBC.js?v=phase07-status-r2";
-import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=phase07-status-r2";
-import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase07-status-r2";
-import { EntityManager } from "../systems/EntityManager.js?v=phase07-status-r2";
+import { PlayerRBC } from "../player/PlayerRBC.js?v=phase08-routes-r1";
+import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=phase08-routes-r1";
+import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase08-routes-r1";
+import { EntityManager } from "../systems/EntityManager.js?v=phase08-routes-r1";
 import {
   canCompleteLevel,
   QTE_EVENTS,
   QTE_OUTCOMES,
   QTE_PHASES,
   QTESystem
-} from "../systems/QTESystem.js?v=phase07-status-r2";
-import { StatusEffectManager } from "../systems/StatusEffectManager.js?v=phase07-status-r2";
-import { HUDManager } from "../ui/HUDManager.js?v=phase07-status-r2";
+} from "../systems/QTESystem.js?v=phase08-routes-r1";
+import { StatusEffectManager } from "../systems/StatusEffectManager.js?v=phase08-routes-r1";
+import { HUDManager } from "../ui/HUDManager.js?v=phase08-routes-r1";
 import { SeededRandom } from "../utils/SeededRandom.js";
-import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase07-status-r2";
-import { VesselTrack } from "../world/VesselTrack.js?v=phase07-status-r2";
+import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase08-routes-r1";
+import { VesselTrack } from "../world/VesselTrack.js?v=phase08-routes-r1";
 import { GameLoop } from "./GameLoop.js";
-import { GameSession } from "./GameSession.js?v=phase07-status-r2";
-import { GAME_STATES } from "./GameStateMachine.js?v=phase07-status-r2";
-import { LevelManager } from "./LevelManager.js?v=phase07-status-r2";
+import { GameSession } from "./GameSession.js?v=phase08-routes-r1";
+import { GAME_STATES } from "./GameStateMachine.js?v=phase08-routes-r1";
+import { LevelManager } from "./LevelManager.js?v=phase08-routes-r1";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);
@@ -224,7 +224,7 @@ export class Game {
     this.#root.dataset.rbcLabelHeight = String(
       GAME_CONFIG.playerModel.label.planeHeight
     );
-    this.#root.dataset.phase = "07";
+    this.#root.dataset.phase = "08";
     this.#root.dataset.proceduralAssets = "true";
     this.#root.dataset.entityBatchCount = String(
       this.entityManager.batchCount
@@ -427,6 +427,8 @@ export class Game {
       score: this.player.state.score,
       level: this.level.id,
       levelCount: GAME_CONFIG.game.totalLevelCount,
+      circulationLabel: this.level.hudLabel,
+      routeCode: "ROUTE " + String(this.level.id).padStart(2, "0"),
       location: this.levelManager.getLocationAtDistance(
         distanceAlongTrack
       ),
@@ -439,6 +441,12 @@ export class Game {
       pointerLocked,
       minimapPathId: this.level.minimapPathId,
       minimapProgress,
+      lateralX: this.player.state.lateralX,
+      lateralY: this.player.state.lateralY,
+      collisionRadius: this.player.state.collisionRadius,
+      vesselRadius: currentSection.radius,
+      viewYaw: this.cameraController.yaw,
+      viewPitch: this.cameraController.pitch,
       clockNowMs,
       statuses: this.#getStatuses(clockNowMs)
     });
@@ -926,6 +934,33 @@ export class Game {
       reflectionDiagnostics.bodyColor;
     this.#root.dataset.rbcReflectedCockpitColor =
       reflectionDiagnostics.cockpitColor;
+    const instrumentDiagnostics = this.hud.instrumentDiagnostics;
+
+    if (instrumentDiagnostics) {
+      const instrumentConfig = GAME_CONFIG.flightInstruments;
+      this.#root.dataset.attitudeX = instrumentDiagnostics.attitudeX.toFixed(
+        instrumentConfig.coordinatePrecision
+      );
+      this.#root.dataset.attitudeY = instrumentDiagnostics.attitudeY.toFixed(
+        instrumentConfig.coordinatePrecision
+      );
+      this.#root.dataset.altitude = instrumentDiagnostics.altitude.toFixed(
+        instrumentConfig.altitudePrecision
+      );
+      this.#root.dataset.vesselDiameter =
+        instrumentDiagnostics.vesselDiameter.toFixed(
+          instrumentConfig.altitudePrecision
+        );
+      this.#root.dataset.viewHeading =
+        instrumentDiagnostics.headingDegrees.toFixed(
+          instrumentConfig.anglePrecision
+        );
+      this.#root.dataset.viewPitch =
+        instrumentDiagnostics.pitchDegrees.toFixed(
+          instrumentConfig.anglePrecision
+        );
+    }
+
     const qteDiagnostics = this.qteSystem.diagnostics;
     this.#root.dataset.qtePhase = qteDiagnostics.phase;
     this.#root.dataset.gasExchangeStatus = qteDiagnostics.status;

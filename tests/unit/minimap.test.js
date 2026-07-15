@@ -1,5 +1,5 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase07-status-r2";
-import { LEVELS } from "../../js/data/levels.js?v=phase07-status-r2";
+import { GAME_CONFIG } from "../../js/config.js?v=phase08-routes-r1";
+import { LEVELS } from "../../js/data/levels.js?v=phase08-routes-r1";
 import {
   buildHeartOutlinePathData,
   buildRoutePathData,
@@ -7,7 +7,7 @@ import {
   calculateMarkerPoint,
   clampMinimapProgress,
   validateMinimapConfig
-} from "../../js/ui/MiniMapRenderer.js?v=phase07-status-r2";
+} from "../../js/ui/MiniMapRenderer.js?v=phase08-routes-r1";
 import {
   assert,
   assertApproximately,
@@ -85,15 +85,41 @@ export function registerMinimapTests(harness) {
     assert(pathData.endsWith("Z"));
   });
 
-  harness.test("level one selects the configured lower systemic SVG route", () => {
-    const route = GAME_CONFIG.minimap.routes[0];
+  harness.test("all four levels select their configured circulation route", () => {
+    const routesById = new Map(
+      GAME_CONFIG.minimap.routes.map((route) => [route.id, route])
+    );
+    const expectedVessels = {
+      "systemic-lower-circulation-path": [
+        "left-ventricle-to-tissues",
+        "tissues-to-right-atrium",
+        "right-atrium-to-right-ventricle"
+      ],
+      "pulmonary-circulation-path": [
+        "right-ventricle-to-lungs",
+        "lungs-to-left-atrium",
+        "left-atrium-to-left-ventricle"
+      ],
+      "systemic-upper-circulation-path": [
+        "left-ventricle-to-brain",
+        "brain-to-right-atrium",
+        "right-atrium-to-right-ventricle"
+      ],
+      "high-risk-pulmonary-circulation-path": [
+        "right-ventricle-to-lungs",
+        "lungs-to-left-atrium",
+        "left-atrium-to-left-ventricle"
+      ]
+    };
 
-    assertEqual(LEVELS[0].minimapPathId, route.id);
-    assertDeepEqual(route.vesselIds, [
-      "left-ventricle-to-tissues",
-      "tissues-to-right-atrium",
-      "right-atrium-to-right-ventricle"
-    ]);
+    assertEqual(routesById.size, GAME_CONFIG.game.totalLevelCount);
+    LEVELS.forEach((level) => {
+      assert(routesById.has(level.minimapPathId));
+      assertDeepEqual(
+        routesById.get(level.minimapPathId).vesselIds,
+        expectedVessels[level.minimapPathId]
+      );
+    });
   });
 
   harness.test("configured vessel curves generate cubic SVG path data", () => {
@@ -113,6 +139,18 @@ export function registerMinimapTests(harness) {
     assertEqual((pathData.match(/\bC\b/g) ?? []).length, 3);
     assert(pathData.startsWith("M 195 207"));
     assert(pathData.endsWith("169 207"));
+  });
+
+  harness.test("every Phase 08 minimap route builds one continuous SVG path", () => {
+    GAME_CONFIG.minimap.routes.forEach((route) => {
+      const pathData = buildRoutePathData(route, GAME_CONFIG.minimap.vessels);
+
+      assertEqual((pathData.match(/\bM\b/g) ?? []).length, 1);
+      assertEqual(
+        (pathData.match(/\bC\b/g) ?? []).length,
+        route.vesselIds.length
+      );
+    });
   });
 
   harness.test("minimap progress clamps to the SVG path bounds", () => {

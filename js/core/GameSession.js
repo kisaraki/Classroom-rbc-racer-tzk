@@ -2,7 +2,7 @@ import { GameClock } from "./GameClock.js?v=phase01-real-clock";
 import {
   GAME_STATES,
   GameStateMachine
-} from "./GameStateMachine.js?v=phase07-status-r2";
+} from "./GameStateMachine.js?v=phase08-routes-r1";
 
 function assertDurationSeconds(value) {
   if (!Number.isFinite(value)) {

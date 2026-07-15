@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
+import { GAME_CONFIG } from "../config.js?v=phase08-routes-r1";
 
 function deepFreeze(value) {
   if (value && typeof value === "object" && !Object.isFrozen(value)) {
@@ -13,6 +13,7 @@ function validateLevelDefinition(tuning, semanticDefinition) {
   if (
     !semanticDefinition ||
     typeof semanticDefinition.name !== "string" ||
+    typeof semanticDefinition.hudLabel !== "string" ||
     typeof semanticDefinition.minimapPathId !== "string" ||
     !Array.isArray(semanticDefinition.sections)
   ) {
@@ -66,6 +67,7 @@ function validateLevelDefinition(tuning, semanticDefinition) {
 export const LEVEL_SEMANTICS = deepFreeze({
   1: {
     name: "體循環－下半身",
+    hudLabel: "SYSTEMIC / LOWER",
     circulationType: "SYSTEMIC",
     minimapPathId: "systemic-lower-circulation-path",
     gasExchangeType: "OXYGEN_TO_TISSUE_CARBON_DIOXIDE_FROM_TISSUE",
@@ -114,6 +116,132 @@ export const LEVEL_SEMANTICS = deepFreeze({
         minimapSegmentId: "right-heart"
       }
     ]
+  },
+  2: {
+    name: "肺循環",
+    hudLabel: "PULMONARY",
+    circulationType: "PULMONARY",
+    minimapPathId: "pulmonary-circulation-path",
+    gasExchangeType: "CARBON_DIOXIDE_TO_ALVEOLI_OXYGEN_FROM_ALVEOLI",
+    startLocationLabel: "右心室",
+    endLocationLabel: "左心室",
+    sections: [
+      {
+        id: "right-ventricle",
+        locationLabel: "右心室",
+        minimapSegmentId: "right-ventricle"
+      },
+      {
+        id: "pulmonary-artery",
+        locationLabel: "肺動脈",
+        minimapSegmentId: "pulmonary-artery"
+      },
+      {
+        id: "alveolar-capillary",
+        locationLabel: "肺泡微血管",
+        minimapSegmentId: "alveolar-capillary",
+        gasExchangeZone: "PULMONARY_ALVEOLI"
+      },
+      {
+        id: "pulmonary-vein",
+        locationLabel: "肺靜脈",
+        minimapSegmentId: "pulmonary-vein"
+      },
+      {
+        id: "left-heart",
+        locationLabel: "左心房／左心室",
+        minimapSegmentId: "left-heart"
+      }
+    ]
+  },
+  3: {
+    name: "體循環－上半身與腦",
+    hudLabel: "SYSTEMIC / UPPER",
+    circulationType: "SYSTEMIC",
+    minimapPathId: "systemic-upper-circulation-path",
+    gasExchangeType: "OXYGEN_TO_TISSUE_CARBON_DIOXIDE_FROM_TISSUE",
+    startLocationLabel: "左心室",
+    endLocationLabel: "右心室",
+    sections: [
+      {
+        id: "left-ventricle",
+        locationLabel: "左心室",
+        minimapSegmentId: "left-ventricle"
+      },
+      {
+        id: "aorta",
+        locationLabel: "主動脈",
+        minimapSegmentId: "aorta"
+      },
+      {
+        id: "carotid-subclavian-arteries",
+        locationLabel: "頸動脈／鎖骨下動脈",
+        minimapSegmentId: "carotid-subclavian-arteries"
+      },
+      {
+        id: "upper-body-arteriole",
+        locationLabel: "上半身小動脈",
+        minimapSegmentId: "upper-body-arteriole"
+      },
+      {
+        id: "brain-upper-capillary",
+        locationLabel: "腦／上半身微血管",
+        minimapSegmentId: "brain-upper-capillary",
+        gasExchangeZone: "SYSTEMIC_BRAIN_UPPER_TISSUE"
+      },
+      {
+        id: "venule",
+        locationLabel: "小靜脈",
+        minimapSegmentId: "venule"
+      },
+      {
+        id: "superior-vena-cava",
+        locationLabel: "上大靜脈",
+        minimapSegmentId: "superior-vena-cava"
+      },
+      {
+        id: "right-heart",
+        locationLabel: "右心房／右心室",
+        minimapSegmentId: "right-heart"
+      }
+    ]
+  },
+  4: {
+    name: "高風險肺循環",
+    hudLabel: "PULMONARY / HIGH RISK",
+    circulationType: "PULMONARY",
+    minimapPathId: "high-risk-pulmonary-circulation-path",
+    gasExchangeType: "CARBON_DIOXIDE_TO_ALVEOLI_OXYGEN_FROM_ALVEOLI",
+    startLocationLabel: "右心室",
+    endLocationLabel: "左心室",
+    sections: [
+      {
+        id: "right-ventricle",
+        locationLabel: "右心室",
+        minimapSegmentId: "right-ventricle"
+      },
+      {
+        id: "pulmonary-artery",
+        locationLabel: "肺動脈",
+        minimapSegmentId: "pulmonary-artery"
+      },
+      {
+        id: "alveolar-capillary",
+        locationLabel: "肺泡微血管",
+        minimapSegmentId: "alveolar-capillary",
+        gasExchangeZone: "PULMONARY_ALVEOLI"
+      },
+      {
+        id: "pulmonary-vein",
+        locationLabel: "肺靜脈",
+        minimapSegmentId: "pulmonary-vein"
+      },
+      {
+        id: "left-heart",
+        locationLabel: "左心房／左心室",
+        minimapSegmentId: "left-heart"
+      }
+    ]
   }
 });
 
@@ -148,6 +276,7 @@ export function assembleLevel(levelId, semanticDefinition) {
   return deepFreeze({
     id: Number(levelId),
     name: semanticDefinition.name,
+    hudLabel: semanticDefinition.hudLabel,
     circulationType: semanticDefinition.circulationType,
     minimapPathId: semanticDefinition.minimapPathId,
     gasExchangeType: semanticDefinition.gasExchangeType,
@@ -171,9 +300,11 @@ export function assembleLevel(levelId, semanticDefinition) {
   });
 }
 
-export const LEVELS = deepFreeze([
-  assembleLevel(1, LEVEL_SEMANTICS[1])
-]);
+export const LEVELS = deepFreeze(
+  Object.keys(LEVEL_SEMANTICS).map((levelId) =>
+    assembleLevel(levelId, LEVEL_SEMANTICS[levelId])
+  )
+);
 
 export function getLevelById(levelId) {
   return LEVELS.find((level) => level.id === Number(levelId)) ?? null;

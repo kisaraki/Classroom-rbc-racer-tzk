@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
+import { GAME_CONFIG } from "../config.js?v=phase08-routes-r1";
 
 export const GAS_EXCHANGE_STATUS = Object.freeze({
   PENDING: "PENDING",
@@ -38,6 +38,7 @@ export const ENTITY_STATE_SCHEMA = Object.freeze({
 export const LEVEL_DATA_SCHEMA = Object.freeze({
   id: "configured level id",
   name: "string",
+  hudLabel: "string",
   circulationType: "string",
   targetDriveSeconds: "positive finite number",
   trackLength: "positive finite number",
@@ -219,6 +220,7 @@ export function isLevelData(value) {
     isObject(value) &&
     isConfiguredLevelId(value.id) &&
     typeof value.name === "string" &&
+    typeof value.hudLabel === "string" &&
     typeof value.circulationType === "string" &&
     isFiniteNumber(value.targetDriveSeconds) &&
     value.targetDriveSeconds > 0 &&

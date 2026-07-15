@@ -1,6 +1,7 @@
-import { GAME_CONFIG } from "../config.js?v=phase07-status-r2";
-import { MessageOverlay } from "./MessageOverlay.js?v=phase07-status-r2";
-import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase07-status-r2";
+import { GAME_CONFIG } from "../config.js?v=phase08-routes-r1";
+import { createFlightInstrumentSnapshot } from "./FlightInstrumentModel.js?v=phase08-routes-r1";
+import { MessageOverlay } from "./MessageOverlay.js?v=phase08-routes-r1";
+import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase08-routes-r1";
 
 const EMPTY_STATUSES = Object.freeze([]);
 
@@ -19,6 +20,7 @@ export class HUDManager {
   #minimap;
   #messageOverlay;
   #statusElements = new Map();
+  #instrumentDiagnostics = null;
 
   constructor(root = document) {
     this.#elements = {
@@ -38,9 +40,25 @@ export class HUDManager {
       stateValue: requireElement(root, "#state-value"),
       fpsValue: requireElement(root, "#fps-value"),
       pointerValue: requireElement(root, "#pointer-value"),
+      circulationTitle: requireElement(root, "#circulation-title"),
+      circulationRouteCode: requireElement(root, "#circulation-route-code"),
       statusPanel: requireElement(root, "#status-panel"),
       statusList: requireElement(root, "#status-list"),
       statusEmpty: requireElement(root, "#status-empty"),
+      flightInstruments: requireElement(root, "#flight-instruments"),
+      bodyReticle: requireElement(root, "#body-reticle"),
+      viewReticle: requireElement(root, "#view-reticle"),
+      attitudeMarker: requireElement(root, "#attitude-marker"),
+      attitudeX: requireElement(root, "#attitude-x"),
+      attitudeY: requireElement(root, "#attitude-y"),
+      altitudeMarker: requireElement(root, "#altitude-marker"),
+      altitudeMinimum: requireElement(root, "#altitude-minimum"),
+      altitudeMaximum: requireElement(root, "#altitude-maximum"),
+      altitudeValue: requireElement(root, "#altitude-value"),
+      vesselDiameter: requireElement(root, "#vessel-diameter"),
+      viewDirectionNeedle: requireElement(root, "#view-direction-needle"),
+      viewHeading: requireElement(root, "#view-heading"),
+      viewPitch: requireElement(root, "#view-pitch"),
       qtePanel: requireElement(root, "#qte-panel"),
       qteAttempt: requireElement(root, "#qte-attempt"),
       qteInstruction: requireElement(root, "#qte-instruction"),
@@ -76,6 +94,10 @@ export class HUDManager {
     });
   }
 
+  get instrumentDiagnostics() {
+    return this.#instrumentDiagnostics;
+  }
+
   update({
     hp,
     maxHp,
@@ -83,6 +105,8 @@ export class HUDManager {
     score,
     level,
     levelCount,
+    circulationLabel,
+    routeCode,
     location,
     speed,
     distance,
@@ -93,6 +117,12 @@ export class HUDManager {
     pointerLocked,
     minimapPathId,
     minimapProgress,
+    lateralX,
+    lateralY,
+    collisionRadius,
+    vesselRadius,
+    viewYaw,
+    viewPitch,
     clockNowMs,
     statuses = EMPTY_STATUSES
   }) {
@@ -127,6 +157,8 @@ export class HUDManager {
           : "SAFE";
     this.#elements.scoreValue.textContent = score.toFixed(valuePrecision);
     this.#elements.levelValue.textContent = level + " / " + levelCount;
+    this.#elements.circulationTitle.textContent = circulationLabel;
+    this.#elements.circulationRouteCode.textContent = routeCode;
     this.#elements.locationValue.textContent = location;
     this.#elements.speedValue.textContent =
       speed.toFixed(valuePrecision) + " u/s";
@@ -154,6 +186,14 @@ export class HUDManager {
       ? "LOCKED"
       : "RELEASED";
     this.#elements.hud.dataset.state = state;
+    this.#updateFlightInstruments({
+      lateralX,
+      lateralY,
+      collisionRadius,
+      vesselRadius,
+      viewYaw,
+      viewPitch
+    });
     this.#minimap.update(minimapPathId, minimapProgress);
     this.#updateStatuses(statuses, clockNowMs);
     this.#messageOverlay.update(clockNowMs);
@@ -170,10 +210,11 @@ export class HUDManager {
   showReady() {
     this.#elements.overlay.hidden = false;
     this.#elements.overlay.dataset.mode = "READY";
-    this.#elements.overlayKicker.textContent = "Phase 07 / Status overlap protocol";
-    this.#elements.overlayTitle.textContent = "狀態效果上線";
+    this.#elements.overlayKicker.textContent =
+      "Phase 08 / Circulation route expansion";
+    this.#elements.overlayTitle.textContent = "四循環航圖上線";
     this.#elements.overlayCopy.textContent =
-      "第五次酒精碰撞觸發十五秒中毒；瘧原蟲使引擎蓋翻動五秒。效果可重疊，絕對期限在 QTE、低血壓與暫停中繼續。";
+      "十字代表鍵盤控制的機身姿態，圓形代表滑鼠控制的視覺方向；ATTITUDE、動態 ALT 與 VIEW 儀表會即時同步。";
     this.#elements.overlayAction.textContent =
       "開始遊戲並鎖定滑鼠視角";
     this.#elements.overlayAction.hidden = false;
@@ -310,7 +351,7 @@ export class HUDManager {
         : "氣體交換失敗，但已依規則通過。") +
       " 最終分數：" +
       score +
-      "。Phase 07 僅開放第一關，可重新挑戰。";
+      "。四關資料已完成；跨關過場與自動切換保留至 Phase 09，可先重新挑戰本關。";
     this.#elements.overlayAction.textContent = "重新挑戰第一關";
     this.#elements.overlayAction.hidden = false;
     this.#elements.overlayAction.disabled = false;
@@ -334,6 +375,74 @@ export class HUDManager {
     this.#elements.overlayAction.textContent = "從檢查點重試";
     this.#elements.overlayAction.hidden = false;
     this.#elements.overlayAction.disabled = false;
+  }
+
+  #updateFlightInstruments({
+    lateralX,
+    lateralY,
+    collisionRadius,
+    vesselRadius,
+    viewYaw,
+    viewPitch
+  }) {
+    const snapshot = createFlightInstrumentSnapshot({
+      lateralX,
+      lateralY,
+      collisionRadius,
+      vesselRadius,
+      wallMargin: GAME_CONFIG.track.wallMargin,
+      viewYaw,
+      viewPitch,
+      pitchLimitRadians: GAME_CONFIG.camera.pitchLimitRadians
+    });
+    const config = GAME_CONFIG.flightInstruments;
+    const coordinatePrecision = config.coordinatePrecision;
+    const altitudePrecision = config.altitudePrecision;
+    const anglePrecision = config.anglePrecision;
+    const formatSigned = (value, precision) =>
+      (value >= 0 ? "+" : "") + value.toFixed(precision);
+
+    this.#instrumentDiagnostics = snapshot;
+    this.#elements.bodyReticle.style.left =
+      snapshot.bodyReticleLeftPercent + "%";
+    this.#elements.bodyReticle.style.top =
+      snapshot.bodyReticleTopPercent + "%";
+    this.#elements.viewReticle.style.left =
+      snapshot.viewReticleLeftPercent + "%";
+    this.#elements.viewReticle.style.top =
+      snapshot.viewReticleTopPercent + "%";
+    this.#elements.attitudeMarker.style.left =
+      (50 + snapshot.attitudeX * config.attitudePanelTravelPercent) + "%";
+    this.#elements.attitudeMarker.style.top =
+      (50 - snapshot.attitudeY * config.attitudePanelTravelPercent) + "%";
+    this.#elements.attitudeX.textContent =
+      "X " + formatSigned(lateralX, coordinatePrecision);
+    this.#elements.attitudeY.textContent =
+      "Y " + formatSigned(lateralY, coordinatePrecision);
+    this.#elements.altitudeMarker.style.top =
+      (1 - snapshot.altitudeRatio) * 100 + "%";
+    this.#elements.altitudeMinimum.textContent =
+      snapshot.altitudeMinimum.toFixed(altitudePrecision);
+    this.#elements.altitudeMaximum.textContent =
+      snapshot.altitudeMaximum.toFixed(altitudePrecision);
+    this.#elements.altitudeValue.textContent =
+      snapshot.altitude.toFixed(altitudePrecision) + " u";
+    this.#elements.vesselDiameter.textContent =
+      "DIA " + snapshot.vesselDiameter.toFixed(altitudePrecision);
+    this.#elements.viewDirectionNeedle.style.rotate =
+      snapshot.headingDegrees + "deg";
+    this.#elements.viewHeading.textContent =
+      "HDG " +
+      String(
+        Math.round(snapshot.headingDegrees) % config.fullCircleDegrees
+      ).padStart(3, "0") +
+      "°";
+    this.#elements.viewPitch.textContent =
+      "PITCH " + formatSigned(snapshot.pitchDegrees, anglePrecision) + "°";
+    this.#elements.flightInstruments.dataset.vesselDiameter =
+      snapshot.vesselDiameter.toFixed(altitudePrecision);
+    this.#elements.flightInstruments.dataset.heading =
+      snapshot.headingDegrees.toFixed(anglePrecision);
   }
 
   #updateStatuses(statuses, nowMs) {

@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="RBC Racer Phase 07 alcohol and malaria status effects"
+      content="RBC Racer Phase 08 data-driven circulation routes and flight instruments"
     >
-    <title>RBC Racer | Phase 07 Status Effects</title>
-    <link rel="stylesheet" href="./css/main.css?v=phase07-status-r2">
-    <link rel="stylesheet" href="./css/hud.css?v=phase07-status-r2">
-    <link rel="stylesheet" href="./css/menu.css?v=phase07-status-r2">
+    <title>RBC Racer | Phase 08 Circulation Routes</title>
+    <link rel="stylesheet" href="./css/main.css?v=phase08-routes-r1">
+    <link rel="stylesheet" href="./css/hud.css?v=phase08-routes-r1">
+    <link rel="stylesheet" href="./css/menu.css?v=phase08-routes-r1">
   </head>
   <body>
     <main
@@ -29,7 +29,7 @@
 
       <section id="game-hud" class="game-hud" aria-label="遊戲狀態">
         <header class="hud-brand">
-          <span class="hud-brand__phase">P07</span>
+          <span class="hud-brand__phase">P08</span>
           <span class="hud-brand__name">RBC / RACER</span>
           <span class="hud-brand__status">
             <i aria-hidden="true"></i>
@@ -41,9 +41,9 @@
           <header class="circulation-card__header">
             <div>
               <span>Circulation map</span>
-              <strong id="circulation-title">SYSTEMIC / LOWER</strong>
+            <strong id="circulation-title">SYSTEMIC / LOWER</strong>
             </div>
-            <b>ROUTE 01</b>
+            <b id="circulation-route-code">ROUTE 01</b>
           </header>
           <div id="circulation-map" class="circulation-map"></div>
           <footer class="circulation-card__legend" aria-label="循環圖圖例">
@@ -147,9 +147,55 @@
           <span>FPS <strong id="fps-value">0</strong></span>
         </aside>
 
-        <div class="reticle" aria-hidden="true">
+        <section
+          id="flight-instruments"
+          class="flight-instruments"
+          aria-label="紅血球姿態、高度與滑鼠視覺方向儀表"
+        >
+          <article class="instrument instrument--attitude">
+            <header><span>KEY / BODY</span><strong>ATTITUDE</strong></header>
+            <div class="attitude-display" aria-hidden="true">
+              <i class="attitude-display__axis"></i>
+              <b id="attitude-marker" class="attitude-display__marker"></b>
+            </div>
+            <footer>
+              <output id="attitude-x">X +0.00</output>
+              <output id="attitude-y">Y +0.00</output>
+            </footer>
+          </article>
+
+          <article class="instrument instrument--altitude">
+            <header><span>VESSEL</span><strong>ALT</strong></header>
+            <div class="altitude-tape" aria-hidden="true">
+              <span id="altitude-maximum">13.0</span>
+              <i><b id="altitude-marker"></b></i>
+              <span id="altitude-minimum">0.0</span>
+            </div>
+            <output id="altitude-value">6.5 u</output>
+            <small id="vessel-diameter">DIA 13.0</small>
+          </article>
+
+          <article class="instrument instrument--view">
+            <header><span>MOUSE / LOOK</span><strong>VIEW</strong></header>
+            <div class="view-direction" aria-hidden="true">
+              <span>N</span>
+              <i id="view-direction-needle"></i>
+              <b></b>
+            </div>
+            <footer>
+              <output id="view-heading">HDG 000°</output>
+              <output id="view-pitch">PITCH +0°</output>
+            </footer>
+          </article>
+        </section>
+
+        <div id="body-reticle" class="reticle reticle--body" aria-hidden="true">
           <i></i>
-          <span></span>
+          <span>KEY / BODY</span>
+        </div>
+        <div id="view-reticle" class="reticle reticle--view" aria-hidden="true">
+          <i></i>
+          <span>MOUSE / VIEW</span>
         </div>
 
         <section
@@ -221,19 +267,19 @@
         data-mode="READY"
         aria-labelledby="overlay-title"
       >
-        <div class="overlay-index" aria-hidden="true">07</div>
+        <div class="overlay-index" aria-hidden="true">08</div>
         <div class="overlay-panel">
           <p id="overlay-kicker" class="overlay-kicker">
-            Phase 07 / Status overlap protocol
+            Phase 08 / Circulation route expansion
           </p>
-          <h1 id="overlay-title">狀態效果上線</h1>
+          <h1 id="overlay-title">四循環航圖上線</h1>
           <p id="overlay-copy" class="overlay-copy">
-            第五次酒精碰撞將觸發十五秒中毒；瘧原蟲會使引擎蓋翻動五秒。兩種效果可重疊，所有期限在 QTE、低血壓與暫停中繼續。
+            四關路線資料、血管映射與高風險倍率已完成。十字代表鍵盤機身姿態，圓形代表滑鼠視覺方向；下方儀表同步顯示 ATTITUDE、動態 ALT 與 VIEW。
           </p>
           <div class="overlay-controls" aria-label="核心操作">
-            <span><b>↑↓←→</b> STRAFE</span>
+            <span><b>↑↓←→ / 十字</b> BODY</span>
             <span><b>Z / X</b> PRESSURE</span>
-            <span><b>MOUSE</b> LOOK ONLY</span>
+            <span><b>MOUSE / 圓形</b> VIEW</span>
           </div>
           <button id="overlay-action" type="button">
             開始遊戲並鎖定滑鼠視角
@@ -249,6 +295,6 @@
       </noscript>
     </main>
 
-    <script type="module" src="./js/main.js?v=phase07-status-r2"></script>
+    <script type="module" src="./js/main.js?v=phase08-routes-r1"></script>
   </body>
 </html>

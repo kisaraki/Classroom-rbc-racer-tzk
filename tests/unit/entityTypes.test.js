@@ -1,10 +1,10 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase07-status-r2";
+import { GAME_CONFIG } from "../../js/config.js?v=phase08-routes-r1";
 import {
   ENTITY_CATEGORIES,
   ENTITY_TYPES,
   GENERAL_SPAWN_TYPE_IDS,
   getEntityType
-} from "../../js/data/entityTypes.js?v=phase07-status-r2";
+} from "../../js/data/entityTypes.js?v=phase08-routes-r1";
 import {
   assert,
   assertDeepEqual,

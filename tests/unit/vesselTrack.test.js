@@ -3,10 +3,10 @@ import {
   Color,
   TubeGeometry
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase07-status-r2";
-import { LEVELS } from "../../js/data/levels.js?v=phase07-status-r2";
-import { GAS_EXCHANGE_STATUS } from "../../js/data/schemas.js?v=phase07-status-r2";
-import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase07-status-r2";
+import { GAME_CONFIG } from "../../js/config.js?v=phase08-routes-r1";
+import { LEVELS } from "../../js/data/levels.js?v=phase08-routes-r1";
+import { GAS_EXCHANGE_STATUS } from "../../js/data/schemas.js?v=phase08-routes-r1";
+import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase08-routes-r1";
 import {
   assert,
   assertApproximately,
@@ -51,6 +51,23 @@ export function registerVesselTrackTests(harness) {
 
     assertApproximately(track.curveLength, track.trackLength, tolerance);
     track.dispose();
+  });
+
+  harness.test("all four levels build one data-driven CatmullRom vessel", () => {
+    LEVELS.forEach((level) => {
+      const track = new VesselTrack({ level });
+
+      assert(track.curve instanceof CatmullRomCurve3);
+      assertEqual(track.trackLength, level.trackLength);
+      assertEqual(track.sections.length, level.sections.length);
+      assertEqual(track.group.children.length, level.sections.length);
+      assertApproximately(
+        track.curveLength,
+        level.trackLength,
+        level.trackLength * 0.1
+      );
+      track.dispose();
+    });
   });
 
   harness.test("cached parallel-transport frames stay orthonormal", () => {
@@ -184,6 +201,30 @@ export function registerVesselTrackTests(harness) {
       beforeExchangeColor.getHex()
     );
     track.dispose();
+  });
+
+  harness.test("every level gates its downstream color at gas exchange", () => {
+    LEVELS.forEach((level) => {
+      const track = new VesselTrack({ level });
+      const gasSection = track.sections.find(
+        (section) => section.gasExchangeZone !== null
+      );
+      const downstreamSection = track.sections.at(-1);
+      const pendingColor = new Color(gasSection.initialColorStart);
+
+      assertEqual(
+        downstreamSection
+          .getColorAtDistance(downstreamSection.endDistance)
+          .getHex(),
+        pendingColor.getHex()
+      );
+      track.setGasExchangeStatus(GAS_EXCHANGE_STATUS.SUCCESS);
+      assertEqual(
+        gasSection.getColorAtDistance(gasSection.endDistance).getHex(),
+        new Color(gasSection.colorEnd).getHex()
+      );
+      track.dispose();
+    });
   });
 
   harness.test("flow texture advances only when the track is updated", () => {

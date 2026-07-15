@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase07-status-r2";
+import { GAME_CONFIG } from "../../js/config.js?v=phase08-routes-r1";
 import {
   assembleLevel,
   LEVELS
-} from "../../js/data/levels.js?v=phase07-status-r2";
+} from "../../js/data/levels.js?v=phase08-routes-r1";
 import {
   createEntityState,
   createLevelCheckpoint,
@@ -11,7 +11,7 @@ import {
   isLevelCheckpoint,
   isLevelData,
   isPlayerState
-} from "../../js/data/schemas.js?v=phase07-status-r2";
+} from "../../js/data/schemas.js?v=phase08-routes-r1";
 import {
   assert,
   assertApproximately,
@@ -57,6 +57,7 @@ export function registerSchemaTests(harness) {
     }));
     const level = assembleLevel(1, {
       name: "Test level",
+      hudLabel: "TEST ROUTE",
       circulationType: "SYSTEMIC",
       minimapPathId: "test-path",
       gasExchangeType: "UNSPECIFIED",
@@ -70,13 +71,19 @@ export function registerSchemaTests(harness) {
     assertEqual(level.sections.length, tuning.sectionRatios.length);
   });
 
-  harness.test("Phase 02 registers only the playable first level", () => {
-    assertEqual(LEVELS.length, 1);
-    assertEqual(LEVELS[0].id, 1);
-    assertEqual(LEVELS[0].sections.length, 8);
-    assertEqual(GAME_CONFIG.levels[2].controlPoints.length, 0);
-    assertEqual(GAME_CONFIG.levels[3].controlPoints.length, 0);
-    assertEqual(GAME_CONFIG.levels[4].controlPoints.length, 0);
+  harness.test("Phase 08 registers four complete data-driven levels", () => {
+    assertEqual(LEVELS.length, GAME_CONFIG.game.totalLevelCount);
+    assertEqual(LEVELS.map((level) => level.id).join(","), "1,2,3,4");
+
+    LEVELS.forEach((level) => {
+      const tuning = GAME_CONFIG.levels[level.id];
+
+      assert(isLevelData(level));
+      assertEqual(level.sections.length, tuning.routeSections.length);
+      assertEqual(level.controlPoints.length >= 2, true);
+      assertEqual(level.start.distance, 0);
+      assertEqual(level.end.distance, level.trackLength);
+    });
   });
 
   harness.test("configured level ratios and baseline times are consistent", () => {

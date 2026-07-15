@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase07-status-r2";
-import { LEVELS } from "../../js/data/levels.js?v=phase07-status-r2";
-import { GAS_EXCHANGE_STATUS } from "../../js/data/schemas.js?v=phase07-status-r2";
-import { GameSession } from "../../js/core/GameSession.js?v=phase07-status-r2";
-import { GAME_STATES } from "../../js/core/GameStateMachine.js?v=phase07-status-r2";
+import { GAME_CONFIG } from "../../js/config.js?v=phase08-routes-r1";
+import { LEVELS } from "../../js/data/levels.js?v=phase08-routes-r1";
+import { GAS_EXCHANGE_STATUS } from "../../js/data/schemas.js?v=phase08-routes-r1";
+import { GameSession } from "../../js/core/GameSession.js?v=phase08-routes-r1";
+import { GAME_STATES } from "../../js/core/GameStateMachine.js?v=phase08-routes-r1";
 import {
   canCompleteLevel,
   QTE_ACTIONS,
@@ -11,7 +11,7 @@ import {
   QTE_PHASES,
   QTESystem,
   QTE_TRIGGER_TYPES
-} from "../../js/systems/QTESystem.js?v=phase07-status-r2";
+} from "../../js/systems/QTESystem.js?v=phase08-routes-r1";
 import { assertEqual, assertThrows } from "./TestHarness.js";
 
 function createQte() {

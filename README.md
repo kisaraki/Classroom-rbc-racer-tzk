@@ -6,51 +6,44 @@ build. It has no runtime backend, database, framework, CDN, or external media.
 
 ## Current Phase
 
-Phase 07 completes the alcohol-intoxication and malaria-obstruction systems on
-top of the playable Level 1 vertical slice while retaining every Phase 00-06
-behavior.
+Phase 08 expands the circulation course into four data-driven level datasets
+while retaining every Phase 00-07 behavior.
 
 Included:
 
-- The fifth alcohol collision starts one absolute 15-second intoxication
-  deadline. Further alcohol still applies its normal Score/HP penalty but never
-  extends the active deadline; natural completion resets the count and BP 100.
-- Arrow and Z/X transitions use one timestamped queue instead of per-input
-  timers. Each transition is delayed 250-700ms and has a 35% failure chance.
-- BP is deterministically resampled in the 80-130 range once per 400ms update,
-  without catch-up bursts after a hidden or late frame.
-- Configured S sway affects the RBC only while world movement is permitted. A
-  subtle procedural canvas distortion communicates intoxication without
-  distorting the HUD.
-- Malaria drives the independent hood from its original transform with two flap
-  frequencies, roll, and vertical offset for five absolute seconds, followed by
-  a 0.4-second restore. Repeated hits reset the same hood instead of adding one.
-- Alcohol and malaria can overlap with separately calculated deadlines. The
-  combined hood is capped at 55% configured coverage.
-- QTE O/C input bypasses intoxication. Delayed driving actions that expire in
-  QTE, PAUSED, transfer, or another disallowed state are discarded; low-BP
-  stasis accepts delayed Z only.
-- Rendering, HUD, status countdowns, malaria animation, and all real-time
-  deadlines continue through QTE, low-BP stasis, PAUSED, and transfer. Game
-  Over, Level Complete, and checkpoint retry clear every transient effect.
-- The Phase 06 Gas Token, QTE retry/failed-pass behavior, exchange colors,
-  Level Complete, terminal failures, and deterministic retry remain intact.
-- The right status area now contains the always-available `KOSMOS TOOLKIT` /
-  `探真拓知酷` keyboard and mouse guide, while active condition countdowns remain
-  above it.
-- A shared 158-test Node/browser suite plus 1280 x 720, 1920 x 1080, and
-  390 x 844 layout acceptance.
+- Level 1 retains its 3000-unit lower-body systemic route and 300-second target.
+- Level 2 adds a 900-unit pulmonary route with right-heart, pulmonary artery,
+  alveolar capillary, pulmonary vein, and left-heart sections.
+- Level 3 adds an 1800-unit upper-body and brain systemic route with its own
+  artery, capillary, venous, radius, color, and gas-exchange mappings.
+- Level 4 reuses the pulmonary anatomy through a separate high-risk dataset.
+  Buff weights use 0.7x, general debuffs use 2.5x, alcohol adds 2x for 5x total,
+  and high-BP Wound chance uses 3x. Safe-BP Wound retains the exponential rule.
+- All numeric control points, distances, radii, colors, seeds, timings, and
+  multipliers remain centralized in `js/config.js`. `js/data/levels.js` adds
+  only route semantics and assembles all four levels through one code path.
+- The procedural circulation map now exposes four route IDs over the existing
+  eight vessel curves and seven anatomical nodes.
+- The cockpit HUD separates controls: a warm cross shows keyboard-controlled
+  body attitude, while a cyan circle shows mouse-controlled view direction.
+- ATTITUDE, dynamic ALT, and VIEW panels report local body offset, a 0-to-vessel
+  diameter altitude scale, mouse heading, and mouse pitch.
+- A shared 169-test Node/browser suite covers every route, location, color
+  boundary, minimap mapping, gas-exchange zone, visual curve, risk multiplier,
+  instrument, and all four target driving times.
 
 Intentionally excluded until later phases:
 
-- Playable Levels 2 through 4 and their data-driven route expansion (Phase 08).
-- Inter-level cinematic content, complete endings, and victory flows. Level 4
-  blood-pressure math remains tested as a contract but is not registered.
+- Automatic inter-level transitions and heart-chamber conveyor cutscenes.
+- Recycle, fall, stroke, and victory ending expansion plus whole-run restart.
 - Phase 10 long-duration performance and cross-browser acceptance.
 
-Phase 07 local acceptance is PASS. Deployment evidence is recorded after the
-implementation push in `reports/phase-07-report.md`; the matching acceptance
-checklist is `tests/phase-07-manual-test-checklist.md`.
+The application still starts on Level 1; Phase 09 owns automatic progression.
+All four Phase 08 datasets are registered and loadable by the shared
+`LevelManager`, `VesselTrack`, entity, gas exchange, and minimap systems.
+
+Phase 08 acceptance evidence is recorded in `reports/phase-08-report.md`; the
+matching checklist is `tests/phase-08-manual-test-checklist.md`.
 
 ## Controls
 
@@ -102,7 +95,7 @@ require an HTTP server.
 
 ## Automated Tests
 
-Run the shared Phase 07 suite with either command:
+Run the shared Phase 08 suite with either command:
 
 ~~~powershell
 npm test
@@ -112,12 +105,12 @@ npm test
 node ./tests/run-tests.mjs
 ~~~
 
-The browser page and Node runner import the same 158 tests from `tests/unit`.
-They include every earlier regression plus fifth-hit intoxication, absolute
-15-second expiry, delayed/failed input, state-aware queue disposal, 400ms BP
-randomization, configured sway, continuous malaria flap/restore transforms,
-55% overlap coverage, QTE coexistence, and cross-state deadline cleanup.
-Earlier Gas QTE, BP, entity, collision, compact RBC, circulation map,
+The browser page and Node runner import the same 169-test suite from
+`tests/unit`. It includes every earlier regression plus four-level schema
+assembly, exact route locations, section continuity, gas zones, four minimap
+paths, four Catmull-Rom tracks, target driving times, Level 4 weights, and
+flight-instrument mapping.
+Earlier status effects, Gas QTE, BP, entity, collision, compact RBC,
 desktop/mobile detection, and refusal-screen contracts remain covered.
 
 ## Three.js Vendor Record

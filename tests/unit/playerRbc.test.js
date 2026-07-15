@@ -3,10 +3,10 @@ import {
   PerspectiveCamera,
   Vector3
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../../js/config.js?v=phase07-status-r2";
-import { createLevelCheckpoint } from "../../js/data/schemas.js?v=phase07-status-r2";
+import { GAME_CONFIG } from "../../js/config.js?v=phase08-routes-r1";
+import { createLevelCheckpoint } from "../../js/data/schemas.js?v=phase08-routes-r1";
 import { InputController } from "../../js/input/InputController.js";
-import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase07-status-r2";
+import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase08-routes-r1";
 import {
   assert,
   assertApproximately,
