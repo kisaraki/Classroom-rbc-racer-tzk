@@ -2,6 +2,7 @@
   "name": "project-aorta-rbc-racer",
   "version": "1.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "test": "node ./tests/run-tests.mjs",
