@@ -7,7 +7,9 @@ export const GAME_STATES = Object.freeze({
   TRANSFER_CUTSCENE: "TRANSFER_CUTSCENE",
   LEVEL_COMPLETE: "LEVEL_COMPLETE",
   GAME_OVER_RECYCLE: "GAME_OVER_RECYCLE",
-  GAME_OVER_FALL: "GAME_OVER_FALL"
+  GAME_OVER_FALL: "GAME_OVER_FALL",
+  GAME_OVER_STROKE: "GAME_OVER_STROKE",
+  VICTORY: "VICTORY"
 });
 
 const PAUSABLE_STATES = new Set([
@@ -19,7 +21,8 @@ const PAUSABLE_STATES = new Set([
 
 const GAME_OVER_STATES = new Set([
   GAME_STATES.GAME_OVER_RECYCLE,
-  GAME_STATES.GAME_OVER_FALL
+  GAME_STATES.GAME_OVER_FALL,
+  GAME_STATES.GAME_OVER_STROKE
 ]);
 
 export class GameStateMachine {
@@ -144,6 +147,15 @@ export class GameStateMachine {
     }
 
     return false;
+  }
+
+  enterVictory() {
+    if (this.#state !== GAME_STATES.LEVEL_COMPLETE) {
+      return false;
+    }
+
+    this.#state = GAME_STATES.VICTORY;
+    return true;
   }
 
   enterGameOver(gameOverState) {

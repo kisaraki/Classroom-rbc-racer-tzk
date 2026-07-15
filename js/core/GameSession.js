@@ -2,7 +2,7 @@ import { GameClock } from "./GameClock.js?v=phase01-real-clock";
 import {
   GAME_STATES,
   GameStateMachine
-} from "./GameStateMachine.js?v=phase08-routes-r1";
+} from "./GameStateMachine.js?v=phase09-endings-r1";
 
 function assertDurationSeconds(value) {
   if (!Number.isFinite(value)) {
@@ -121,6 +121,10 @@ export class GameSession {
 
   completeTransferCutscene() {
     return this.#stateMachine.completeTransferCutscene();
+  }
+
+  enterVictory() {
+    return this.#stateMachine.enterVictory();
   }
 
   enterGameOver(gameOverState) {

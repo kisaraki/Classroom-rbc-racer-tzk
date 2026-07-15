@@ -1,10 +1,10 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase08-routes-r1";
-import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase08-routes-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase09-endings-r1";
+import { PlayerRBC } from "../../js/player/PlayerRBC.js?v=phase09-endings-r1";
 import {
   INTOXICATION_EVENTS,
   isIntoxicationActionAllowed,
   StatusEffectManager
-} from "../../js/systems/StatusEffectManager.js?v=phase08-routes-r1";
+} from "../../js/systems/StatusEffectManager.js?v=phase09-endings-r1";
 import {
   assertApproximately,
   assertEqual,

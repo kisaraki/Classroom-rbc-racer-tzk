@@ -1,8 +1,8 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase08-routes-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase09-endings-r1";
 import {
   assembleLevel,
   LEVELS
-} from "../../js/data/levels.js?v=phase08-routes-r1";
+} from "../../js/data/levels.js?v=phase09-endings-r1";
 import {
   createEntityState,
   createLevelCheckpoint,
@@ -11,7 +11,7 @@ import {
   isLevelCheckpoint,
   isLevelData,
   isPlayerState
-} from "../../js/data/schemas.js?v=phase08-routes-r1";
+} from "../../js/data/schemas.js?v=phase09-endings-r1";
 import {
   assert,
   assertApproximately,
@@ -63,6 +63,10 @@ export function registerSchemaTests(harness) {
       gasExchangeType: "UNSPECIFIED",
       startLocationLabel: "Test start",
       endLocationLabel: "Test end",
+      transfer: {
+        fromChamber: "Test atrium",
+        toChamber: "Test ventricle"
+      },
       sections
     });
 
@@ -71,7 +75,7 @@ export function registerSchemaTests(harness) {
     assertEqual(level.sections.length, tuning.sectionRatios.length);
   });
 
-  harness.test("Phase 08 registers four complete data-driven levels", () => {
+  harness.test("Phase 09 retains four complete data-driven levels", () => {
     assertEqual(LEVELS.length, GAME_CONFIG.game.totalLevelCount);
     assertEqual(LEVELS.map((level) => level.id).join(","), "1,2,3,4");
 

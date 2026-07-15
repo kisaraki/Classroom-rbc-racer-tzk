@@ -1585,6 +1585,47 @@ export const GAME_CONFIG = deepFreeze({
 
   cutscenes: {
     transferDurationMinSeconds: 3,
-    transferDurationMaxSeconds: 5
+    transferDurationMaxSeconds: 5,
+    durationsSeconds: {
+      TRANSFER: 4,
+      RECYCLE: 5.2,
+      FALL: 4.8,
+      STROKE: 3.8,
+      VICTORY: 7.5
+    },
+    timelines: {
+      TRANSFER: [
+        { id: "CHAMBER_ENTRY", endProgress: 0.2 },
+        { id: "CONVEYOR", endProgress: 0.78 },
+        { id: "CHAMBER_ARRIVAL", endProgress: 1 }
+      ],
+      RECYCLE: [
+        { id: "FACTORY_APPROACH", endProgress: 0.25 },
+        { id: "DISASSEMBLY", endProgress: 0.78 },
+        { id: "RECYCLED", endProgress: 1 }
+      ],
+      FALL: [
+        { id: "VESSEL_EXIT", endProgress: 0.24 },
+        { id: "TUMBLE", endProgress: 0.72 },
+        { id: "ABYSS", endProgress: 1 }
+      ],
+      STROKE: [
+        { id: "IMPACT", endProgress: 0.22 },
+        { id: "BLACKOUT", endProgress: 0.62 },
+        { id: "DIAGNOSIS", endProgress: 1 }
+      ],
+      VICTORY: [
+        { id: "ARTERIAL_ENTRY", endProgress: 0.2 },
+        { id: "OXYGEN_PARADE", endProgress: 0.78 },
+        { id: "FINAL_STATISTICS", endProgress: 1 }
+      ]
+    },
+    recycleFragmentCount: 12,
+    recycleFragmentColumns: 4,
+    victoryParadeRbcCount: 6,
+    victoryParadeRows: 2,
+    victoryConfettiCount: 36,
+    victoryConfettiRows: 6,
+    victoryConfettiColumns: 12
   }
 });

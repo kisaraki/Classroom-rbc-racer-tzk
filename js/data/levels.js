@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase08-routes-r1";
+import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
 
 function deepFreeze(value) {
   if (value && typeof value === "object" && !Object.isFrozen(value)) {
@@ -15,6 +15,8 @@ function validateLevelDefinition(tuning, semanticDefinition) {
     typeof semanticDefinition.name !== "string" ||
     typeof semanticDefinition.hudLabel !== "string" ||
     typeof semanticDefinition.minimapPathId !== "string" ||
+    typeof semanticDefinition.transfer?.fromChamber !== "string" ||
+    typeof semanticDefinition.transfer?.toChamber !== "string" ||
     !Array.isArray(semanticDefinition.sections)
   ) {
     throw new TypeError("A level semantic definition is required.");
@@ -73,6 +75,10 @@ export const LEVEL_SEMANTICS = deepFreeze({
     gasExchangeType: "OXYGEN_TO_TISSUE_CARBON_DIOXIDE_FROM_TISSUE",
     startLocationLabel: "左心室",
     endLocationLabel: "右心室",
+    transfer: {
+      fromChamber: "右心房",
+      toChamber: "右心室"
+    },
     sections: [
       {
         id: "left-ventricle",
@@ -125,6 +131,10 @@ export const LEVEL_SEMANTICS = deepFreeze({
     gasExchangeType: "CARBON_DIOXIDE_TO_ALVEOLI_OXYGEN_FROM_ALVEOLI",
     startLocationLabel: "右心室",
     endLocationLabel: "左心室",
+    transfer: {
+      fromChamber: "左心房",
+      toChamber: "左心室"
+    },
     sections: [
       {
         id: "right-ventricle",
@@ -162,6 +172,10 @@ export const LEVEL_SEMANTICS = deepFreeze({
     gasExchangeType: "OXYGEN_TO_TISSUE_CARBON_DIOXIDE_FROM_TISSUE",
     startLocationLabel: "左心室",
     endLocationLabel: "右心室",
+    transfer: {
+      fromChamber: "右心房",
+      toChamber: "右心室"
+    },
     sections: [
       {
         id: "left-ventricle",
@@ -214,6 +228,10 @@ export const LEVEL_SEMANTICS = deepFreeze({
     gasExchangeType: "CARBON_DIOXIDE_TO_ALVEOLI_OXYGEN_FROM_ALVEOLI",
     startLocationLabel: "右心室",
     endLocationLabel: "左心室",
+    transfer: {
+      fromChamber: "左心房",
+      toChamber: "左心室"
+    },
     sections: [
       {
         id: "right-ventricle",
@@ -280,6 +298,7 @@ export function assembleLevel(levelId, semanticDefinition) {
     circulationType: semanticDefinition.circulationType,
     minimapPathId: semanticDefinition.minimapPathId,
     gasExchangeType: semanticDefinition.gasExchangeType,
+    transfer: semanticDefinition.transfer,
     targetDriveSeconds: tuning.targetDriveSeconds,
     trackLength: tuning.trackLength,
     seed: tuning.seed,

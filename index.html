@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="RBC Racer Phase 08 data-driven circulation routes and flight instruments"
+      content="RBC Racer Phase 09 circulation cutscenes, endings, victory, and complete retry flow"
     >
-    <title>RBC Racer | Phase 08 Circulation Routes</title>
-    <link rel="stylesheet" href="./css/main.css?v=phase08-routes-r1">
-    <link rel="stylesheet" href="./css/hud.css?v=phase08-routes-r1">
-    <link rel="stylesheet" href="./css/menu.css?v=phase08-routes-r1">
+    <title>RBC Racer | Phase 09 Full Circulation Run</title>
+    <link rel="stylesheet" href="./css/main.css?v=phase09-endings-r1">
+    <link rel="stylesheet" href="./css/hud.css?v=phase09-endings-r1">
+    <link rel="stylesheet" href="./css/menu.css?v=phase09-endings-r1">
+    <link rel="stylesheet" href="./css/cutscene.css?v=phase09-endings-r1">
   </head>
   <body>
     <main
@@ -29,7 +30,7 @@
 
       <section id="game-hud" class="game-hud" aria-label="遊戲狀態">
         <header class="hud-brand">
-          <span class="hud-brand__phase">P08</span>
+          <span class="hud-brand__phase">P09</span>
           <span class="hud-brand__name">RBC / RACER</span>
           <span class="hud-brand__status">
             <i aria-hidden="true"></i>
@@ -262,28 +263,54 @@
       </section>
 
       <section
+        id="cutscene-layer"
+        class="cutscene-layer"
+        aria-live="polite"
+        aria-label="劇情動畫"
+        hidden
+      ></section>
+
+      <section
         id="game-overlay"
         class="game-overlay"
         data-mode="READY"
         aria-labelledby="overlay-title"
       >
-        <div class="overlay-index" aria-hidden="true">08</div>
+        <div id="overlay-index" class="overlay-index" aria-hidden="true">09</div>
         <div class="overlay-panel">
           <p id="overlay-kicker" class="overlay-kicker">
-            Phase 08 / Circulation route expansion
+            Phase 09 / Full circulation run
           </p>
-          <h1 id="overlay-title">四循環航圖上線</h1>
+          <h1 id="overlay-title">完整循環啟航</h1>
           <p id="overlay-copy" class="overlay-copy">
-            四關路線資料、血管映射與高風險倍率已完成。十字代表鍵盤機身姿態，圓形代表滑鼠視覺方向；下方儀表同步顯示 ATTITUDE、動態 ALT 與 VIEW。
+            四關將自動銜接心腔輸送帶，並依結果進入回收、墜落、中風或 O₂ 旗幟勝利遊街。
           </p>
           <div class="overlay-controls" aria-label="核心操作">
             <span><b>↑↓←→ / 十字</b> BODY</span>
             <span><b>Z / X</b> PRESSURE</span>
             <span><b>MOUSE / 圓形</b> VIEW</span>
           </div>
-          <button id="overlay-action" type="button">
-            開始遊戲並鎖定滑鼠視角
-          </button>
+          <div id="overlay-actions" class="overlay-actions">
+            <button id="overlay-action" type="button">
+              開始遊戲並鎖定滑鼠視角
+            </button>
+            <button
+              id="overlay-restart-action"
+              class="overlay-action-secondary"
+              type="button"
+              hidden
+            >
+              從第一關重新開始
+            </button>
+            <button
+              id="overlay-menu-action"
+              class="overlay-action-secondary"
+              type="button"
+              hidden
+            >
+              回到主選單
+            </button>
+          </div>
           <p class="overlay-note">
             Pointer Lock 僅會在此次點擊後請求，頁面不會自動鎖定滑鼠。
           </p>
@@ -295,6 +322,6 @@
       </noscript>
     </main>
 
-    <script type="module" src="./js/main.js?v=phase08-routes-r1"></script>
+    <script type="module" src="./js/main.js?v=phase09-endings-r1"></script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase08-routes-r1";
+import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
 
 export const INTOXICATION_EVENTS = Object.freeze({
   STARTED: "STARTED",

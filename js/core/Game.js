@@ -10,34 +10,42 @@ import {
   SRGBColorSpace,
   WebGLRenderer
 } from "../../vendor/three.module.js";
-import { GAME_CONFIG } from "../config.js?v=phase08-routes-r1";
-import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase08-routes-r1";
+import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
+import {
+  CUTSCENE_TYPES,
+  CutsceneManager
+} from "../cutscenes/CutsceneManager.js?v=phase09-endings-r1";
+import { ENTITY_TRIGGERS } from "../data/entityTypes.js?v=phase09-endings-r1";
 import {
   createLevelCheckpoint
-} from "../data/schemas.js?v=phase08-routes-r1";
-import { CameraController } from "../input/CameraController.js?v=phase08-routes-r1";
-import { InputController } from "../input/InputController.js?v=phase08-routes-r1";
+} from "../data/schemas.js?v=phase09-endings-r1";
+import { CameraController } from "../input/CameraController.js?v=phase09-endings-r1";
+import { InputController } from "../input/InputController.js?v=phase09-endings-r1";
 import { PointerLockController } from "../input/PointerLockController.js";
-import { PlayerRBC } from "../player/PlayerRBC.js?v=phase08-routes-r1";
-import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=phase08-routes-r1";
-import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase08-routes-r1";
-import { EntityManager } from "../systems/EntityManager.js?v=phase08-routes-r1";
+import { PlayerRBC } from "../player/PlayerRBC.js?v=phase09-endings-r1";
+import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=phase09-endings-r1";
+import { CollisionSystem } from "../systems/CollisionSystem.js?v=phase09-endings-r1";
+import { EntityManager } from "../systems/EntityManager.js?v=phase09-endings-r1";
 import {
   canCompleteLevel,
   QTE_EVENTS,
   QTE_OUTCOMES,
   QTE_PHASES,
   QTESystem
-} from "../systems/QTESystem.js?v=phase08-routes-r1";
-import { StatusEffectManager } from "../systems/StatusEffectManager.js?v=phase08-routes-r1";
-import { HUDManager } from "../ui/HUDManager.js?v=phase08-routes-r1";
+} from "../systems/QTESystem.js?v=phase09-endings-r1";
+import { StatusEffectManager } from "../systems/StatusEffectManager.js?v=phase09-endings-r1";
+import { HUDManager } from "../ui/HUDManager.js?v=phase09-endings-r1";
 import { SeededRandom } from "../utils/SeededRandom.js";
-import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase08-routes-r1";
-import { VesselTrack } from "../world/VesselTrack.js?v=phase08-routes-r1";
+import { ProceduralAssetFactory } from "../world/ProceduralAssetFactory.js?v=phase09-endings-r1";
+import { VesselTrack } from "../world/VesselTrack.js?v=phase09-endings-r1";
 import { GameLoop } from "./GameLoop.js";
-import { GameSession } from "./GameSession.js?v=phase08-routes-r1";
-import { GAME_STATES } from "./GameStateMachine.js?v=phase08-routes-r1";
-import { LevelManager } from "./LevelManager.js?v=phase08-routes-r1";
+import { GameSession } from "./GameSession.js?v=phase09-endings-r1";
+import { GAME_STATES } from "./GameStateMachine.js?v=phase09-endings-r1";
+import { LevelManager } from "./LevelManager.js?v=phase09-endings-r1";
+import {
+  createLevelStartPlayerState,
+  createRetryPlayerState
+} from "./RunProgression.js?v=phase09-endings-r1";
 
 function requireElement(root, selector) {
   const element = root.querySelector(selector);
@@ -57,7 +65,18 @@ export class Game {
   #session;
   #levelCheckpoint;
   #pointerLock;
-  #transferExpiresAtMs = null;
+  #cutsceneManager;
+  #runStartedAtMs = null;
+  #runCompletedAtMs = null;
+  #runTotals = {
+    levelsCompleted: 0,
+    gasExchangeSuccessCount: 0,
+    woundDodgedCount: 0
+  };
+  #completedLevelIds = new Set();
+  #finalSummary = null;
+  #levelTransitionCount = 0;
+  #cutsceneCompletionCount = 0;
   #pointerLockErrorName = "";
   #pointerLockErrorMessage = "";
   #renderFrameCount = 0;
@@ -92,6 +111,7 @@ export class Game {
       durationSeconds: this.level.targetDriveSeconds
     });
     this.hud = new HUDManager(documentRef);
+    this.#cutsceneManager = new CutsceneManager();
 
     this.scene = new Scene();
     this.scene.background = new Color(
@@ -224,7 +244,7 @@ export class Game {
     this.#root.dataset.rbcLabelHeight = String(
       GAME_CONFIG.playerModel.label.planeHeight
     );
-    this.#root.dataset.phase = "08";
+    this.#root.dataset.phase = "09";
     this.#root.dataset.proceduralAssets = "true";
     this.#root.dataset.entityBatchCount = String(
       this.entityManager.batchCount
@@ -246,6 +266,7 @@ export class Game {
     this.#root.dataset.checkpointSeed = String(
       this.#levelCheckpoint.seed
     );
+    this.#publishLevelMetadata();
     this.hud.showReady();
     this.#resize();
     this.#renderFrame(0);
@@ -265,7 +286,15 @@ export class Game {
     this.#pointerLock.attach();
     this.hud.actionElement.addEventListener(
       "click",
-      this.#requestPointerLock
+      this.#handlePrimaryAction
+    );
+    this.hud.restartActionElement.addEventListener(
+      "click",
+      this.#handleRestartAction
+    );
+    this.hud.menuActionElement.addEventListener(
+      "click",
+      this.#handleMenuAction
     );
     this.#document.addEventListener(
       "visibilitychange",
@@ -288,7 +317,15 @@ export class Game {
     this.#pointerLock.detach();
     this.hud.actionElement.removeEventListener(
       "click",
-      this.#requestPointerLock
+      this.#handlePrimaryAction
+    );
+    this.hud.restartActionElement.removeEventListener(
+      "click",
+      this.#handleRestartAction
+    );
+    this.hud.menuActionElement.removeEventListener(
+      "click",
+      this.#handleMenuAction
     );
     this.#document.removeEventListener(
       "visibilitychange",
@@ -383,7 +420,7 @@ export class Game {
     const clockNowMs = this.#session.nowMs;
     this.#updateStatusEffects(clockNowMs);
     this.#updateQte(clockNowMs);
-    this.#updateTransfer(clockNowMs);
+    this.#updateCutscene(clockNowMs);
     this.#updateBloodPressureMechanisms(
       rawDeltaSeconds,
       clockNowMs
@@ -535,45 +572,126 @@ export class Game {
       return false;
     }
 
-    this.#transferExpiresAtMs =
-      this.#session.nowMs +
-      GAME_CONFIG.cutscenes.transferDurationMinSeconds *
-        GAME_CONFIG.timing.millisecondsPerSecond;
+    this.#recordLevelCompletion();
+    const nextLevel = this.levelManager.peekNextLevel();
+    const snapshot = this.#cutsceneManager.start(
+      CUTSCENE_TYPES.TRANSFER,
+      this.#session.nowMs,
+      {
+        levelId: this.level.id,
+        nextLevelId: nextLevel?.id ?? null,
+        fromChamber: this.level.transfer.fromChamber,
+        toChamber: this.level.transfer.toChamber,
+        gasExchangeStatus: this.qteSystem.status
+      }
+    );
     this.statusEffects.releaseActiveControls();
     this.input.reset();
     this.gasToken.hide();
     this.player.hoodController.setQteMode(false);
     this.hud.hideMessage();
     this.hud.hideQte();
-    this.hud.showTransfer(this.qteSystem.status);
+    this.hud.hideOverlay();
+    this.hud.renderCutscene(snapshot);
     return true;
   }
 
-  #updateTransfer(nowMs) {
-    const isTransferState =
-      this.#session.state === GAME_STATES.TRANSFER_CUTSCENE;
-    const isPausedTransfer =
-      this.#session.state === GAME_STATES.PAUSED &&
-      this.#session.pausedFromState === GAME_STATES.TRANSFER_CUTSCENE;
+  #updateCutscene(nowMs) {
+    const snapshot = this.#cutsceneManager.update(nowMs);
 
-    if (
-      (!isTransferState && !isPausedTransfer) ||
-      this.#transferExpiresAtMs === null ||
-      nowMs < this.#transferExpiresAtMs
-    ) {
+    if (!snapshot) {
       return;
     }
 
-    if (this.#session.completeTransferCutscene()) {
-      this.#transferExpiresAtMs = null;
-      this.input.reset();
-      this.#clearStatusEffects();
-      this.hud.showLevelComplete({
-        gasExchangeStatus: this.qteSystem.status,
-        score: this.player.state.score
-      });
-      this.#pointerLock.exit();
+    this.hud.renderCutscene(snapshot);
+
+    if (!snapshot.completed) {
+      return;
     }
+
+    this.#cutsceneManager.finish();
+    this.#cutsceneCompletionCount += 1;
+    this.hud.hideCutscene();
+
+    if (snapshot.type === CUTSCENE_TYPES.TRANSFER) {
+      this.#completeTransfer(nowMs);
+      return;
+    }
+
+    if (snapshot.type === CUTSCENE_TYPES.VICTORY) {
+      this.hud.showVictory(this.#finalSummary);
+      return;
+    }
+
+    this.hud.showGameOver({
+      mode: snapshot.type,
+      levelId: this.level.id,
+      checkpointSeed: this.#levelCheckpoint.seed
+    });
+  }
+
+  #completeTransfer(nowMs) {
+    if (!this.#session.completeTransferCutscene()) {
+      return false;
+    }
+
+    if (!this.levelManager.hasNextLevel) {
+      return this.#beginVictory(nowMs);
+    }
+
+    const pointerLocked = this.#pointerLock.isLocked;
+    const nextLevel = this.levelManager.peekNextLevel();
+    const hp = this.player.state.hp;
+    const score = this.player.state.score;
+    const playerState = createLevelStartPlayerState({
+      levelId: nextLevel.id,
+      hp,
+      score
+    });
+    this.#replaceLevelRuntime({
+      levelId: nextLevel.id,
+      playerState
+    });
+    this.#levelTransitionCount += 1;
+
+    if (pointerLocked) {
+      this.#session.acquirePointerLock();
+      this.hud.hideOverlay();
+      this.hud.showMessage({
+        kicker: "Automatic level transition",
+        title: "第 " + this.level.id + " 關已載入",
+        copy:
+          "HP、Score 與 checkpoint 已保存，從 " +
+          this.level.start.locationLabel +
+          " 繼續循環。",
+        tone: "INFO",
+        nowMs: this.#session.nowMs
+      });
+    } else {
+      this.hud.showLevelReady(this.level);
+    }
+
+    return true;
+  }
+
+  #beginVictory(nowMs) {
+    if (!this.#session.enterVictory()) {
+      return false;
+    }
+
+    this.#runCompletedAtMs = nowMs;
+    this.#finalSummary = this.#createFinalSummary();
+    const snapshot = this.#cutsceneManager.start(
+      CUTSCENE_TYPES.VICTORY,
+      nowMs,
+      { summary: this.#finalSummary }
+    );
+    this.input.reset();
+    this.#clearStatusEffects();
+    this.hud.hideOverlay();
+    this.hud.renderCutscene(snapshot);
+    this.#pointerLock.exit();
+    return true;
   }
 
   #syncGasToken() {
@@ -1000,18 +1118,42 @@ export class Game {
     this.#root.dataset.gasTokenDistance = String(
       this.gasToken.distanceAlongTrack
     );
-    this.#root.dataset.transferExpiresAt =
-      this.#transferExpiresAtMs === null
+    const cutsceneDiagnostics = this.#cutsceneManager.diagnostics;
+    this.#root.dataset.cutsceneActive = String(
+      cutsceneDiagnostics.active
+    );
+    this.#root.dataset.cutsceneType = cutsceneDiagnostics.type ?? "";
+    this.#root.dataset.cutscenePhase = cutsceneDiagnostics.phase ?? "";
+    this.#root.dataset.cutsceneProgress =
+      cutsceneDiagnostics.progress.toFixed(
+        GAME_CONFIG.hud.minimapProgressPrecision
+      );
+    this.#root.dataset.cutsceneStartedAt =
+      cutsceneDiagnostics.startedAtMs === null
         ? ""
-        : String(this.#transferExpiresAtMs);
-    this.#root.dataset.transferRemaining =
-      this.#transferExpiresAtMs === null
+        : String(cutsceneDiagnostics.startedAtMs);
+    this.#root.dataset.cutsceneExpiresAt =
+      cutsceneDiagnostics.expiresAtMs === null
         ? ""
-        : Math.max(
-            0,
-            (this.#transferExpiresAtMs - clockNowMs) /
-              GAME_CONFIG.timing.millisecondsPerSecond
-          ).toFixed(GAME_CONFIG.hud.timerPrecision);
+        : String(cutsceneDiagnostics.expiresAtMs);
+    this.#root.dataset.cutsceneVisualVisible = String(
+      this.hud.cutsceneDiagnostics.visible
+    );
+    this.#root.dataset.levelTransitionCount = String(
+      this.#levelTransitionCount
+    );
+    this.#root.dataset.cutsceneCompletionCount = String(
+      this.#cutsceneCompletionCount
+    );
+    this.#root.dataset.levelsCompleted = String(
+      this.#runTotals.levelsCompleted
+    );
+    this.#root.dataset.runStartedAt =
+      this.#runStartedAtMs === null ? "" : String(this.#runStartedAtMs);
+    this.#root.dataset.runCompletedAt =
+      this.#runCompletedAtMs === null
+        ? ""
+        : String(this.#runCompletedAtMs);
   }
 
   #handleCollisionResult(result) {
@@ -1025,11 +1167,14 @@ export class Game {
 
     if (result.fatalTypeId) {
       this.#fatalTypeId = result.fatalTypeId;
+      const isStroke = this.level.id === 3;
 
       if (
         this.#enterGameOver(
-          GAME_STATES.GAME_OVER_FALL,
-          "FALL"
+          isStroke
+            ? GAME_STATES.GAME_OVER_STROKE
+            : GAME_STATES.GAME_OVER_FALL,
+          isStroke ? CUTSCENE_TYPES.STROKE : CUTSCENE_TYPES.FALL
         )
       ) {
         return true;
@@ -1040,7 +1185,7 @@ export class Game {
       result.playerDepleted &&
       this.#enterGameOver(
         GAME_STATES.GAME_OVER_RECYCLE,
-        "RECYCLE"
+        CUTSCENE_TYPES.RECYCLE
       )
     ) {
       return true;
@@ -1101,12 +1246,21 @@ export class Game {
       return false;
     }
 
-    this.#clearStatusEffects();
+    this.statusEffects.releaseActiveControls();
     this.input.reset();
     this.gasToken.hide();
     this.hud.hideMessage();
     this.hud.hideQte();
-    this.hud.showGameOver(mode);
+    this.hud.hideOverlay();
+    const snapshot = this.#cutsceneManager.start(
+      mode,
+      this.#session.nowMs,
+      {
+        levelId: this.level.id,
+        checkpointSeed: this.#levelCheckpoint.seed
+      }
+    );
+    this.hud.renderCutscene(snapshot);
     this.#pointerLock.exit();
     return true;
   }
@@ -1167,28 +1321,84 @@ export class Game {
     return value > 0 ? "+" + value : String(value);
   }
 
-  #resetLevel() {
+  #recordLevelCompletion() {
+    if (this.#completedLevelIds.has(this.level.id)) {
+      return false;
+    }
+
+    this.#completedLevelIds.add(this.level.id);
+    this.#runTotals.levelsCompleted += 1;
+    this.#runTotals.gasExchangeSuccessCount += Number(
+      this.qteSystem.status === "SUCCESS"
+    );
+    this.#runTotals.woundDodgedCount +=
+      this.player.state.woundDodgedCount;
+    return true;
+  }
+
+  #createFinalSummary() {
+    const elapsedMs =
+      this.#runStartedAtMs === null || this.#runCompletedAtMs === null
+        ? 0
+        : Math.max(0, this.#runCompletedAtMs - this.#runStartedAtMs);
+
+    return Object.freeze({
+      score: this.player.state.score,
+      hp: this.player.state.hp,
+      levelsCompleted: this.#runTotals.levelsCompleted,
+      gasExchangeSuccessCount:
+        this.#runTotals.gasExchangeSuccessCount,
+      woundDodgedCount: this.#runTotals.woundDodgedCount,
+      elapsedSeconds:
+        elapsedMs / GAME_CONFIG.timing.millisecondsPerSecond
+    });
+  }
+
+  #resetRunProgress() {
+    this.#runStartedAtMs = null;
+    this.#runCompletedAtMs = null;
+    this.#runTotals = {
+      levelsCompleted: 0,
+      gasExchangeSuccessCount: 0,
+      woundDodgedCount: 0
+    };
+    this.#completedLevelIds = new Set();
+    this.#finalSummary = null;
+    this.#levelTransitionCount = 0;
+    this.#cutsceneCompletionCount = 0;
+  }
+
+  #replaceLevelRuntime({ levelId, playerState, checkpoint = null }) {
+    this.statusEffects.reset();
+    this.input.reset();
+    this.#cutsceneManager.reset();
+    this.hud.hideCutscene();
+    this.hud.hideMessage();
+    this.hud.hideQte();
+
     this.scene.remove(this.entityManager.group);
     this.scene.remove(this.gasToken.group);
+    this.scene.remove(this.track.group);
+    this.scene.remove(this.player.worldGroup);
+    this.camera.remove(this.player.cockpitGroup);
     this.entityManager.dispose();
+    this.track.dispose();
+    this.player.dispose();
 
-    this.qteSystem.reset();
-    this.track.resetForRetry();
-    this.player.resetForCheckpoint(this.#levelCheckpoint);
-    this.cameraController.reset();
-    this.input.reset();
+    this.level = this.levelManager.loadLevel(levelId);
     this.#session = new GameSession({
       durationSeconds: this.level.targetDriveSeconds
     });
-    this.#transferExpiresAtMs = null;
-    this.#pointerLockErrorName = "";
-    this.#pointerLockErrorMessage = "";
-    this.#collisionCount = 0;
-    this.#lastCollisionTypeId = "";
-    this.#fatalTypeId = "";
-    this.#playerDepleted = false;
-    this.#woundSpawnCount = 0;
-
+    this.track = new VesselTrack({ level: this.level });
+    this.player = new PlayerRBC({
+      config: GAME_CONFIG,
+      stateOverrides: playerState
+    });
+    this.#levelCheckpoint = checkpoint ?? createLevelCheckpoint(
+      this.player.state,
+      this.level.seed
+    );
+    this.qteSystem = new QTESystem({ level: this.level });
     this.assetFactory = new ProceduralAssetFactory({
       documentRef: this.#document
     });
@@ -1211,8 +1421,14 @@ export class Game {
         (this.level.seed ^ GAME_CONFIG.intoxication.randomSeedSalt) >>> 0
       )
     });
+
+    this.scene.add(this.track.group);
     this.scene.add(this.entityManager.group);
     this.scene.add(this.gasToken.group);
+    this.scene.add(this.player.worldGroup);
+    this.camera.add(this.player.cockpitGroup);
+    this.cameraController.reset();
+    this.#resetAttemptDiagnostics();
 
     const initialFrame = this.track.getFrameAtDistance(
       this.player.state.distanceAlongTrack
@@ -1226,9 +1442,40 @@ export class Game {
       this.player.state.lateralX,
       this.player.state.lateralY
     );
-    this.hud.hideMessage();
-    this.hud.hideQte();
-    this.hud.showReady();
+    this.#publishLevelMetadata();
+    return this.level;
+  }
+
+  #resetAttemptDiagnostics() {
+    this.#pointerLockErrorName = "";
+    this.#pointerLockErrorMessage = "";
+    this.#collisionCount = 0;
+    this.#lastCollisionTypeId = "";
+    this.#fatalTypeId = "";
+    this.#playerDepleted = false;
+    this.#woundSpawnCount = 0;
+  }
+
+  #publishLevelMetadata() {
+    this.#root.dataset.currentLevel = String(this.level.id);
+    this.#root.dataset.levelName = this.level.name;
+    this.#root.dataset.minimapPathId = this.level.minimapPathId;
+    this.#root.dataset.trackStart = String(this.level.start.distance);
+    this.#root.dataset.trackEnd = String(this.level.end.distance);
+    this.#root.dataset.trackSections = String(this.track.sections.length);
+    this.#root.dataset.cachedFrames = String(
+      this.track.cachedFrameCount
+    );
+    this.#root.dataset.checkpointLevel = String(
+      this.#levelCheckpoint.levelId
+    );
+    this.#root.dataset.checkpointHp = String(this.#levelCheckpoint.hp);
+    this.#root.dataset.checkpointScore = String(
+      this.#levelCheckpoint.score
+    );
+    this.#root.dataset.checkpointSeed = String(
+      this.#levelCheckpoint.seed
+    );
     this.#root.dataset.entityBatchCount = String(
       this.entityManager.batchCount
     );
@@ -1238,32 +1485,74 @@ export class Game {
     this.#root.dataset.gasTokenPartCount = String(
       this.gasToken.partCount
     );
-    return true;
   }
 
-  #requestPointerLock = () => {
+  #retryCurrentLevel() {
+    const playerState = createRetryPlayerState(this.#levelCheckpoint);
+    this.#replaceLevelRuntime({
+      levelId: this.#levelCheckpoint.levelId,
+      playerState,
+      checkpoint: this.#levelCheckpoint
+    });
+    this.#root.dataset.lastRestartMode = "LEVEL_RETRY";
+    this.hud.showLevelReady(this.level);
+  }
+
+  #restartRun() {
+    this.#resetRunProgress();
+    const playerState = createLevelStartPlayerState({
+      levelId: GAME_CONFIG.game.initialLevelId,
+      hp: GAME_CONFIG.hp.initial,
+      score: GAME_CONFIG.score.initial
+    });
+    this.#replaceLevelRuntime({
+      levelId: GAME_CONFIG.game.initialLevelId,
+      playerState
+    });
+    this.#root.dataset.lastRestartMode = "RUN_RESTART";
+    this.hud.showReady();
+  }
+
+  #handlePrimaryAction = () => {
     if (
-      this.#session.state === GAME_STATES.LEVEL_COMPLETE ||
       this.#session.state === GAME_STATES.GAME_OVER_RECYCLE ||
-      this.#session.state === GAME_STATES.GAME_OVER_FALL
+      this.#session.state === GAME_STATES.GAME_OVER_FALL ||
+      this.#session.state === GAME_STATES.GAME_OVER_STROKE
     ) {
-      this.#resetLevel();
+      this.#retryCurrentLevel();
+    } else if (this.#session.state === GAME_STATES.VICTORY) {
+      this.#restartRun();
+    }
+
+    this.#requestPointerLock();
+  };
+
+  #handleRestartAction = () => {
+    this.#restartRun();
+    this.#requestPointerLock();
+  };
+
+  #handleMenuAction = () => {
+    this.#pointerLock.exit();
+    this.#restartRun();
+    this.#root.dataset.lastRestartMode = "MAIN_MENU";
+  };
+
+  #requestPointerLock() {
+    if (this.#runStartedAtMs === null) {
+      this.#runStartedAtMs = this.#session.nowMs;
     }
 
     this.#session.prepareForPointerLock();
     void this.#pointerLock.request();
-  };
+  }
 
   #handlePointerLockChange = (pointerLocked) => {
     if (pointerLocked) {
       this.#session.acquirePointerLock();
       this.#pointerLockErrorName = "";
       this.#pointerLockErrorMessage = "";
-      if (this.#session.state === GAME_STATES.TRANSFER_CUTSCENE) {
-        this.hud.showTransfer(this.qteSystem.status);
-      } else {
-        this.hud.hideOverlay();
-      }
+      this.hud.hideOverlay();
 
       if (this.#session.state === GAME_STATES.LOW_BP_STASIS) {
         this.#showLowBloodPressureWarning(this.#session.nowMs);

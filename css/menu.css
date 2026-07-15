@@ -1,6 +1,6 @@
 .game-overlay {
   position: absolute;
-  z-index: 10;
+  z-index: 30;
   inset: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(31rem, 0.8fr);
@@ -98,7 +98,15 @@
   color: var(--plasma);
 }
 
-#overlay-action {
+.overlay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  max-width: 38rem;
+}
+
+#overlay-action,
+.overlay-action-secondary {
   position: relative;
   min-height: 3.4rem;
   padding: 0.9rem 3.8rem 0.9rem 1.25rem;
@@ -115,6 +123,15 @@
   transition: filter 150ms ease, transform 150ms ease;
 }
 
+.overlay-action-secondary {
+  padding-right: 1.25rem;
+  border: 1px solid rgba(255, 236, 226, 0.28);
+  color: var(--ink);
+  background: rgba(255, 236, 226, 0.07);
+  clip-path: none;
+  box-shadow: none;
+}
+
 #overlay-action::after {
   position: absolute;
   top: 50%;
@@ -127,12 +144,15 @@
 }
 
 #overlay-action:hover,
-#overlay-action:focus-visible {
+#overlay-action:focus-visible,
+.overlay-action-secondary:hover,
+.overlay-action-secondary:focus-visible {
   filter: brightness(1.15);
   transform: translateX(0.25rem);
 }
 
-#overlay-action:focus-visible {
+#overlay-action:focus-visible,
+.overlay-action-secondary:focus-visible {
   outline: 0.15rem solid var(--plasma);
   outline-offset: 0.25rem;
 }
@@ -192,15 +212,32 @@
 }
 
 .game-overlay[data-mode="GAME_OVER_FALL"] .overlay-panel::before,
-.game-overlay[data-mode="GAME_OVER_RECYCLE"] .overlay-panel::before {
+.game-overlay[data-mode="GAME_OVER_RECYCLE"] .overlay-panel::before,
+.game-overlay[data-mode="GAME_OVER_STROKE"] .overlay-panel::before {
   height: 100%;
   background: var(--bp-high);
   box-shadow: 0 0 2rem rgba(255, 154, 77, 0.52);
 }
 
 .game-overlay[data-mode="GAME_OVER_FALL"] .overlay-kicker,
-.game-overlay[data-mode="GAME_OVER_RECYCLE"] .overlay-kicker {
+.game-overlay[data-mode="GAME_OVER_RECYCLE"] .overlay-kicker,
+.game-overlay[data-mode="GAME_OVER_STROKE"] .overlay-kicker {
   color: var(--bp-high);
+}
+
+.game-overlay[data-mode="VICTORY"] .overlay-panel::before {
+  height: 100%;
+  background: var(--vitamin-c);
+  box-shadow: 0 0 2rem rgba(255, 211, 78, 0.56);
+}
+
+.game-overlay[data-mode="VICTORY"] .overlay-kicker {
+  color: var(--vitamin-c);
+}
+
+.game-overlay[data-mode="VICTORY"] #overlay-action {
+  color: #160a00;
+  background: var(--vitamin-c);
 }
 
 @keyframes overlay-enter {

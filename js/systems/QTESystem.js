@@ -1,6 +1,6 @@
-import { GAME_CONFIG } from "../config.js?v=phase08-routes-r1";
-import { GameClock } from "../core/GameClock.js?v=phase08-routes-r1";
-import { GAS_EXCHANGE_STATUS } from "../data/schemas.js?v=phase08-routes-r1";
+import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
+import { GameClock } from "../core/GameClock.js?v=phase09-endings-r1";
+import { GAS_EXCHANGE_STATUS } from "../data/schemas.js?v=phase09-endings-r1";
 
 export const QTE_ACTIONS = Object.freeze({
   OXYGEN: "KeyO",

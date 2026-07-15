@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../config.js?v=phase08-routes-r1";
+import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
 
 export const GAS_EXCHANGE_STATUS = Object.freeze({
   PENDING: "PENDING",
@@ -45,6 +45,7 @@ export const LEVEL_DATA_SCHEMA = Object.freeze({
   seed: "integer",
   controlPoints: "array of three-number arrays",
   minimapPathId: "string",
+  transfer: "heart chamber endpoint pair",
   start: "route endpoint",
   end: "route endpoint",
   sections: "array",
@@ -236,6 +237,9 @@ export function isLevelData(value) {
         point.every(isFiniteNumber)
     ) &&
     typeof value.minimapPathId === "string" &&
+    isObject(value.transfer) &&
+    typeof value.transfer.fromChamber === "string" &&
+    typeof value.transfer.toChamber === "string" &&
     isRouteEndpoint(value.start) &&
     value.start.distance === 0 &&
     isRouteEndpoint(value.end) &&

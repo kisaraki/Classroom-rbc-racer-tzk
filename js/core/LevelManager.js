@@ -1,6 +1,6 @@
-import { GAME_CONFIG } from "../config.js?v=phase08-routes-r1";
-import { LEVELS } from "../data/levels.js?v=phase08-routes-r1";
-import { isLevelData } from "../data/schemas.js?v=phase08-routes-r1";
+import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
+import { LEVELS } from "../data/levels.js?v=phase09-endings-r1";
+import { isLevelData } from "../data/schemas.js?v=phase09-endings-r1";
 
 function requireDistance(distanceAlongTrack) {
   if (!Number.isFinite(distanceAlongTrack)) {
@@ -47,6 +47,31 @@ export class LevelManager {
 
   get currentLevel() {
     return this.#currentLevel;
+  }
+
+  get currentLevelIndex() {
+    return this.#levels.indexOf(this.#currentLevel);
+  }
+
+  get hasNextLevel() {
+    return this.currentLevelIndex < this.#levels.length - 1;
+  }
+
+  peekNextLevel() {
+    return this.hasNextLevel
+      ? this.#levels[this.currentLevelIndex + 1]
+      : null;
+  }
+
+  loadNextLevel() {
+    const nextLevel = this.peekNextLevel();
+
+    if (!nextLevel) {
+      return null;
+    }
+
+    this.#currentLevel = nextLevel;
+    return nextLevel;
   }
 
   loadLevel(levelId) {

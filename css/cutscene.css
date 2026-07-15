@@ -1,1 +1,400 @@
-/* Reserved for the cutscene phase. */
+.cutscene-layer[hidden] {
+  display: none;
+}
+
+.cutscene-layer {
+  --cutscene-duration: 4s;
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  overflow: hidden;
+  color: #fff4ed;
+  background:
+    radial-gradient(circle at 68% 46%, rgba(255, 61, 85, 0.19), transparent 36%),
+    linear-gradient(135deg, rgba(7, 0, 3, 0.94), rgba(31, 2, 10, 0.97));
+  pointer-events: none;
+}
+
+.cutscene-layer[data-preview="true"] * {
+  animation-delay: var(--cutscene-preview-delay) !important;
+  animation-play-state: paused !important;
+}
+
+.cutscene-frame {
+  display: grid;
+  grid-template-columns: minmax(21rem, 0.72fr) minmax(36rem, 1.28fr);
+  grid-template-rows: 1fr auto;
+  gap: 0 4vw;
+  align-items: center;
+  padding: clamp(2rem, 5vw, 5rem);
+}
+
+.cutscene-header {
+  position: relative;
+  z-index: 2;
+}
+
+.cutscene-kicker,
+.cutscene-phase {
+  color: #ff7888;
+  font-family: var(--mono-font);
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.cutscene-title {
+  max-width: 8ch;
+  margin: 0.8rem 0 1.2rem;
+  font-size: clamp(3.8rem, 7vw, 7.4rem);
+  line-height: 0.84;
+  letter-spacing: -0.08em;
+}
+
+.cutscene-copy {
+  max-width: 31rem;
+  color: rgba(255, 244, 237, 0.66);
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+
+.cutscene-stage {
+  position: relative;
+  min-height: min(56vh, 34rem);
+  overflow: hidden;
+  border: 1px solid rgba(255, 244, 237, 0.14);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    rgba(0, 0, 0, 0.21);
+  background-size: 2.4rem 2.4rem;
+  box-shadow: inset 0 0 7rem rgba(0, 0, 0, 0.58);
+}
+
+.cutscene-footer {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 13rem 1fr;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.cutscene-progress-track {
+  height: 0.22rem;
+  overflow: hidden;
+  background: rgba(255, 244, 237, 0.12);
+}
+
+.cutscene-progress {
+  width: 0;
+  height: 100%;
+  background: #ff5265;
+  box-shadow: 0 0 1.2rem rgba(255, 82, 101, 0.82);
+}
+
+.cutscene-rbc {
+  display: grid;
+  place-items: center;
+  width: 6.4rem;
+  aspect-ratio: 1.35;
+  border: 0.48rem solid #ff8d84;
+  border-radius: 50%;
+  color: #fff4ed;
+  background: radial-gradient(ellipse, #8d0d1d 20%, #df2e3d 22% 62%, #8f101f 64%);
+  box-shadow: 0 0 2rem rgba(255, 73, 88, 0.45);
+  font-family: var(--mono-font);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.cutscene-belt {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 48%;
+  height: 3.2rem;
+  border-block: 0.22rem solid rgba(169, 217, 239, 0.64);
+  background: repeating-linear-gradient(90deg, rgba(169, 217, 239, 0.1) 0 2.2rem, rgba(169, 217, 239, 0.38) 2.2rem 2.45rem);
+  transform: translateY(-50%);
+}
+
+.cutscene-belt .cutscene-rbc {
+  position: absolute;
+  top: 50%;
+  left: -2rem;
+  animation: transfer-rbc var(--cutscene-duration) cubic-bezier(0.34, 0.04, 0.34, 1) both;
+}
+
+.cutscene-chamber {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 9.2rem;
+  aspect-ratio: 0.84;
+  border: 0.34rem solid rgba(255, 187, 176, 0.8);
+  border-radius: 48% 52% 57% 43%;
+  color: #fff4ed;
+  background: linear-gradient(145deg, #bf1d33, #5c0716);
+  box-shadow: inset 0 0 2rem rgba(0, 0, 0, 0.36), 0 0 2rem rgba(255, 52, 74, 0.25);
+  transform: translateY(-50%);
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-weight: 900;
+}
+
+.cutscene-chamber--from {
+  left: 3%;
+}
+
+.cutscene-chamber--to {
+  right: 3%;
+  width: 10.6rem;
+  background: linear-gradient(145deg, #db2b3d, #710918);
+}
+
+.cutscene-stage--recycle .cutscene-belt {
+  right: 36%;
+}
+
+.cutscene-stage--recycle .cutscene-belt .cutscene-rbc {
+  animation-name: recycle-rbc;
+}
+
+.cutscene-factory {
+  position: absolute;
+  right: 7%;
+  bottom: 18%;
+  display: flex;
+  gap: 0.8rem;
+  align-items: end;
+}
+
+.cutscene-factory__tower {
+  display: grid;
+  place-items: center;
+  width: 7.5rem;
+  height: 14rem;
+  border: 0.18rem solid #be9f7d;
+  color: #f7d6b2;
+  background: linear-gradient(90deg, #301b16, #704435 55%, #24120f);
+  clip-path: polygon(0 10%, 24% 10%, 24% 0, 44% 0, 44% 10%, 100% 10%, 100% 100%, 0 100%);
+  font-family: var(--mono-font);
+  font-size: 0.65rem;
+  font-weight: 900;
+  writing-mode: vertical-rl;
+}
+
+.cutscene-factory__tower:last-child {
+  height: 11rem;
+}
+
+.cutscene-fragment,
+.cutscene-confetti__strip {
+  position: absolute;
+  width: 0.36rem;
+  height: 1.25rem;
+  background: #ff5265;
+  animation: fragment-scatter var(--cutscene-duration) ease-out both;
+  animation-delay: calc(var(--item-index) * -0.035s);
+}
+
+.cutscene-fragment {
+  right: calc(17% + var(--item-column) * 2.1rem);
+  bottom: 28%;
+  rotate: calc(var(--item-index) * 31deg);
+}
+
+.cutscene-vessel-rim {
+  position: absolute;
+  inset: 14% -18% auto -18%;
+  height: 11rem;
+  border: 2.4rem solid #9c1830;
+  border-radius: 50%;
+  background: #26030b;
+  rotate: -7deg;
+}
+
+.cutscene-rbc--fall {
+  position: absolute;
+  top: 25%;
+  left: 43%;
+  filter: brightness(0.16) saturate(0);
+  animation: fall-rbc var(--cutscene-duration) cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.cutscene-abyss {
+  position: absolute;
+  inset: 62% 0 0;
+  display: grid;
+  place-items: end center;
+  padding-bottom: 2rem;
+  color: rgba(255, 82, 101, 0.42);
+  background: linear-gradient(transparent, #000 72%);
+  font-family: var(--mono-font);
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+}
+
+.cutscene-stage--stroke {
+  display: grid;
+  place-items: center;
+  animation: stroke-shake var(--cutscene-duration) linear both;
+}
+
+.cutscene-stroke-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  animation: stroke-flash var(--cutscene-duration) steps(1, end) both;
+}
+
+.cutscene-stroke-label {
+  position: relative;
+  color: #f10b26;
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: clamp(6rem, 15vw, 12rem);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 2rem rgba(241, 11, 38, 0.6);
+  animation: stroke-diagnosis var(--cutscene-duration) steps(1, end) both;
+}
+
+.cutscene-stroke-subtitle {
+  position: absolute;
+  top: 72%;
+  color: #f10b26;
+  font-family: var(--mono-font);
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 0.55em;
+  animation: stroke-diagnosis var(--cutscene-duration) steps(1, end) both;
+}
+
+.cutscene-victory-vessel {
+  position: absolute;
+  inset: 18% -12%;
+  border: 3rem solid #ef253d;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #8f0719 0 46%, #e41f39 48% 60%, #6c0614 62%);
+  box-shadow: inset 0 0 4rem #ff5f68, 0 0 5rem rgba(255, 49, 69, 0.42);
+}
+
+.cutscene-parade {
+  position: absolute;
+  inset: 0;
+}
+
+.cutscene-rbc--parade {
+  position: absolute;
+  top: calc(36% + var(--item-row) * 18%);
+  left: calc(-16% - var(--item-index) * 12%);
+  width: 5.1rem;
+  animation: victory-parade var(--cutscene-duration) ease-in-out both;
+  animation-delay: calc(var(--item-index) * 0.09s);
+}
+
+.cutscene-oxygen-flag {
+  position: absolute;
+  top: 18%;
+  left: 38%;
+  display: grid;
+  place-items: center;
+  width: 7rem;
+  height: 4rem;
+  color: #102a37;
+  background: #a9d9ef;
+  clip-path: polygon(0 0, 100% 12%, 83% 50%, 100% 88%, 0 100%);
+  font-family: var(--mono-font);
+  font-size: 1.5rem;
+  font-weight: 900;
+  animation: victory-flag var(--cutscene-duration) ease-in-out both;
+}
+
+.cutscene-confetti__strip {
+  top: calc(var(--item-row) * 15% - 10%);
+  left: calc(var(--item-column) * 8.5%);
+  background: hsl(calc(var(--item-index) * 41deg) 86% 62%);
+  animation-name: confetti-fall;
+}
+
+@keyframes transfer-rbc {
+  0%, 12% { left: -2rem; transform: translateY(-50%) rotate(0); }
+  80%, 100% { left: calc(100% - 4rem); transform: translateY(-50%) rotate(720deg); }
+}
+
+@keyframes recycle-rbc {
+  0%, 16% { left: -2rem; opacity: 1; transform: translateY(-50%) scale(1); }
+  72% { left: calc(100% - 3rem); opacity: 1; transform: translateY(-50%) scale(0.8); }
+  82%, 100% { left: calc(100% - 2rem); opacity: 0; transform: translateY(-50%) scale(0.05); }
+}
+
+@keyframes fragment-scatter {
+  0%, 60% { opacity: 0; translate: 0 0; }
+  68% { opacity: 1; }
+  100% { opacity: 0; translate: calc((var(--item-index) - 6) * 0.8rem) 7rem; }
+}
+
+@keyframes fall-rbc {
+  0%, 18% { top: 24%; left: 43%; rotate: 0; scale: 1; }
+  48% { top: 44%; left: 58%; rotate: 480deg; scale: 0.82; }
+  100% { top: 112%; left: 35%; rotate: 1260deg; scale: 0.12; }
+}
+
+@keyframes stroke-shake {
+  0%, 20% { translate: 0 0; }
+  3%, 9%, 15% { translate: -1.1rem 0.4rem; }
+  6%, 12%, 18% { translate: 1rem -0.35rem; }
+  22%, 100% { translate: 0 0; }
+}
+
+@keyframes stroke-flash {
+  0%, 18% { opacity: 0; }
+  19%, 24% { opacity: 1; }
+  25%, 100% { opacity: 0; background: #000; }
+}
+
+@keyframes stroke-diagnosis {
+  0%, 61% { opacity: 0; }
+  62%, 100% { opacity: 1; }
+}
+
+@keyframes victory-parade {
+  0%, 12% { translate: 0 0; filter: brightness(0.8); }
+  82%, 100% { translate: 78vw 0; filter: brightness(1.45); }
+}
+
+@keyframes victory-flag {
+  0%, 25% { opacity: 0; rotate: -14deg; scale: 0.7; }
+  38%, 100% { opacity: 1; rotate: 4deg; scale: 1; }
+}
+
+@keyframes confetti-fall {
+  0%, 30% { opacity: 0; translate: 0 -8rem; rotate: 0; }
+  36% { opacity: 1; }
+  100% { opacity: 0; translate: 4rem 38rem; rotate: 880deg; }
+}
+
+@media (max-height: 48rem) and (min-width: 59rem) {
+  .cutscene-frame {
+    padding-block: 1.6rem;
+  }
+
+  .cutscene-stage {
+    min-height: 29rem;
+  }
+
+  .cutscene-title {
+    font-size: clamp(3.2rem, 6vw, 5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cutscene-stage--stroke {
+    animation-name: none;
+  }
+}

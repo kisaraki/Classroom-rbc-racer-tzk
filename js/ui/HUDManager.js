@@ -1,7 +1,8 @@
-import { GAME_CONFIG } from "../config.js?v=phase08-routes-r1";
-import { createFlightInstrumentSnapshot } from "./FlightInstrumentModel.js?v=phase08-routes-r1";
-import { MessageOverlay } from "./MessageOverlay.js?v=phase08-routes-r1";
-import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase08-routes-r1";
+import { GAME_CONFIG } from "../config.js?v=phase09-endings-r1";
+import { CutsceneRenderer } from "../cutscenes/CutsceneRenderer.js?v=phase09-endings-r1";
+import { createFlightInstrumentSnapshot } from "./FlightInstrumentModel.js?v=phase09-endings-r1";
+import { MessageOverlay } from "./MessageOverlay.js?v=phase09-endings-r1";
+import { MiniMapRenderer } from "./MiniMapRenderer.js?v=phase09-endings-r1";
 
 const EMPTY_STATUSES = Object.freeze([]);
 
@@ -19,6 +20,7 @@ export class HUDManager {
   #elements;
   #minimap;
   #messageOverlay;
+  #cutsceneRenderer;
   #statusElements = new Map();
   #instrumentDiagnostics = null;
 
@@ -72,17 +74,36 @@ export class HUDManager {
       qteResultTitle: requireElement(root, "#qte-result-title"),
       qteResultCopy: requireElement(root, "#qte-result-copy"),
       overlay: requireElement(root, "#game-overlay"),
+      overlayIndex: requireElement(root, "#overlay-index"),
       overlayKicker: requireElement(root, "#overlay-kicker"),
       overlayTitle: requireElement(root, "#overlay-title"),
       overlayCopy: requireElement(root, "#overlay-copy"),
-      overlayAction: requireElement(root, "#overlay-action")
+      overlayAction: requireElement(root, "#overlay-action"),
+      overlayRestartAction: requireElement(root, "#overlay-restart-action"),
+      overlayMenuAction: requireElement(root, "#overlay-menu-action")
     };
     this.#minimap = new MiniMapRenderer(root);
     this.#messageOverlay = new MessageOverlay(root);
+    this.#cutsceneRenderer = new CutsceneRenderer(root);
   }
 
   get actionElement() {
     return this.#elements.overlayAction;
+  }
+
+  get restartActionElement() {
+    return this.#elements.overlayRestartAction;
+  }
+
+  get menuActionElement() {
+    return this.#elements.overlayMenuAction;
+  }
+
+  get cutsceneDiagnostics() {
+    return Object.freeze({
+      visible: this.#cutsceneRenderer.isVisible,
+      type: this.#cutsceneRenderer.type
+    });
   }
 
   get minimapDiagnostics() {
@@ -210,15 +231,31 @@ export class HUDManager {
   showReady() {
     this.#elements.overlay.hidden = false;
     this.#elements.overlay.dataset.mode = "READY";
+    this.#elements.overlayIndex.textContent = "09";
     this.#elements.overlayKicker.textContent =
-      "Phase 08 / Circulation route expansion";
-    this.#elements.overlayTitle.textContent = "四循環航圖上線";
+      "Phase 09 / Full circulation run";
+    this.#elements.overlayTitle.textContent = "完整循環啟航";
     this.#elements.overlayCopy.textContent =
-      "十字代表鍵盤控制的機身姿態，圓形代表滑鼠控制的視覺方向；ATTITUDE、動態 ALT 與 VIEW 儀表會即時同步。";
+      "四關會自動銜接心腔輸送帶，失敗時依原因播放回收、墜落或中風結局；完成第四關後進入 O₂ 旗幟勝利遊街。";
     this.#elements.overlayAction.textContent =
       "開始遊戲並鎖定滑鼠視角";
-    this.#elements.overlayAction.hidden = false;
-    this.#elements.overlayAction.disabled = false;
+    this.#setActions({ primary: true });
+  }
+
+  showLevelReady(level) {
+    this.#elements.overlay.hidden = false;
+    this.#elements.overlay.dataset.mode = "READY";
+    this.#elements.overlayIndex.textContent =
+      String(level.id).padStart(2, "0");
+    this.#elements.overlayKicker.textContent =
+      "Level " + String(level.id).padStart(2, "0") + " / Ready";
+    this.#elements.overlayTitle.textContent = level.name;
+    this.#elements.overlayCopy.textContent =
+      "前一關已完成並保存 HP、Score 與新 checkpoint。點擊後從 " +
+      level.start.locationLabel +
+      " 繼續循環。";
+    this.#elements.overlayAction.textContent = "繼續並鎖定滑鼠視角";
+    this.#setActions({ primary: true });
   }
 
   showPaused(pausedFromState = null) {
@@ -229,11 +266,10 @@ export class HUDManager {
     this.#elements.overlayCopy.textContent = pausedFromState === "QTE"
       ? "世界位移已停止，但氣體交換與 REAL CLOCK 的絕對倒數仍持續。"
       : pausedFromState === "TRANSFER_CUTSCENE"
-        ? "轉場倒數仍持續；完成後會直接顯示第一關結算。"
+        ? "心腔輸送帶仍依絕對時間運行；完成後會自動載入下一關或勝利遊街。"
         : "世界位移已停止；REAL CLOCK、酒精與瘧原蟲的絕對期限及動畫仍繼續。";
     this.#elements.overlayAction.textContent = "點擊恢復遊戲";
-    this.#elements.overlayAction.hidden = false;
-    this.#elements.overlayAction.disabled = false;
+    this.#setActions({ primary: true });
   }
 
   hideOverlay() {
@@ -247,8 +283,7 @@ export class HUDManager {
     this.#elements.overlayTitle.textContent = "無法鎖定滑鼠";
     this.#elements.overlayCopy.textContent = message;
     this.#elements.overlayAction.textContent = "重試滑鼠鎖定";
-    this.#elements.overlayAction.hidden = false;
-    this.#elements.overlayAction.disabled = false;
+    this.#setActions({ primary: true });
   }
 
   updateQte(diagnostics, nowMs) {
@@ -318,7 +353,7 @@ export class HUDManager {
         ? "血液已完成氣體交換，血管色彩開始轉換。"
         : retryAvailable
           ? "前方會出現第二個 Gas Token。"
-          : "已記錄減分，仍可完成第一關。";
+          : "已記錄減分，仍可完成本關。";
     }
   }
 
@@ -328,53 +363,72 @@ export class HUDManager {
     this.#elements.qtePanel.dataset.outcome = "";
   }
 
-  showTransfer(gasExchangeStatus) {
-    this.#elements.overlay.hidden = false;
-    this.#elements.overlay.dataset.mode = "TRANSFER";
-    this.#elements.overlayKicker.textContent = "Transfer cutscene / Absolute time";
-    this.#elements.overlayTitle.textContent = "循環交接中";
-    this.#elements.overlayCopy.textContent = gasExchangeStatus === "SUCCESS"
-      ? "氣體交換成功，正在將血流資料送往右心室。"
-      : "氣體交換未完成，但依規則允許失敗通過並送往右心室。";
-    this.#elements.overlayAction.hidden = true;
-    this.#elements.overlayAction.disabled = true;
+  renderCutscene(snapshot) {
+    this.#cutsceneRenderer.render(snapshot);
   }
 
-  showLevelComplete({ gasExchangeStatus, score }) {
-    this.#elements.overlay.hidden = false;
-    this.#elements.overlay.dataset.mode = "COMPLETE";
-    this.#elements.overlayKicker.textContent = "Level 01 / Route complete";
-    this.#elements.overlayTitle.textContent = "第一關完成";
-    this.#elements.overlayCopy.textContent =
-      (gasExchangeStatus === "SUCCESS"
-        ? "氣體交換成功。"
-        : "氣體交換失敗，但已依規則通過。") +
-      " 最終分數：" +
-      score +
-      "。四關資料已完成；跨關過場與自動切換保留至 Phase 09，可先重新挑戰本關。";
-    this.#elements.overlayAction.textContent = "重新挑戰第一關";
-    this.#elements.overlayAction.hidden = false;
-    this.#elements.overlayAction.disabled = false;
+  hideCutscene() {
+    this.#cutsceneRenderer.hide();
   }
 
-  showGameOver(mode) {
+  showGameOver({ mode, levelId, checkpointSeed }) {
     const fellIntoWound = mode === "FALL";
+    const stroke = mode === "STROKE";
     this.#elements.overlay.hidden = false;
-    this.#elements.overlay.dataset.mode = fellIntoWound
-      ? "GAME_OVER_FALL"
-      : "GAME_OVER_RECYCLE";
-    this.#elements.overlayKicker.textContent = "Level 01 / Mission failed";
-    this.#elements.overlayTitle.textContent = fellIntoWound
-      ? "墜入血管破口"
-      : "紅血球已回收";
-    this.#elements.overlayCopy.textContent = fellIntoWound
-      ? "Wound 為致命障礙。將由第一關檢查點重新建立同一組種子與障礙序列。"
-      : "HP 已降至零。將以至少 " +
-        GAME_CONFIG.checkpoint.retryMinimumHp +
-        " HP 從第一關檢查點重新開始。";
-    this.#elements.overlayAction.textContent = "從檢查點重試";
-    this.#elements.overlayAction.hidden = false;
-    this.#elements.overlayAction.disabled = false;
+    this.#elements.overlay.dataset.mode = stroke
+      ? "GAME_OVER_STROKE"
+      : fellIntoWound
+        ? "GAME_OVER_FALL"
+        : "GAME_OVER_RECYCLE";
+    this.#elements.overlayIndex.textContent =
+      String(levelId).padStart(2, "0");
+    this.#elements.overlayKicker.textContent =
+      "Level " + String(levelId).padStart(2, "0") + " / Mission failed";
+    this.#elements.overlayTitle.textContent = stroke
+      ? "中風 / Stroke"
+      : fellIntoWound
+        ? "Vessel Rupture"
+        : "紅血球已回收";
+    this.#elements.overlayCopy.textContent = stroke
+      ? "腦循環 Wound 觸發中風結局。本關 checkpoint seed " +
+        checkpointSeed + " 將保持不變。"
+      : fellIntoWound
+        ? "Wound 為致命障礙。本關會使用相同 checkpoint seed " +
+          checkpointSeed + " 重建障礙序列。"
+        : "HP 已降至零。重試時 HP 至少恢復為 " +
+          GAME_CONFIG.checkpoint.retryMinimumHp +
+          "，Score 回到本關 checkpoint。";
+    this.#elements.overlayAction.textContent = "重新挑戰本關";
+    this.#elements.overlayRestartAction.textContent = "從第一關重新開始";
+    this.#elements.overlayMenuAction.textContent = "回到主選單";
+    this.#setActions({ primary: true, restart: true, menu: true });
+  }
+
+  showVictory(summary) {
+    this.#elements.overlay.hidden = false;
+    this.#elements.overlay.dataset.mode = "VICTORY";
+    this.#elements.overlayIndex.textContent = "O₂";
+    this.#elements.overlayKicker.textContent =
+      "Four routes complete / Final statistics";
+    this.#elements.overlayTitle.textContent = "循環任務成功";
+    this.#elements.overlayCopy.textContent =
+      "Score " + summary.score +
+      " / HP " + summary.hp +
+      " / 氣體交換成功 " + summary.gasExchangeSuccessCount +
+      " / Wound 閃避 " + summary.woundDodgedCount +
+      " / REAL CLOCK " + summary.elapsedSeconds.toFixed(1) + " 秒。";
+    this.#elements.overlayAction.textContent = "從第一關重新開始";
+    this.#elements.overlayMenuAction.textContent = "回到主選單";
+    this.#setActions({ primary: true, menu: true });
+  }
+
+  #setActions({ primary = false, restart = false, menu = false } = {}) {
+    this.#elements.overlayAction.hidden = !primary;
+    this.#elements.overlayAction.disabled = !primary;
+    this.#elements.overlayRestartAction.hidden = !restart;
+    this.#elements.overlayRestartAction.disabled = !restart;
+    this.#elements.overlayMenuAction.hidden = !menu;
+    this.#elements.overlayMenuAction.disabled = !menu;
   }
 
   #updateFlightInstruments({

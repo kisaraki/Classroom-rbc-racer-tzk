@@ -1,11 +1,11 @@
 import {
   GameLoop,
   getSimulationDeltaSeconds
-} from "../../js/core/GameLoop.js?v=phase08-routes-r1";
+} from "../../js/core/GameLoop.js?v=phase09-endings-r1";
 import {
   GAME_STATES,
   GameStateMachine
-} from "../../js/core/GameStateMachine.js?v=phase08-routes-r1";
+} from "../../js/core/GameStateMachine.js?v=phase09-endings-r1";
 import {
   assertEqual,
   assertThrows
@@ -112,6 +112,30 @@ export function registerGameStateTests(harness) {
       true
     );
     assertEqual(depletedState.isWorldRunning, false);
+  });
+
+  harness.test("brain Wound enters the dedicated Stroke terminal state", () => {
+    const stateMachine = new GameStateMachine();
+    stateMachine.start();
+
+    assertEqual(
+      stateMachine.enterGameOver(GAME_STATES.GAME_OVER_STROKE),
+      true
+    );
+    assertEqual(stateMachine.state, GAME_STATES.GAME_OVER_STROKE);
+    assertEqual(stateMachine.isWorldRunning, false);
+  });
+
+  harness.test("victory is accepted only after the final transfer completes", () => {
+    const stateMachine = new GameStateMachine();
+    assertEqual(stateMachine.enterVictory(), false);
+    stateMachine.start();
+    stateMachine.enterTransferCutscene();
+    stateMachine.completeTransferCutscene();
+
+    assertEqual(stateMachine.enterVictory(), true);
+    assertEqual(stateMachine.state, GAME_STATES.VICTORY);
+    assertEqual(stateMachine.isWorldRunning, false);
   });
 
   harness.test("GameLoop renders while paused without world updates", () => {

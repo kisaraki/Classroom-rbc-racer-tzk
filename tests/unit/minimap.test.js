@@ -1,5 +1,5 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase08-routes-r1";
-import { LEVELS } from "../../js/data/levels.js?v=phase08-routes-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase09-endings-r1";
+import { LEVELS } from "../../js/data/levels.js?v=phase09-endings-r1";
 import {
   buildHeartOutlinePathData,
   buildRoutePathData,
@@ -7,7 +7,7 @@ import {
   calculateMarkerPoint,
   clampMinimapProgress,
   validateMinimapConfig
-} from "../../js/ui/MiniMapRenderer.js?v=phase08-routes-r1";
+} from "../../js/ui/MiniMapRenderer.js?v=phase09-endings-r1";
 import {
   assert,
   assertApproximately,
@@ -141,7 +141,7 @@ export function registerMinimapTests(harness) {
     assert(pathData.endsWith("169 207"));
   });
 
-  harness.test("every Phase 08 minimap route builds one continuous SVG path", () => {
+  harness.test("every Phase 09 minimap route builds one continuous SVG path", () => {
     GAME_CONFIG.minimap.routes.forEach((route) => {
       const pathData = buildRoutePathData(route, GAME_CONFIG.minimap.vessels);
 

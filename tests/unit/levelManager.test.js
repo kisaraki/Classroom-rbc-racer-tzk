@@ -1,9 +1,9 @@
-import { GAME_CONFIG } from "../../js/config.js?v=phase08-routes-r1";
-import { LevelManager } from "../../js/core/LevelManager.js?v=phase08-routes-r1";
-import { LEVELS } from "../../js/data/levels.js?v=phase08-routes-r1";
+import { GAME_CONFIG } from "../../js/config.js?v=phase09-endings-r1";
+import { LevelManager } from "../../js/core/LevelManager.js?v=phase09-endings-r1";
+import { LEVELS } from "../../js/data/levels.js?v=phase09-endings-r1";
 import { InputController } from "../../js/input/InputController.js";
 import { PlayerRBC } from "../../js/player/PlayerRBC.js";
-import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase08-routes-r1";
+import { VesselTrack } from "../../js/world/VesselTrack.js?v=phase09-endings-r1";
 import {
   assert,
   assertApproximately,
@@ -49,8 +49,15 @@ const EXPECTED_ROUTE_LABELS = Object.freeze({
   ]
 });
 
+const EXPECTED_TRANSFERS = Object.freeze({
+  1: ["右心房", "右心室"],
+  2: ["左心房", "左心室"],
+  3: ["右心房", "右心室"],
+  4: ["左心房", "左心室"]
+});
+
 export function registerLevelManagerTests(harness) {
-  harness.test("LevelManager loads all four Phase 08 route datasets", () => {
+  harness.test("LevelManager loads all four Phase 09 route datasets", () => {
     const manager = new LevelManager();
 
     assertEqual(manager.levels.length, GAME_CONFIG.game.totalLevelCount);
@@ -62,6 +69,30 @@ export function registerLevelManagerTests(harness) {
     });
 
     assertThrows(() => manager.loadLevel(5), RangeError);
+  });
+
+  harness.test("LevelManager advances all four routes without wrapping", () => {
+    const manager = new LevelManager();
+
+    assertEqual(manager.currentLevelIndex, 0);
+    assertEqual(manager.hasNextLevel, true);
+    assertEqual(manager.peekNextLevel().id, 2);
+    assertEqual(manager.loadNextLevel().id, 2);
+    assertEqual(manager.loadNextLevel().id, 3);
+    assertEqual(manager.loadNextLevel().id, 4);
+    assertEqual(manager.hasNextLevel, false);
+    assertEqual(manager.peekNextLevel(), null);
+    assertEqual(manager.loadNextLevel(), null);
+    assertEqual(manager.currentLevel.id, 4);
+  });
+
+  harness.test("all levels expose their configured heart transfer", () => {
+    LEVELS.forEach((level) => {
+      assertDeepEqual(
+        [level.transfer.fromChamber, level.transfer.toChamber],
+        EXPECTED_TRANSFERS[level.id]
+      );
+    });
   });
 
   harness.test("all levels expose their required circulation locations", () => {

@@ -6,44 +6,46 @@ build. It has no runtime backend, database, framework, CDN, or external media.
 
 ## Current Phase
 
-Phase 08 expands the circulation course into four data-driven level datasets
-while retaining every Phase 00-07 behavior.
+Phase 09 connects the four data-driven circulation routes into one complete
+run while retaining every Phase 00-08 behavior.
 
 Included:
 
-- Level 1 retains its 3000-unit lower-body systemic route and 300-second target.
-- Level 2 adds a 900-unit pulmonary route with right-heart, pulmonary artery,
-  alveolar capillary, pulmonary vein, and left-heart sections.
-- Level 3 adds an 1800-unit upper-body and brain systemic route with its own
-  artery, capillary, venous, radius, color, and gas-exchange mappings.
-- Level 4 reuses the pulmonary anatomy through a separate high-risk dataset.
-  Buff weights use 0.7x, general debuffs use 2.5x, alcohol adds 2x for 5x total,
-  and high-BP Wound chance uses 3x. Safe-BP Wound retains the exponential rule.
-- All numeric control points, distances, radii, colors, seeds, timings, and
-  multipliers remain centralized in `js/config.js`. `js/data/levels.js` adds
-  only route semantics and assembles all four levels through one code path.
-- The procedural circulation map now exposes four route IDs over the existing
-  eight vessel curves and seven anatomical nodes.
-- The cockpit HUD separates controls: a warm cross shows keyboard-controlled
-  body attitude, while a cyan circle shows mouse-controlled view direction.
-- ATTITUDE, dynamic ALT, and VIEW panels report local body offset, a 0-to-vessel
-  diameter altitude scale, mouse heading, and mouse pitch.
-- A shared 169-test Node/browser suite covers every route, location, color
-  boundary, minimap mapping, gas-exchange zone, visual curve, risk multiplier,
-  instrument, and all four target driving times.
+- Levels 1 through 3 automatically load the next route after a four-second
+  heart-chamber conveyor. Level 4 continues through its left-atrium-to-left-
+  ventricle transfer and then starts the victory sequence.
+- Transfer semantics remain level data: Levels 1 and 3 use right atrium to
+  right ventricle; Levels 2 and 4 use left atrium to left ventricle.
+- HP depletion plays the procedural Spleen/Liver recycle factory. Wound plays
+  the vessel-rupture fall for Levels 1, 2, and 4, and the dedicated Stroke
+  ending for the Level 3 brain route.
+- Victory procedurally builds a bright arterial tunnel, six-RBC parade, O2
+  flag, and 36 confetti strips before presenting final run statistics.
+- Failure menus expose retry-current-level, restart-from-Level-1, and return-
+  to-main-menu actions. Victory exposes restart and main-menu actions.
+- Level retry preserves checkpoint seed and score, applies the configured
+  minimum HP, and clears BP, position, QTE, intoxication, malaria, entities,
+  delayed input, low-BP state, and pending transitions.
+- Cross-level loading preserves current HP and score while creating a new
+  checkpoint from the next level's fixed seed. All four routes still use the
+  shared managers and systems without level-specific class forks.
+- Every cutscene uses absolute deadlines. The render loop, REAL CLOCK, status
+  effects, cooldowns, and animations continue while world movement is frozen.
+- A shared 181-test Node/browser suite covers all earlier contracts plus the
+  five cutscene timelines, four heart transfers, sequential loading, Stroke,
+  victory state, checkpoint retry, and transient-state clearing.
 
 Intentionally excluded until later phases:
 
-- Automatic inter-level transitions and heart-chamber conveyor cutscenes.
-- Recycle, fall, stroke, and victory ending expansion plus whole-run restart.
 - Phase 10 long-duration performance and cross-browser acceptance.
 
-The application still starts on Level 1; Phase 09 owns automatic progression.
-All four Phase 08 datasets are registered and loadable by the shared
-`LevelManager`, `VesselTrack`, entity, gas exchange, and minimap systems.
+The application starts on Level 1. If Pointer Lock remains active, inter-level
+loading continues automatically. If the user releases Pointer Lock during a
+transfer, the next route is still loaded automatically but waits for the next
+user click before browser security allows mouse recapture.
 
-Phase 08 acceptance evidence is recorded in `reports/phase-08-report.md`; the
-matching checklist is `tests/phase-08-manual-test-checklist.md`.
+Phase 09 acceptance evidence is recorded in `reports/phase-09-report.md`; the
+matching checklist is `tests/phase-09-manual-test-checklist.md`.
 
 ## Controls
 
@@ -89,13 +91,14 @@ Open:
 
 - Driving prototype: http://127.0.0.1:8000/
 - Browser tests: http://127.0.0.1:8000/tests/unit-test.html
+- Cutscene preview: http://127.0.0.1:8000/tests/phase-09-cutscene-preview.html
 
 Do not open index.html through file:// because browser ES Module security rules
 require an HTTP server.
 
 ## Automated Tests
 
-Run the shared Phase 08 suite with either command:
+Run the shared Phase 09 suite with either command:
 
 ~~~powershell
 npm test
@@ -105,13 +108,12 @@ npm test
 node ./tests/run-tests.mjs
 ~~~
 
-The browser page and Node runner import the same 169-test suite from
-`tests/unit`. It includes every earlier regression plus four-level schema
-assembly, exact route locations, section continuity, gas zones, four minimap
-paths, four Catmull-Rom tracks, target driving times, Level 4 weights, and
-flight-instrument mapping.
-Earlier status effects, Gas QTE, BP, entity, collision, compact RBC,
-desktop/mobile detection, and refusal-screen contracts remain covered.
+The browser page and Node runner import the same 181-test suite from
+`tests/unit`. It includes every earlier regression plus five absolute-time
+cutscene timelines, sequential route loading, all four chamber transfers,
+retry state construction, dedicated Stroke and victory states, route geometry,
+target driving times, status effects, Gas QTE, BP, entity, collision, compact
+RBC, desktop/mobile detection, and refusal-screen contracts.
 
 ## Three.js Vendor Record
 
