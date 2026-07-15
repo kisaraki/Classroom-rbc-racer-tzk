@@ -4,8 +4,9 @@
 
 - 狀態：PASS（自動測試與本機 Chromium 瀏覽器煙霧測試）
 - 分支：`agent/phase11-circulation-statuses`
-- 發布：未 push、未部署 GitHub Pages
-- 基底提交：`3d2412ddce90a98762aa85a5134e46b7d1d60da7`
+- 發布：已推送 `main`，並由 GitHub Actions 部署 GitHub Pages
+- 開發起點：`3d2412ddce90a98762aa85a5134e46b7d1d60da7`
+- Phase 11 實作基線：`e22cd963ed5bd12cca877200dd2f2238cff169fc`
 
 ## 完成範圍
 

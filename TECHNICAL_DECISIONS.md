@@ -4,6 +4,8 @@
 
 **對應總案版本：** 3.4
 
+**Phase 11 實作基線：** `e22cd963ed5bd12cca877200dd2f2238cff169fc`
+
 **決策日期：** 2026-07-15
 
 **適用文件：** `classroom-rbc-racer-tzk.md`

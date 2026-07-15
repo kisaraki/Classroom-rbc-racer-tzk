@@ -14,7 +14,7 @@
 | 主要技術 | HTML5、CSS3、Vanilla JavaScript ES Modules、Three.js |
 | 專案類型 | 純前端、無後端、無資料庫 |
 | GitHub | `https://github.com/kisaraki/Classroom-rbc-racer-tzk` |
-| Phase 11 候選版基底 | `3d2412ddce90a98762aa85a5134e46b7d1d60da7` |
+| Phase 11 實作基線 | `e22cd963ed5bd12cca877200dd2f2238cff169fc` |
 | 技術決策附錄 | `TECHNICAL_DECISIONS.md` |
 | 循環術語基準 | `CIRCULATION_TERMINOLOGY.md` |
 | 重建操作手冊 | `codex-devp-cmd.md` |
@@ -74,7 +74,7 @@
 | 項目 | 基準 |
 | --- | --- |
 | 分支 | `agent/phase11-circulation-statuses` |
-| 候選版基底 | `3d2412ddce90a98762aa85a5134e46b7d1d60da7` |
+| 實作基線 | `e22cd963ed5bd12cca877200dd2f2238cff169fc` |
 | 單元／整合測試 | 203 passed、0 failed |
 | 靜態稽核 | 9 passed、0 failed |
 | 完整 gate | `npm run test:phase11` |

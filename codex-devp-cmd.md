@@ -7,7 +7,7 @@
 | 技術決策附錄版本 | 1.5 |
 | 專案狀態 | Phase 11 正式發布、空機重建與維護基準 |
 | GitHub | `https://github.com/kisaraki/Classroom-rbc-racer-tzk` |
-| Phase 11 候選版基底 | `3d2412ddce90a98762aa85a5134e46b7d1d60da7` |
+| Phase 11 實作基線 | `e22cd963ed5bd12cca877200dd2f2238cff169fc` |
 
 本文件是交給其他版本 AI、Codex 或開發者的執行手冊，不重複定義全部玩法數值。所有相對路徑都以 `rbc-racer/` Git 倉庫根目錄為準。
 

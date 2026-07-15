@@ -61,5 +61,5 @@
 
 ## 發布邊界
 
-- [x] 未 push GitHub。
-- [x] 未部署或觸發 GitHub Pages。
+- [x] Phase 11 實作與發布紀錄已推送 GitHub。
+- [x] `main` 的 GitHub Pages workflow 通過並完成部署。
