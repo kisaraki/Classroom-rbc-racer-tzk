@@ -2,12 +2,14 @@
 
 ## 結果
 
-- 狀態：本機自動測試 PASS，正式發布驗證由本次發布紀錄回填
+- 狀態：PASS（本機、GitHub Actions 與 GitHub Pages）
 - 正式名稱：Project Aorta：大動脈計畫室
 - 副標：RBC RACER
 - 狀態／版本：STABLE／Version 1.1（20260715）
-- 分支：`agent/stable-v1.1-branding`
+- 分支：`main`
+- 發布：已推送 GitHub，並由 GitHub Actions 部署 GitHub Pages
 - 前一功能基線：`e22cd963ed5bd12cca877200dd2f2238cff169fc`
+- STABLE 1.1 實作基線：`363f4c9124448a013d4d7c12e3f3bf2eddc7444e`
 
 ## 完成範圍
 
@@ -91,6 +93,6 @@ STABLE audit: 9 passed, 0 failed.
 
 ## 殘餘風險
 
-- GitHub Actions 與正式 Pages 結果必須在發布紀錄提交後實際追蹤，不得以本機結果代替。
+- GitHub Actions 必須先通過 `npm run test:stable` 才可部署；正式 Pages 仍需逐次發布後實際驗證，不得只依賴歷史結果。
 - 水蒸氣使用瀏覽器 `backdrop-filter`；正式支援矩陣需以 Chrome、Edge、Firefox 桌面版實測視覺一致性。
 - 9 次 O 加 9 次 C 必須在既有 1.5 秒內完成，難度顯著提高，符合本次明示規則但仍需玩家體感驗收。

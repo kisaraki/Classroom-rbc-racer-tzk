@@ -18,6 +18,7 @@
 | 專案類型 | 純前端、無後端、無資料庫 |
 | GitHub | `https://github.com/kisaraki/Classroom-rbc-racer-tzk` |
 | 前一功能基線 | `e22cd963ed5bd12cca877200dd2f2238cff169fc` |
+| STABLE 1.1 實作基線 | `363f4c9124448a013d4d7c12e3f3bf2eddc7444e` |
 | 技術決策附錄 | `TECHNICAL_DECISIONS.md` |
 | 循環術語基準 | `CIRCULATION_TERMINOLOGY.md` |
 | 重建操作手冊 | `codex-devp-cmd.md` |
@@ -81,6 +82,7 @@
 | 狀態／版本 | STABLE／1.1（20260715） |
 | 分支 | `main` |
 | 前一功能基線 | `e22cd963ed5bd12cca877200dd2f2238cff169fc` |
+| STABLE 1.1 實作基線 | `363f4c9124448a013d4d7c12e3f3bf2eddc7444e` |
 | 單元／整合測試 | 204 passed、0 failed |
 | 靜態稽核 | 9 passed、0 failed |
 | 完整 gate | `npm run test:stable` |

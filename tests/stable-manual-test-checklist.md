@@ -68,5 +68,5 @@
 
 ## 發布邊界
 
-- [ ] STABLE 1.1 實作與發布紀錄已推送 GitHub。
-- [ ] `main` 的 GitHub Pages workflow 通過並完成部署。
+- [x] STABLE 1.1 實作與發布紀錄已推送 GitHub。
+- [x] `main` 的 GitHub Pages workflow 通過並完成部署。

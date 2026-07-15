@@ -11,6 +11,7 @@
 | 產品版本 | 1.1（20260715） |
 | GitHub | `https://github.com/kisaraki/Classroom-rbc-racer-tzk` |
 | 前一功能基線 | `e22cd963ed5bd12cca877200dd2f2238cff169fc` |
+| STABLE 1.1 實作基線 | `363f4c9124448a013d4d7c12e3f3bf2eddc7444e` |
 
 本文件是交給其他版本 AI、Codex 或開發者的執行手冊，不重複定義全部玩法數值。所有相對路徑都以 `rbc-racer/` Git 倉庫根目錄為準。
 
@@ -349,6 +350,7 @@ http://127.0.0.1:8000/tests/phase-09-cutscene-preview.html
 ```text
 REPOSITORY=https://github.com/kisaraki/Classroom-rbc-racer-tzk
 PREVIOUS_FUNCTION_BASELINE=e22cd963ed5bd12cca877200dd2f2238cff169fc
+STABLE_IMPLEMENTATION_BASELINE=363f4c9124448a013d4d7c12e3f3bf2eddc7444e
 RELEASE_STATUS=STABLE
 RELEASE_VERSION=1.1
 RELEASE_DATE=20260715

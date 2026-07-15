@@ -21,12 +21,13 @@
 | 自動測試 | 204 passed、0 failed |
 | 靜態稽核 | 9 passed、0 failed |
 | 前一功能基線 | `e22cd963ed5bd12cca877200dd2f2238cff169fc` |
+| STABLE 1.1 實作基線 | `363f4c9124448a013d4d7c12e3f3bf2eddc7444e` |
 | 正式分支 | `main` |
 | 部署方式 | GitHub Actions → GitHub Pages |
 | Three.js | 官方 r184，置於 `vendor/` |
 | 執行架構 | HTML5、CSS3、Vanilla JavaScript ES Modules |
 
-STABLE 1.1 的實作提交雜湊會由緊接其後的發布紀錄提交回填。本 README、總案、技術決策、重建手冊、測試與版本報告共同構成不可退縮基線。
+本 README、總案、技術決策、重建手冊、測試與版本報告共同構成不可退縮基線。後續異動必須保留上表實作提交，作為可回溯、可比對與可重建的固定參考點。
 
 ## 不可退縮契約
 
