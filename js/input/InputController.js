@@ -1,3 +1,5 @@
+import { GAME_CONFIG } from "../config.js?v=stable-v1.1-20260715-r2";
+
 export const DRIVING_CONTROL_CODES = Object.freeze([
   "ArrowUp",
   "ArrowDown",
@@ -13,6 +15,14 @@ const CONTROL_CODES = new Set([
   "KeyO",
   "KeyC"
 ]);
+const VOLUME_CODE_TO_CONTROL = new Map([
+  ...GAME_CONFIG.mobileControls.volumeIncreaseCodes.map(
+    (code) => [code, "KeyZ"]
+  ),
+  ...GAME_CONFIG.mobileControls.volumeDecreaseCodes.map(
+    (code) => [code, "KeyX"]
+  )
+]);
 
 export class InputController {
   #target;
@@ -20,9 +30,14 @@ export class InputController {
   #drivingActions = [];
   #qteActions = [];
   #attached = false;
+  #useVolumeKeys;
 
-  constructor({ target = globalThis.window } = {}) {
+  constructor({
+    target = globalThis.window,
+    useVolumeKeys = false
+  } = {}) {
     this.#target = target;
+    this.#useVolumeKeys = useVolumeKeys;
   }
 
   attach() {
@@ -119,55 +134,96 @@ export class InputController {
     return this.#qteActions.splice(0);
   }
 
-  #handleKeyDown = (event) => {
-    if (!CONTROL_CODES.has(event.code)) {
-      return;
+  pressControl(code, { repeat = false } = {}) {
+    if (!CONTROL_CODES.has(code)) {
+      return false;
     }
 
-    event.preventDefault();
-
-    if (
-      (event.code === "KeyO" || event.code === "KeyC") &&
-      event.repeat
-    ) {
-      return;
+    if ((code === "KeyO" || code === "KeyC") && repeat) {
+      return true;
     }
 
-    const wasPressed = this.isPressed(event.code);
-    this.setPressed(event.code, true);
+    const wasPressed = this.isPressed(code);
+    this.setPressed(code, true);
 
     if (
-      DRIVING_CONTROL_CODE_SET.has(event.code) &&
+      DRIVING_CONTROL_CODE_SET.has(code) &&
       !wasPressed &&
-      !event.repeat
+      !repeat
     ) {
       this.#drivingActions.push(Object.freeze({
-        code: event.code,
+        code,
         pressed: true
       }));
     }
 
-    if (event.code === "KeyO" || event.code === "KeyC") {
-      this.#qteActions.push(event.code);
+    if (code === "KeyO" || code === "KeyC") {
+      this.#qteActions.push(code);
     }
-  };
 
-  #handleKeyUp = (event) => {
-    if (!CONTROL_CODES.has(event.code)) {
+    return true;
+  }
+
+  releaseControl(code) {
+    if (!CONTROL_CODES.has(code)) {
+      return false;
+    }
+
+    const wasPressed = this.isPressed(code);
+    this.setPressed(code, false);
+
+    if (DRIVING_CONTROL_CODE_SET.has(code) && wasPressed) {
+      this.#drivingActions.push(Object.freeze({
+        code,
+        pressed: false
+      }));
+    }
+
+    return true;
+  }
+
+  queueQteAction(code) {
+    if (code !== "KeyO" && code !== "KeyC") {
+      return false;
+    }
+
+    this.#qteActions.push(code);
+    return true;
+  }
+
+  #handleKeyDown = (event) => {
+    const code = this.#getEventControlCode(event);
+
+    if (!code) {
       return;
     }
 
     event.preventDefault();
-    const wasPressed = this.isPressed(event.code);
-    this.setPressed(event.code, false);
-
-    if (DRIVING_CONTROL_CODE_SET.has(event.code) && wasPressed) {
-      this.#drivingActions.push(Object.freeze({
-        code: event.code,
-        pressed: false
-      }));
-    }
+    this.pressControl(code, { repeat: event.repeat === true });
   };
+
+  #handleKeyUp = (event) => {
+    const code = this.#getEventControlCode(event);
+
+    if (!code) {
+      return;
+    }
+
+    event.preventDefault();
+    this.releaseControl(code);
+  };
+
+  #getEventControlCode(event) {
+    const eventCode = event?.code || event?.key || "";
+
+    if (CONTROL_CODES.has(eventCode)) {
+      return eventCode;
+    }
+
+    return this.#useVolumeKeys
+      ? VOLUME_CODE_TO_CONTROL.get(eventCode) ?? null
+      : null;
+  }
 
   #handleBlur = () => {
     this.reset();

@@ -29,6 +29,8 @@ export const GAME_CONFIG = deepFreeze({
     minimumHeight: 720,
     maximumPixelRatio: 2,
     renderResolutionScale: 0.75,
+    mobileMaximumPixelRatio: 1.5,
+    mobileRenderResolutionScale: 0.72,
     exposure: 1.08
   },
 
@@ -127,17 +129,32 @@ export const GAME_CONFIG = deepFreeze({
       "Mobi|Android|iPhone|iPad|iPod|IEMobile|Windows Phone|Opera Mini",
     touchTabletPlatform: "MacIntel",
     touchTabletMinimumPoints: 2,
-    mobileReason: "MOBILE_DEVICE",
     supportedDatasetValue: "SUPPORTED",
-    blockedState: "UNSUPPORTED",
-    blockedDatasetValue: "MOBILE_BLOCKED",
-    overlayMode: "UNSUPPORTED",
-    overlayIndex: "!",
-    overlayKicker: "Device check / Desktop required",
-    overlayTitle: "不支援手機",
-    overlayCopy:
-      "本遊戲需要鍵盤、滑鼠與 Pointer Lock，手機或平板無法提供完整操作，因此已停止啟動。請改用桌上型或筆記型電腦。",
-    overlayNote: "未建立 Three.js 場景，也未啟動遊戲計時器。"
+    desktopInputMode: "DESKTOP_POINTER",
+    mobileInputMode: "MOBILE_TOUCH",
+    iosPlatform: "IOS",
+    androidPlatform: "ANDROID",
+    otherPlatform: "OTHER",
+    previewQueryParameter: "input",
+    previewQueryValue: "mobile",
+    previewHostnames: [
+      "127.0.0.1",
+      "localhost"
+    ]
+  },
+
+  mobileControls: {
+    landscapeMediaQuery: "(orientation: landscape)",
+    orientationLockType: "landscape",
+    requestFullscreenForOrientationLock: true,
+    volumeIncreaseCodes: [
+      "AudioVolumeUp",
+      "VolumeUp"
+    ],
+    volumeDecreaseCodes: [
+      "AudioVolumeDown",
+      "VolumeDown"
+    ]
   },
 
   pointerLock: {

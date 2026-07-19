@@ -1,0 +1,523 @@
+.mobile-control-copy,
+.mobile-controls,
+.mobile-orientation-guard {
+  display: none;
+}
+
+.game-root[data-mobile-device="true"] {
+  width: 100vw;
+  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
+  min-height: -webkit-fill-available;
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.game-root[data-mobile-device="true"] .desktop-control-copy {
+  display: none;
+}
+
+.game-root[data-mobile-device="true"] .mobile-control-copy {
+  display: inline;
+}
+
+.game-root[data-mobile-device="true"] .status-toolkit {
+  display: none;
+}
+
+.game-root[data-mobile-device="true"] .reticle--view,
+.game-root[data-mobile-device="true"] .instrument--view {
+  display: none;
+}
+
+.game-root[data-mobile-device="true"] .mobile-controls {
+  position: absolute;
+  z-index: 18;
+  inset: 0;
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.game-root[data-mobile-device="true"][data-game-state="PLAYING"] .mobile-controls,
+.game-root[data-mobile-device="true"][data-game-state="QTE"] .mobile-controls,
+.game-root[data-mobile-device="true"][data-game-state="LOW_BP_STASIS"] .mobile-controls {
+  opacity: 1;
+}
+
+.mobile-control,
+.mobile-pause-control {
+  appearance: none;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  margin: 0;
+  border: 1px solid rgba(255, 211, 187, 0.5);
+  color: var(--ink);
+  background:
+    linear-gradient(145deg, rgba(255, 82, 101, 0.3), rgba(18, 2, 7, 0.88));
+  box-shadow:
+    inset 0 0 1.1rem rgba(255, 82, 101, 0.08),
+    0 0.3rem 1.2rem rgba(0, 0, 0, 0.32);
+  font-family: var(--mono-font);
+  font-weight: 900;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.mobile-control[data-pressed="true"],
+.mobile-control:active {
+  border-color: var(--plasma);
+  color: var(--button-ink);
+  background: var(--plasma);
+  box-shadow: 0 0 1.2rem rgba(255, 211, 187, 0.72);
+  transform: scale(0.94);
+}
+
+.mobile-drive-pad,
+.mobile-pressure-pad,
+.mobile-qte-pad {
+  position: absolute;
+  bottom: max(0.65rem, env(safe-area-inset-bottom));
+}
+
+.mobile-drive-pad > span,
+.mobile-pressure-pad > span,
+.mobile-qte-pad > span {
+  position: absolute;
+  color: rgba(255, 245, 238, 0.62);
+  font-family: var(--mono-font);
+  font-size: 0.43rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  white-space: nowrap;
+}
+
+.mobile-drive-pad {
+  left: max(0.65rem, env(safe-area-inset-left));
+  display: grid;
+  grid-template: repeat(3, 2.8rem) / repeat(3, 2.8rem);
+  gap: 0.16rem;
+}
+
+.mobile-drive-pad > span {
+  top: -0.85rem;
+  left: 50%;
+  translate: -50% 0;
+}
+
+.mobile-control--up {
+  grid-area: 1 / 2;
+}
+
+.mobile-control--left {
+  grid-area: 2 / 1;
+}
+
+.mobile-control--right {
+  grid-area: 2 / 3;
+}
+
+.mobile-control--down {
+  grid-area: 3 / 2;
+}
+
+.mobile-pressure-pad {
+  left: max(10.2rem, calc(env(safe-area-inset-left) + 10.2rem));
+  display: grid;
+  grid-template-columns: repeat(2, 3rem);
+  gap: 0.35rem;
+}
+
+.mobile-pressure-pad > span {
+  bottom: calc(100% + 0.32rem);
+  left: 50%;
+  translate: -50% 0;
+}
+
+.mobile-pressure-pad .mobile-control,
+.mobile-qte-pad .mobile-control {
+  display: grid;
+  place-content: center;
+  gap: 0.08rem;
+  min-width: 3rem;
+  min-height: 3.35rem;
+}
+
+.mobile-pressure-pad b,
+.mobile-qte-pad b {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.mobile-pressure-pad small,
+.mobile-qte-pad small {
+  font-size: 0.42rem;
+  letter-spacing: 0.04em;
+}
+
+.mobile-qte-pad {
+  right: max(0.65rem, env(safe-area-inset-right));
+  display: grid;
+  grid-template-columns: repeat(2, 4.1rem);
+  gap: 0.42rem;
+}
+
+.mobile-qte-pad > span {
+  right: 0;
+  bottom: calc(100% + 0.32rem);
+}
+
+.mobile-qte-pad .mobile-control {
+  min-width: 4.1rem;
+  min-height: 4.1rem;
+  border-radius: 50%;
+}
+
+.mobile-control--oxygen {
+  border-color: rgba(255, 82, 101, 0.72);
+}
+
+.mobile-control--carbon {
+  border-color: rgba(169, 217, 239, 0.72);
+  background:
+    linear-gradient(145deg, rgba(49, 87, 200, 0.38), rgba(8, 18, 25, 0.9));
+}
+
+.mobile-pause-control {
+  position: absolute;
+  top: max(0.55rem, env(safe-area-inset-top));
+  left: 50%;
+  display: grid;
+  place-content: center;
+  min-width: 3.6rem;
+  min-height: 2.5rem;
+  translate: -50% 0;
+  border-color: rgba(169, 217, 239, 0.42);
+  pointer-events: auto;
+}
+
+.mobile-pause-control b,
+.mobile-pause-control span {
+  display: block;
+  line-height: 1;
+}
+
+.mobile-pause-control span {
+  margin-top: 0.18rem;
+  color: var(--ink-soft);
+  font-size: 0.36rem;
+  letter-spacing: 0.1em;
+}
+
+.game-root[data-mobile-device="true"][data-game-state="QTE"] .mobile-drive-pad,
+.game-root[data-mobile-device="true"][data-game-state="QTE"] .mobile-pressure-pad {
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+.game-root[data-mobile-device="true"][data-game-state="QTE"] .mobile-qte-pad {
+  filter: drop-shadow(0 0 0.8rem rgba(169, 217, 239, 0.4));
+  transform: scale(1.06);
+  transform-origin: right bottom;
+}
+
+.game-root[data-mobile-device="true"] .mobile-orientation-guard {
+  position: absolute;
+  z-index: 60;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  padding:
+    max(1.5rem, env(safe-area-inset-top))
+    max(1.5rem, env(safe-area-inset-right))
+    max(1.5rem, env(safe-area-inset-bottom))
+    max(1.5rem, env(safe-area-inset-left));
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(215, 36, 63, 0.28), transparent 30%),
+    repeating-linear-gradient(135deg, transparent 0 1.6rem, rgba(255, 255, 255, 0.02) 1.65rem),
+    #090104;
+  text-align: center;
+  pointer-events: auto;
+}
+
+.orientation-device {
+  width: 7rem;
+  height: 3.8rem;
+  margin-bottom: 1.4rem;
+  border: 0.2rem solid var(--plasma);
+  border-radius: 0.8rem;
+  box-shadow:
+    inset 0 0 1.4rem rgba(255, 82, 101, 0.18),
+    0 0 1.8rem rgba(255, 82, 101, 0.34);
+  transform: rotate(-8deg);
+}
+
+.orientation-device i {
+  display: block;
+  width: 0.35rem;
+  aspect-ratio: 1;
+  margin: 1.5rem 0.38rem 0 auto;
+  border-radius: 50%;
+  background: var(--plasma);
+}
+
+.mobile-orientation-guard p {
+  margin: 0 0 0.5rem;
+  color: var(--blood-hot);
+  font-family: var(--mono-font);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.mobile-orientation-guard h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 8vw, 3rem);
+}
+
+.mobile-orientation-guard > span {
+  max-width: 24rem;
+  margin-top: 0.7rem;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+@media (orientation: landscape) and (max-height: 36rem) {
+  .game-root[data-mobile-device="true"] .game-overlay {
+    grid-template-columns: 1fr;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-index {
+    display: none;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-panel {
+    align-content: center;
+    min-height: 100%;
+    padding:
+      max(0.7rem, env(safe-area-inset-top))
+      max(1rem, env(safe-area-inset-right))
+      max(0.7rem, env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+    border-left: 0;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-product {
+    gap: 0.12rem;
+    margin-bottom: 0.5rem;
+    padding: 0.4rem 0.65rem;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-product > span {
+    font-size: 0.82rem;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-product > strong {
+    font-size: 0.52rem;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-product > small {
+    font-size: 0.45rem;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-kicker {
+    margin-bottom: 0.35rem;
+    font-size: 0.5rem;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-panel h1 {
+    max-width: none;
+    font-size: clamp(2.1rem, 10vh, 3rem);
+    line-height: 0.9;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-copy {
+    max-width: 50rem;
+    margin: 0.5rem 0;
+    font-size: 0.68rem;
+    line-height: 1.35;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-controls {
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-controls span {
+    padding: 0.28rem 0.4rem;
+    font-size: 0.44rem;
+  }
+
+  .game-root[data-mobile-device="true"] #overlay-action,
+  .game-root[data-mobile-device="true"] .overlay-action-secondary {
+    min-height: 2.65rem;
+    padding: 0.55rem 3.2rem 0.55rem 0.9rem;
+    font-size: 0.76rem;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-action-secondary {
+    padding-right: 0.9rem;
+  }
+
+  .game-root[data-mobile-device="true"] .overlay-note {
+    max-width: 50rem;
+    margin-top: 0.4rem;
+    font-size: 0.56rem;
+    line-height: 1.35;
+  }
+
+  .game-root[data-mobile-device="true"] .hud-brand {
+    display: none;
+  }
+
+  .game-root[data-mobile-device="true"] .circulation-card {
+    top: max(0.45rem, env(safe-area-inset-top));
+    left: max(0.45rem, env(safe-area-inset-left));
+    width: 10.5rem;
+  }
+
+  .game-root[data-mobile-device="true"] .circulation-card__header {
+    padding: 0.35rem 0.48rem 0.28rem;
+  }
+
+  .game-root[data-mobile-device="true"] .circulation-card__header strong {
+    font-size: 0.78rem;
+  }
+
+  .game-root[data-mobile-device="true"] .circulation-map {
+    aspect-ratio: 2.15;
+  }
+
+  .game-root[data-mobile-device="true"] .vital-stack {
+    top: max(0.45rem, env(safe-area-inset-top));
+    right: max(0.45rem, env(safe-area-inset-right));
+    width: 9.3rem;
+    gap: 0.3rem;
+  }
+
+  .game-root[data-mobile-device="true"] .vital-card {
+    padding: 0.38rem 0.52rem;
+  }
+
+  .game-root[data-mobile-device="true"] .vital-card__heading span,
+  .game-root[data-mobile-device="true"] .vital-card small {
+    display: none;
+  }
+
+  .game-root[data-mobile-device="true"] .vital-card output {
+    margin-bottom: 0.25rem;
+    font-size: 0.58rem;
+  }
+
+  .game-root[data-mobile-device="true"] .clock-card {
+    top: max(0.45rem, env(safe-area-inset-top));
+    right: max(10.25rem, calc(env(safe-area-inset-right) + 10.25rem));
+    min-width: 8.5rem;
+    padding: 0.45rem 0.6rem;
+  }
+
+  .game-root[data-mobile-device="true"] .clock-card small {
+    display: none;
+  }
+
+  .game-root[data-mobile-device="true"] .mission-strip {
+    top: max(0.45rem, env(safe-area-inset-top));
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    grid-template-columns: 1fr;
+    width: 11rem;
+    translate: -50% 0;
+  }
+
+  .game-root[data-mobile-device="true"] .mission-strip div:not(.mission-strip__location) {
+    display: none;
+  }
+
+  .game-root[data-mobile-device="true"] .mission-strip__location {
+    padding: 0.42rem 0.65rem;
+  }
+
+  .game-root[data-mobile-device="true"] .status-panel,
+  .game-root[data-mobile-device="true"] .flight-instruments,
+  .game-root[data-mobile-device="true"] .control-ribbon {
+    display: none;
+  }
+
+  .game-root[data-mobile-device="true"] .reticle--body {
+    width: 2.2rem;
+  }
+
+  .game-root[data-mobile-device="true"] .qte-panel {
+    top: 46%;
+    width: min(57vw, 27rem);
+    min-width: 20rem;
+    padding: 0.58rem 0.65rem 0.62rem;
+  }
+
+  .game-root[data-mobile-device="true"] .qte-panel__header {
+    padding-bottom: 0.38rem;
+  }
+
+  .game-root[data-mobile-device="true"] .qte-panel__header strong {
+    font-size: 0.9rem;
+  }
+
+  .game-root[data-mobile-device="true"] .qte-panel__instruction {
+    margin: 0.35rem 0;
+    font-size: 0.62rem;
+  }
+
+  .game-root[data-mobile-device="true"] .qte-panel__actions article {
+    gap: 0.38rem;
+    padding: 0.4rem;
+  }
+
+  .game-root[data-mobile-device="true"] .qte-panel__actions kbd {
+    width: 2rem;
+    font-size: 1rem;
+  }
+
+  .game-root[data-mobile-device="true"] .qte-panel__deadline {
+    margin-top: 0.4rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 25rem) {
+  .mobile-drive-pad {
+    grid-template: repeat(3, 2.45rem) / repeat(3, 2.45rem);
+  }
+
+  .mobile-control {
+    min-width: 2.4rem;
+    min-height: 2.4rem;
+  }
+
+  .mobile-pressure-pad {
+    left: max(8.9rem, calc(env(safe-area-inset-left) + 8.9rem));
+  }
+
+  .mobile-qte-pad .mobile-control {
+    min-width: 3.6rem;
+    min-height: 3.6rem;
+  }
+
+  .mobile-qte-pad {
+    grid-template-columns: repeat(2, 3.6rem);
+  }
+
+  .game-root[data-mobile-device="true"] .qte-panel {
+    width: min(53vw, 23rem);
+  }
+}

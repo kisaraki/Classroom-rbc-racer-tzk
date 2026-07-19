@@ -156,6 +156,21 @@ await check("all STABLE release limits are deep-frozen config", async () => {
     "performance acceptance values are not centralized"
   );
   assert(
+    GAME_CONFIG.deviceSupport.mobileInputMode === "MOBILE_TOUCH" &&
+      GAME_CONFIG.renderer.mobileMaximumPixelRatio === 1.5 &&
+      GAME_CONFIG.renderer.mobileRenderResolutionScale === 0.72 &&
+      GAME_CONFIG.mobileControls.orientationLockType === "landscape" &&
+      GAME_CONFIG.mobileControls.volumeIncreaseCodes.includes(
+        "AudioVolumeUp"
+      ) &&
+      GAME_CONFIG.mobileControls.volumeDecreaseCodes.includes(
+        "AudioVolumeDown"
+      ) &&
+      GAME_CONFIG.deviceSupport.previewHostnames.join("|") ===
+        "127.0.0.1|localhost",
+    "mobile compatibility values are not centralized"
+  );
+  assert(
     GAME_CONFIG.penalties.debuffMultiplier === 2 &&
       GAME_CONFIG.bloodRupture.malariaCollisionInterval === 5 &&
       GAME_CONFIG.bloodRupture.hoodDurationMultiplier === 3 &&
@@ -230,6 +245,13 @@ await check("STABLE identity, timeout, and player-facing HUD replace development
   );
   const main = await read(path.join("js", "main.js"));
   const hud = await read(path.join("js", "ui", "HUDManager.js"));
+  const deviceSupport = await read(
+    path.join("js", "core", "DeviceSupport.js")
+  );
+  const mobileControls = await read(
+    path.join("js", "input", "MobileControls.js")
+  );
+  const input = await read(path.join("js", "input", "InputController.js"));
   const releaseFiles = allFiles.filter(
     (file) =>
       /\.(?:html|css|js|mjs|json|md|yml)$/.test(file) &&
@@ -275,6 +297,27 @@ await check("STABLE identity, timeout, and player-facing HUD replace development
   assert(
     /showPointerLockPending/.test(hud),
     "Pointer Lock startup has no immediate player feedback"
+  );
+  assert(
+    /supported:\s*true/.test(deviceSupport) &&
+      /deviceProfile:\s*deviceSupport/.test(main) &&
+      /isMobilePreviewRequested/.test(main) &&
+      !/showUnsupportedMobileDevice|MOBILE_BLOCKED|不支援手機/.test(
+        runtimeSource
+      ),
+    "mobile startup is still refused or bypasses the device profile"
+  );
+  assert(
+    [
+      "mobile-controls",
+      "mobile-orientation-guard",
+      "data-mobile-hold-code",
+      "data-mobile-qte-code"
+    ].every((value) => index.includes(value)) &&
+      /requestLandscapeLock/.test(mobileControls) &&
+      /isLandscapeViewport/.test(mobileControls) &&
+      /VOLUME_CODE_TO_CONTROL/.test(input),
+    "landscape, touch, QTE, or volume-key mobile controls are incomplete"
   );
 });
 

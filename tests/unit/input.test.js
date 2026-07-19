@@ -54,6 +54,70 @@ export function registerInputTests(harness) {
     assertEqual(input.getBloodPressureRaiseAxis(), 0);
   });
 
+  harness.test("mobile volume keys map to BP while desktop keeps media keys", () => {
+    const mobileTarget = new FakeEventTarget();
+    const desktopTarget = new FakeEventTarget();
+    const mobileInput = new InputController({
+      target: mobileTarget,
+      useVolumeKeys: true
+    });
+    const desktopInput = new InputController({
+      target: desktopTarget,
+      useVolumeKeys: false
+    });
+    let mobilePrevented = 0;
+    let desktopPrevented = 0;
+
+    mobileInput.attach();
+    desktopInput.attach();
+    mobileTarget.emit("keydown", {
+      code: "AudioVolumeUp",
+      preventDefault: () => {
+        mobilePrevented += 1;
+      }
+    });
+    desktopTarget.emit("keydown", {
+      code: "AudioVolumeUp",
+      preventDefault: () => {
+        desktopPrevented += 1;
+      }
+    });
+    assertEqual(mobileInput.getBloodPressureAxis(), 1);
+    assertEqual(desktopInput.getBloodPressureAxis(), 0);
+    assertEqual(mobilePrevented, 1);
+    assertEqual(desktopPrevented, 0);
+
+    mobileTarget.emit("keyup", {
+      key: "AudioVolumeUp",
+      preventDefault: () => {
+        mobilePrevented += 1;
+      }
+    });
+    mobileTarget.emit("keydown", {
+      code: "AudioVolumeDown",
+      preventDefault: () => {
+        mobilePrevented += 1;
+      }
+    });
+    assertEqual(mobileInput.getBloodPressureAxis(), -1);
+    mobileInput.detach();
+    desktopInput.detach();
+  });
+
+  harness.test("touch-facing methods preserve driving and QTE queues", () => {
+    const input = new InputController({ target: null });
+
+    assertEqual(input.pressControl("ArrowUp"), true);
+    assertEqual(input.getLateralAxes().y, 1);
+    assertEqual(input.releaseControl("ArrowUp"), true);
+    assertEqual(input.getLateralAxes().y, 0);
+    assertEqual(input.queueQteAction("KeyO"), true);
+    assertEqual(input.queueQteAction("KeyC"), true);
+    assertEqual(input.queueQteAction("KeyQ"), false);
+    assertEqual(input.consumeDrivingActions().length, 2);
+    assertEqual(input.consumeQteActions().join(" "), "KeyO KeyC");
+  });
+
   harness.test("WASD is never accepted as vehicle input", () => {
     const input = new InputController({ target: null });
     assertEqual(input.setPressed("KeyW", true), false);

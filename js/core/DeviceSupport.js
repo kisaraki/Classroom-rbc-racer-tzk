@@ -1,15 +1,5 @@
 import { GAME_CONFIG } from "../config.js?v=stable-v1.1-20260715-r2";
 
-function requireElement(root, selector) {
-  const element = root?.querySelector?.(selector);
-
-  if (!element) {
-    throw new Error("Missing device-support element: " + selector);
-  }
-
-  return element;
-}
-
 export function isMobileDevice(
   navigatorRef = globalThis.navigator,
   config = GAME_CONFIG.deviceSupport
@@ -32,58 +22,50 @@ export function isMobileDevice(
   return clientHintMobile || userAgentMobile || touchTablet;
 }
 
-export function getDeviceSupport(
-  navigatorRef = globalThis.navigator,
+export function isMobilePreviewRequested(
+  locationRef = globalThis.location,
   config = GAME_CONFIG.deviceSupport
 ) {
-  const isMobile = isMobileDevice(navigatorRef, config);
+  if (
+    !locationRef ||
+    !config.previewHostnames.includes(locationRef.hostname)
+  ) {
+    return false;
+  }
 
-  return Object.freeze({
-    supported: !isMobile,
-    isMobile,
-    reason: isMobile ? config.mobileReason : null
-  });
+  const parameters = new URLSearchParams(locationRef.search ?? "");
+  return parameters.get(config.previewQueryParameter) ===
+    config.previewQueryValue;
 }
 
-export function showUnsupportedMobileDevice(
-  root = globalThis.document,
-  config = GAME_CONFIG.deviceSupport
+export function getDeviceSupport(
+  navigatorRef = globalThis.navigator,
+  config = GAME_CONFIG.deviceSupport,
+  { forceMobile = false } = {}
 ) {
-  const elements = {
-    gameRoot: requireElement(root, "#game-root"),
-    canvas: requireElement(root, "#game-canvas"),
-    hud: requireElement(root, "#game-hud"),
-    overlay: requireElement(root, "#game-overlay"),
-    index: requireElement(root, ".overlay-index"),
-    kicker: requireElement(root, "#overlay-kicker"),
-    title: requireElement(root, "#overlay-title"),
-    copy: requireElement(root, "#overlay-copy"),
-    controls: requireElement(root, ".overlay-controls"),
-    action: requireElement(root, "#overlay-action"),
-    note: requireElement(root, ".overlay-note")
-  };
-
-  elements.gameRoot.dataset.gameState = config.blockedState;
-  elements.gameRoot.dataset.deviceSupport =
-    config.blockedDatasetValue;
-  elements.gameRoot.dataset.mobileDevice = "true";
-  elements.gameRoot.dataset.gameInitialized = "false";
-  elements.canvas.hidden = true;
-  elements.hud.hidden = true;
-  elements.overlay.hidden = false;
-  elements.overlay.dataset.mode = config.overlayMode;
-  elements.index.textContent = config.overlayIndex;
-  elements.kicker.textContent = config.overlayKicker;
-  elements.title.textContent = config.overlayTitle;
-  elements.copy.textContent = config.overlayCopy;
-  elements.controls.hidden = true;
-  elements.action.hidden = true;
-  elements.action.disabled = true;
-  elements.note.textContent = config.overlayNote;
+  const isMobile = forceMobile || isMobileDevice(navigatorRef, config);
+  const userAgent =
+    typeof navigatorRef?.userAgent === "string"
+      ? navigatorRef.userAgent
+      : "";
+  const platform = /iPhone|iPad|iPod/i.test(userAgent) ||
+      (
+        navigatorRef?.platform === config.touchTabletPlatform &&
+        Number.isFinite(navigatorRef?.maxTouchPoints) &&
+        navigatorRef.maxTouchPoints >= config.touchTabletMinimumPoints
+      )
+    ? config.iosPlatform
+    : /Android/i.test(userAgent)
+      ? config.androidPlatform
+      : config.otherPlatform;
 
   return Object.freeze({
-    gameState: elements.gameRoot.dataset.gameState,
-    deviceSupport: elements.gameRoot.dataset.deviceSupport,
-    gameInitialized: false
+    supported: true,
+    isMobile,
+    inputMode: isMobile
+      ? config.mobileInputMode
+      : config.desktopInputMode,
+    platform,
+    reason: null
   });
 }

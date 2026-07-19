@@ -14,6 +14,7 @@ import { registerInputTests } from "./input.test.js?v=stable-v1.1-20260715-r2";
 import { registerHudTests } from "./hud.test.js?v=stable-v1.1-20260715-r2";
 import { registerLevelManagerTests } from "./levelManager.test.js?v=stable-v1.1-20260715-r2";
 import { registerMinimapTests } from "./minimap.test.js?v=stable-v1.1-20260715-r2";
+import { registerMobileControlsTests } from "./mobileControls.test.js?v=stable-v1.1-20260715-r2";
 import { registerPlayerRbcTests } from "./playerRbc.test.js?v=stable-v1.1-20260715-r2";
 import { registerPointerLockTests } from "./pointerLock.test.js?v=stable-v1.1-20260715-r2";
 import { registerProceduralAssetTests } from "./proceduralAssets.test.js?v=stable-v1.1-20260715-r2";
@@ -46,6 +47,7 @@ export function createStableTestHarness() {
   registerVendorTests(harness);
   registerBloodPressureDrivingTests(harness);
   registerInputTests(harness);
+  registerMobileControlsTests(harness);
   registerStatusEffectTests(harness);
   registerQteTests(harness);
   registerResourceLifecycleTests(harness);

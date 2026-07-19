@@ -21,6 +21,7 @@ import {
 } from "../data/schemas.js?v=stable-v1.1-20260715-r2";
 import { CameraController } from "../input/CameraController.js?v=stable-v1.1-20260715-r2";
 import { InputController } from "../input/InputController.js?v=stable-v1.1-20260715-r2";
+import { MobileControls } from "../input/MobileControls.js?v=stable-v1.1-20260715-r2";
 import { PointerLockController } from "../input/PointerLockController.js?v=stable-v1.1-20260715-r2";
 import { PlayerRBC } from "../player/PlayerRBC.js?v=stable-v1.1-20260715-r2";
 import { BloodPressureHazardSystem } from "../systems/BloodPressureSystem.js?v=stable-v1.1-20260715-r2";
@@ -65,6 +66,8 @@ export class Game {
   #session;
   #levelCheckpoint;
   #pointerLock;
+  #mobileControls = null;
+  #isMobile = false;
   #cutsceneManager;
   #runStartedAtMs = null;
   #runCompletedAtMs = null;
@@ -95,7 +98,8 @@ export class Game {
 
   constructor({
     documentRef = globalThis.document,
-    windowRef = globalThis.window
+    windowRef = globalThis.window,
+    deviceProfile = null
   } = {}) {
     if (!documentRef || !windowRef) {
       throw new Error("Game requires a browser document and window.");
@@ -103,8 +107,13 @@ export class Game {
 
     this.#document = documentRef;
     this.#window = windowRef;
+    this.#isMobile = deviceProfile?.isMobile === true;
     this.#root = requireElement(documentRef, "#game-root");
     this.#canvas = requireElement(documentRef, "#game-canvas");
+    this.#root.dataset.mobileDevice = String(this.#isMobile);
+    this.#root.dataset.inputMode = this.#isMobile
+      ? GAME_CONFIG.deviceSupport.mobileInputMode
+      : GAME_CONFIG.deviceSupport.desktopInputMode;
     this.#root.style.setProperty(
       "--malaria-steam-blur",
       GAME_CONFIG.malaria.steamBlurPixels + "px"
@@ -122,7 +131,9 @@ export class Game {
     this.#session = new GameSession({
       durationSeconds: this.level.targetDriveSeconds
     });
-    this.hud = new HUDManager(documentRef);
+    this.hud = new HUDManager(documentRef, {
+      isMobile: this.#isMobile
+    });
     this.#cutsceneManager = new CutsceneManager();
 
     this.scene = new Scene();
@@ -142,7 +153,7 @@ export class Game {
     this.renderer = new WebGLRenderer({
       canvas: this.#canvas,
       antialias: true,
-      powerPreference: "high-performance"
+      powerPreference: this.#isMobile ? "default" : "high-performance"
     });
     this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.toneMapping = ACESFilmicToneMapping;
@@ -179,7 +190,10 @@ export class Game {
       )
     });
     this.collisionSystem = new CollisionSystem();
-    this.input = new InputController({ target: windowRef });
+    this.input = new InputController({
+      target: windowRef,
+      useVolumeKeys: this.#isMobile
+    });
     this.cameraController = new CameraController({
       targetElement: this.#canvas,
       documentRef
@@ -190,6 +204,16 @@ export class Game {
       onChange: this.#handlePointerLockChange,
       onError: this.#handlePointerLockError
     });
+    if (this.#isMobile) {
+      this.#mobileControls = new MobileControls({
+        documentRef,
+        windowRef,
+        rootElement: this.#root,
+        input: this.input,
+        onPause: this.#handleMobilePause,
+        onOrientationChange: this.#handleMobileOrientationChange
+      });
+    }
 
     this.scene.add(this.track.group);
     this.scene.add(this.entityManager.group);
@@ -298,8 +322,12 @@ export class Game {
     }
 
     this.input.attach();
-    this.cameraController.attach();
-    this.#pointerLock.attach();
+    if (this.#isMobile) {
+      this.#mobileControls.attach();
+    } else {
+      this.cameraController.attach();
+      this.#pointerLock.attach();
+    }
     this.hud.actionElement.addEventListener(
       "click",
       this.#handlePrimaryAction
@@ -329,8 +357,12 @@ export class Game {
 
     this.loop.stop();
     this.input.detach();
-    this.cameraController.detach();
-    this.#pointerLock.detach();
+    if (this.#isMobile) {
+      this.#mobileControls.detach();
+    } else {
+      this.cameraController.detach();
+      this.#pointerLock.detach();
+    }
     this.hud.actionElement.removeEventListener(
       "click",
       this.#handlePrimaryAction
@@ -444,7 +476,9 @@ export class Game {
 
   #renderFrame(rawDeltaSeconds) {
     const clockNowMs = this.#session.nowMs;
-    this.#pointerLock.update(clockNowMs);
+    if (!this.#isMobile) {
+      this.#pointerLock.update(clockNowMs);
+    }
     const timedOut = this.#checkForTimeout();
     this.#updateStatusEffects(clockNowMs);
     if (!timedOut) {
@@ -667,6 +701,13 @@ export class Game {
   }
 
   #completeTransfer(nowMs) {
+    const controlsActive = this.#isMobile
+      ? (
+          this.#mobileControls.isLandscape &&
+          this.#session.state !== GAME_STATES.PAUSED
+        )
+      : this.#pointerLock.isLocked;
+
     if (!this.#session.completeTransferCutscene()) {
       return false;
     }
@@ -675,7 +716,6 @@ export class Game {
       return this.#beginVictory(nowMs);
     }
 
-    const pointerLocked = this.#pointerLock.isLocked;
     const nextLevel = this.levelManager.peekNextLevel();
     const hp = this.player.state.hp;
     const score = this.player.state.score;
@@ -692,7 +732,7 @@ export class Game {
     });
     this.#levelTransitionCount += 1;
 
-    if (pointerLocked) {
+    if (controlsActive) {
       this.#session.acquirePointerLock();
       this.hud.hideOverlay();
       this.hud.showMessage({
@@ -1740,19 +1780,62 @@ export class Game {
       this.#restartRun();
     }
 
-    this.#requestPointerLock();
+    this.#activateControls();
   };
 
   #handleRestartAction = () => {
     this.#restartRun();
-    this.#requestPointerLock();
+    this.#activateControls();
   };
 
   #handleMenuAction = () => {
-    this.#pointerLock.exit();
+    if (this.#isMobile) {
+      this.#mobileControls.reset();
+    } else {
+      this.#pointerLock.exit();
+    }
     this.#restartRun();
     this.#root.dataset.lastRestartMode = "MAIN_MENU";
   };
+
+  #activateControls() {
+    if (this.#isMobile) {
+      return this.#activateMobileControls();
+    }
+
+    this.#requestPointerLock();
+    return true;
+  }
+
+  #activateMobileControls() {
+    if (!this.#mobileControls.isLandscape) {
+      return false;
+    }
+
+    if (this.#runStartedAtMs === null) {
+      this.#runStartedAtMs = this.#session.nowMs;
+    }
+
+    void this.#mobileControls.requestLandscapeLock();
+    this.#session.acquirePointerLock();
+    this.#pointerLockErrorName = "";
+    this.#pointerLockErrorMessage = "";
+    this.hud.hideOverlay();
+
+    if (this.#session.state === GAME_STATES.LOW_BP_STASIS) {
+      this.#showLowBloodPressureWarning(this.#session.nowMs);
+    } else if (this.#session.state === GAME_STATES.PLAYING) {
+      this.hud.showMessage({
+        kicker: "觸控駕駛已啟用",
+        title: "循環圖已同步",
+        copy: "拖按方向鍵移動機身；氣體交換時連點 O 與 C。",
+        tone: "INFO",
+        nowMs: this.#session.nowMs
+      });
+    }
+
+    return true;
+  }
 
   #requestPointerLock() {
     if (this.#runStartedAtMs === null) {
@@ -1785,12 +1868,7 @@ export class Game {
       return;
     }
 
-    if (this.#session.releasePointerLock()) {
-      this.#queueIntoxicatedInput(this.#session.nowMs);
-      this.statusEffects.releaseActiveControls();
-      this.input.reset();
-      this.hud.showPaused(this.#session.pausedFromState);
-    }
+    this.#pauseForControlLoss();
   };
 
   #handlePointerLockError = (error) => {
@@ -1814,15 +1892,34 @@ export class Game {
       return;
     }
 
-    if (this.#session.releasePointerLock()) {
-      this.#queueIntoxicatedInput(this.#session.nowMs);
-      this.statusEffects.releaseActiveControls();
-      this.input.reset();
-      this.hud.showPaused(this.#session.pausedFromState);
+    this.#pauseForControlLoss();
+
+    if (!this.#isMobile) {
+      this.#pointerLock.exit();
+    }
+  };
+
+  #handleMobilePause = () => {
+    this.#pauseForControlLoss();
+  };
+
+  #handleMobileOrientationChange = (isLandscape) => {
+    if (!isLandscape) {
+      this.#pauseForControlLoss();
+    }
+  };
+
+  #pauseForControlLoss() {
+    if (!this.#session.releasePointerLock()) {
+      return false;
     }
 
-    this.#pointerLock.exit();
-  };
+    this.#queueIntoxicatedInput(this.#session.nowMs);
+    this.statusEffects.releaseActiveControls();
+    this.input.reset();
+    this.hud.showPaused(this.#session.pausedFromState);
+    return true;
+  }
 
   #resize = () => {
     const width = Math.max(1, this.#window.innerWidth);
@@ -1832,8 +1929,14 @@ export class Game {
     this.renderer.setPixelRatio(
       Math.min(
         this.#window.devicePixelRatio,
-        GAME_CONFIG.renderer.maximumPixelRatio
-      ) * GAME_CONFIG.renderer.renderResolutionScale
+        this.#isMobile
+          ? GAME_CONFIG.renderer.mobileMaximumPixelRatio
+          : GAME_CONFIG.renderer.maximumPixelRatio
+      ) * (
+        this.#isMobile
+          ? GAME_CONFIG.renderer.mobileRenderResolutionScale
+          : GAME_CONFIG.renderer.renderResolutionScale
+      )
     );
     this.renderer.setSize(width, height, false);
   };
