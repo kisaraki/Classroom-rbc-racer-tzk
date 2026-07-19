@@ -18,16 +18,21 @@
 | Version | 1.1（20260715） |
 | 總案版本 | 3.6 |
 | 技術決策附錄 | 1.7 |
+| 最近驗證日期 | 2026-07-19 |
 | 自動測試 | 210 passed、0 failed |
 | 靜態稽核 | 9 passed、0 failed |
 | 前一功能基線 | `e22cd963ed5bd12cca877200dd2f2238cff169fc` |
 | STABLE 1.1 實作基線 | `363f4c9124448a013d4d7c12e3f3bf2eddc7444e` |
+| STABLE 1.1 文件基線 | `74e0a439658f385239c87fae24dc6e1cacd95c32` |
+| 行動橫式維護基線 | `ae383f8be4f45a9cac389837c4fae4795a3718fc` |
+| 目前 main 基線 | `8afc81a5440b11df875343c6a7744b8d74a370b7` |
 | 正式分支 | `main` |
 | 部署方式 | GitHub Actions → GitHub Pages |
+| 最近 Pages 部署 | Actions run `29672011743`，success |
 | Three.js | 官方 r184，置於 `vendor/` |
 | 執行架構 | HTML5、CSS3、Vanilla JavaScript ES Modules |
 
-本 README、總案、技術決策、重建手冊、測試與版本報告共同構成不可退縮基線。後續異動必須保留上表實作提交，作為可回溯、可比對與可重建的固定參考點。
+本 README、總案、技術決策、重建手冊、測試與版本報告共同構成不可退縮基線。後續異動必須保留上表實作提交與目前 main 基線，作為可回溯、可比對與可重建的固定參考點。
 
 ## 不可退縮契約
 
@@ -181,6 +186,7 @@ STABLE audit: 9 passed, 0 failed.
 | `codex-devp-cmd.md` | RESTORE／MAINTAIN／REBUILD 空機操作手冊 |
 | `CIRCULATION_TERMINOLOGY.md` | 台灣教材術語與內部 ID 對照 |
 | `reports/stable-1.1-release-report.md` | Version 1.1 實作、驗證與發布結果 |
+| `reports/2026-07-19-mobile-landscape-support-report.md` | 手機橫式支援、觸控、音量鍵備援與 PR #2 維護報告 |
 | `tests/stable-manual-test-checklist.md` | 自動與真人驗收矩陣 |
 
 已存在完整倉庫時，預設使用 `RESTORE` 或 `MAINTAIN`。只有原始碼確實遺失、損壞無法修復，或使用者明確要求從零重建時，才在新的空目錄依現行總案與測試契約執行 `REBUILD`。Phase 00–10 報告只保存開發史；STABLE 後採版本維護，不再新增編號階段。
@@ -200,6 +206,8 @@ STABLE audit: 9 passed, 0 failed.
 ## GitHub Pages
 
 `.github/workflows/deploy-pages.yml` 只在推送 `main` 或手動 dispatch 時執行。Build job 必須先通過 `npm run test:stable`，才可設定 Pages、上傳整個靜態站台並部署。
+
+最近一次 main 部署由 PR #2 合併提交 `8afc81a5440b11df875343c6a7744b8d74a370b7` 觸發，GitHub Actions run `29672011743` 結果為 success。
 
 正式驗證 URL：
 
