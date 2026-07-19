@@ -1,8 +1,8 @@
 # Project Aorta：大動脈計畫室 技術決策附錄
 
-**附錄版本：** 1.6
+**附錄版本：** 1.7
 
-**對應總案版本：** 3.5
+**對應總案版本：** 3.6
 
 **前一功能基線：** `e22cd963ed5bd12cca877200dd2f2238cff169fc`
 
@@ -10,7 +10,7 @@
 
 **產品狀態：** STABLE／Version 1.1（20260715）
 
-**決策日期：** 2026-07-15
+**決策日期：** 2026-07-19
 
 **適用文件：** `classroom-rbc-racer-tzk.md`
 
@@ -22,7 +22,7 @@
 
 本附錄將總案中的玩法需求轉換為可直接實作與測試的技術契約。
 
-若本附錄與舊版總案衝突，以 3.5 版總案及本附錄為準。循環系統繁體中文術語以 `CIRCULATION_TERMINOLOGY.md` 指定的台灣教材為準。醫學資料只用於校準循環方向、相對路徑與教育表述；遊戲時間、世界單位、BP、傷害和生成機率仍是遊戲化數值，不代表真實生理量測。
+若本附錄與舊版總案衝突，以 3.6 版總案及本附錄為準。循環系統繁體中文術語以 `CIRCULATION_TERMINOLOGY.md` 指定的台灣教材為準。醫學資料只用於校準循環方向、相對路徑與教育表述；遊戲時間、世界單位、BP、傷害和生成機率仍是遊戲化數值，不代表真實生理量測。
 
 ---
 
@@ -55,6 +55,7 @@
 | TD-023 | 開始按鈕立即顯示 Pointer Lock 等待狀態；靜默失敗依集中期限轉為可重試錯誤，`file://` 則提供靜態伺服器指引 |
 | TD-024 | RBC 截面採十字線至機體下緣的垂直膠囊；增益／減益以完整本體與標示牌聯集判定碰撞 |
 | TD-025 | 正式名稱、副標、STABLE、Version 1.1 與發布日期集中於 `GAME_CONFIG.app`，現行 gate 統一命名為 `test:stable` |
+| TD-026 | 手機與平板改為橫式觸控模式：固定視角、四向機身、O／C、暫停、音量鍵 BP 映射與畫面 BP 備援；直式方向閘門取代舊拒絕流程 |
 
 ## 2.1 Three.js 版本鎖定
 
@@ -607,3 +608,13 @@ gasExchangeAttempts = 0;
 - `index.html` 保留同值的無模組 fallback，ES Module 啟動後必須由 `GAME_CONFIG.app` 重設品牌節點與 `data-release-*` 診斷屬性。
 - 快取識別統一為 `stable-v1.1-20260715-r2`；npm、測試、CI 與文件的正式 gate 統一為 `npm run test:stable`。
 - Phase 00–10 僅為歷史報告；STABLE 後續變更採 SemVer 與版本報告，不建立新的編號階段。
+
+## 17.10 手機橫式與輸入相容性
+
+- `DeviceSupport` 仍以 Client Hint、User-Agent 與 iPadOS 桌面 UA fallback 判斷裝置，但所有裝置均可初始化；結果只選擇 `DESKTOP_POINTER` 或 `MOBILE_TOUCH` 輸入模式，不得再顯示手機拒絕畫面。
+- 手機只允許橫式操作。`MobileControls` 以 `matchMedia("(orientation: landscape)")` 判定；直式時全畫面方向閘門覆蓋所有控制。遊玩途中轉成直式時進入 `PAUSED`，世界模擬停止，但任務、QTE、狀態、冷卻與過場期限仍依絕對時間繼續。
+- 手機開始按鈕必須在使用者手勢內嘗試 `requestFullscreen()`，再嘗試 `screen.orientation.lock("landscape")`。兩項 API 都是 best effort；任一缺少或拒絕時不得中止遊戲，而由方向閘門維持橫式要求。Screen Orientation 規格允許實作者限制鎖定條件，且目前規格把 fullscreen 列為前置條件；因此不能把成功鎖定當成跨瀏覽器保證：[W3C Screen Orientation](https://www.w3.org/TR/screen-orientation/)。
+- WebKit 自 Safari 16.4 起提供 Screen Orientation 的方向讀取與 change 事件，但當時 `lock()`／`unlock()` 仍列為實驗功能；一般元素 Fullscreen 主要明列 macOS 與 iPadOS。故 iPhone／iPadOS 必須能在沒有 lock 或 Fullscreen 的情況下只靠 CSS／JS 方向閘門運作：[WebKit Safari 16.4](https://webkit.org/blog/13966/webkit-features-in-safari-16-4/)。
+- 手機固定 `yaw = 0`、`pitch = 0`，不 attach `CameraController` 或 `PointerLockController`。觸控螢幕只透過 Pointer Events 控制局部截面機身、O／C 與暫停，並以 pointer capture、`pointercancel`、`lostpointercapture` 和 `touch-action: none` 防止手指滑出後卡鍵；依規格，viewport 直接操作必須由 `touch-action` 控制，不能只依賴取消 pointer event：[W3C Pointer Events](https://www.w3.org/TR/pointerevents/)。
+- `AudioVolumeUp`／`AudioVolumeDown` 若以 `KeyboardEvent.code` 送達，分別映射到 `KeyZ`／`KeyX`。UI Events 規格列出這兩個 code，但標示為非必要值；加上手機作業系統通常保留實體音量鍵，因此不得把硬體鍵當成唯一 BP 路徑。畫面上的 `BP ＋／−` 必須永遠存在且使用同一 `InputController` 狀態：[W3C UI Events KeyboardEvent code Values](https://www.w3.org/TR/uievents-code/)。
+- Android 與 iOS 都使用 Pointer Events 主路徑；不新增 Touch Events 分叉。渲染器在手機套用集中設定的較低 pixel ratio 與 resolution scale，以降低高 DPI 裝置的 fill-rate 負擔，不改變世界座標、碰撞、路線或遊戲平衡。

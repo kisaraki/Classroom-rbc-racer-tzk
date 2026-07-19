@@ -6,13 +6,13 @@
 
 | 項目 | 內容 |
 | --- | --- |
-| 文件版本 | 3.5 |
+| 文件版本 | 3.6 |
 | 專案名稱 | Project Aorta：大動脈計畫室 |
 | 專案副標 | RBC RACER |
 | 產品狀態 | STABLE |
 | 產品版本 | 1.1（20260715） |
 | 文件狀態 | 正式發布、重建與維護基準 |
-| 執行環境 | 桌面版現代瀏覽器 |
+| 執行環境 | 桌面版現代瀏覽器、Android／iOS 橫式瀏覽器 |
 | 部署環境 | GitHub Pages 或其他靜態網頁空間 |
 | 主要技術 | HTML5、CSS3、Vanilla JavaScript ES Modules、Three.js |
 | 專案類型 | 純前端、無後端、無資料庫 |
@@ -24,7 +24,7 @@
 | 重建操作手冊 | `codex-devp-cmd.md` |
 | 版本報告範本 | `RELEASE_REPORT_TEMPLATE.md` |
 
-3.5 版總案、循環術語基準、技術決策附錄、重建操作手冊、可執行測試與版本報告共同構成實作依據。本文件所有相對路徑均以 `rbc-racer/` Git 倉庫根目錄為準，不以文件所在目錄為準。Git 倉庫內同名文件是可交付正本；工作區上一層的同名文件是同步鏡像。
+3.6 版總案、循環術語基準、技術決策附錄、重建操作手冊、可執行測試與版本報告共同構成實作依據。本文件所有相對路徑均以 `rbc-racer/` Git 倉庫根目錄為準，不以文件所在目錄為準。Git 倉庫內同名文件是可交付正本；工作區上一層的同名文件是同步鏡像。
 
 ---
 
@@ -90,7 +90,23 @@
 
 STABLE 1.1 包含組織／肺氣體交換期間的小地圖鎖點、一般減益加倍、血球破裂、CO 中毒、Time Out 肝臟工廠結局、程序化水蒸氣模糊、啟動可靠性、可見碰撞輪廓與正式產品識別。Phase 10 仍是最近一次完整三瀏覽器與效能歷史證據，不得把 STABLE 1.1 的自動測試冒充為未執行的人工或效能驗收。STABLE 後採版本維護，不再新增編號階段。
 
-## 0.5 不可漂移的重建原則
+## 0.5 STABLE 1.1 手機支援維護基線
+
+| 項目 | 基準 |
+| --- | --- |
+| 裝置模式 | `DESKTOP_POINTER`／`MOBILE_TOUCH` |
+| 手機方向 | 僅橫式；直式全畫面閘門 |
+| 手機視角 | 固定前方，不提供觸控環視 |
+| 手機機身 | Pointer Events 四向觸控，可多點斜向 |
+| 手機 QTE | 畫面 O／C 快速連點 |
+| 手機 BP | 音量鍵事件映射；畫面 BP ＋／−永久備援 |
+| 手機暫停 | 畫面 PAUSE、分頁隱藏或轉直式 |
+| 單元／整合測試 | 210 passed、0 failed |
+| 靜態稽核 | 9 passed、0 failed |
+
+手機方向鎖定與全螢幕均採能力偵測與失敗降級，不得假設所有 Android 或 iOS 瀏覽器都會授權。硬體音量鍵也不得作為唯一 BP 輸入，因 UI Events 只定義可用 code，並未要求使用者代理一定送出。
+
+## 0.6 不可漂移的重建原則
 
 - 不執行 `npm install`；本案沒有 runtime 或 test package dependency。
 - 不加入 bundler、framework、TypeScript 編譯、後端、資料庫或 CDN。
@@ -162,6 +178,12 @@ STABLE 1.1 包含組織／肺氣體交換期間的小地圖鎖點、一般減益
 - Canvas API
 
 - Pointer Lock API
+
+- Pointer Events
+
+- Screen Orientation API（能力偵測與降級）
+
+- Fullscreen API（手機橫式鎖定的可選前置）
 
 - requestAnimationFrame
 
@@ -413,6 +435,10 @@ rbc-racer/
 
 - macOS
 
+- Android
+
+- iOS／iPadOS
+
 ## 5.2 主要支援瀏覽器
 
 - Google Chrome
@@ -421,9 +447,9 @@ rbc-racer/
 
 - Mozilla Firefox
 
-Safari 為次要支援環境，未列入 Phase 10 正式驗收矩陣。
+手機主要目標為 Android Chrome 與 iOS／iPadOS Safari；桌面 Safari 仍為次要支援環境，未列入 Phase 10 正式驗收矩陣。
 
-手機與平板不是「未最佳化」而是明確不支援。啟動時必須在載入 Three.js 前以 Client Hint 與 User-Agent fallback 偵測並顯示拒絕畫面，不得暴露遊戲控制。
+手機與平板改為明確支援的 `MOBILE_TOUCH` 模式。啟動時仍以 Client Hint、User-Agent 與 iPadOS 桌面 UA fallback 偵測，但偵測結果只選擇輸入與介面，不得阻止 Three.js 初始化。手機必須保持橫式；直式時全畫面方向閘門覆蓋所有控制，旋轉後才可開始或恢復。
 
 ---
 
@@ -435,7 +461,7 @@ Safari 為次要支援環境，未列入 Phase 10 正式驗收矩陣。
 1920 × 1080
 ```
 
-最低支援解析度：
+桌面最低支援解析度：
 
 ```text
 1280 × 720
@@ -447,10 +473,18 @@ Renderer 必須設定：
 renderer.setPixelRatio(
   Math.min(
     window.devicePixelRatio,
-    GAME_CONFIG.renderer.maximumPixelRatio
+    isMobile
+      ? GAME_CONFIG.renderer.mobileMaximumPixelRatio
+      : GAME_CONFIG.renderer.maximumPixelRatio
+  ) * (
+    isMobile
+      ? GAME_CONFIG.renderer.mobileRenderResolutionScale
+      : GAME_CONFIG.renderer.renderResolutionScale
   )
 );
 ```
+
+手機以實際橫式 visual viewport 為畫布尺寸，HUD 使用 `dvh`、`dvw` 與 safe-area inset；不得套用桌面 1280 × 720 的最小寬度而造成橫向捲動。
 
 ---
 
@@ -466,13 +500,13 @@ renderer.setPixelRatio(
 
 4. 開始遊戲按鈕
 
-5. Pointer Lock 請求
+5. 依裝置啟用控制：桌面要求 Pointer Lock；手機要求橫式並嘗試 Fullscreen／Screen Orientation lock
 
 6. 第一關介紹
 
 7. 正式進入遊戲
 
-開始按鈕文字：
+桌面開始按鈕文字：
 
 ```text
 開始遊戲並鎖定滑鼠視角
@@ -484,6 +518,14 @@ Pointer Lock 必須由使用者點擊啟動。
 
 點擊後必須立即顯示等待回饋；若瀏覽器未送出成功或失敗事件，應依
 `GAME_CONFIG.pointerLock.requestTimeoutMs` 的絕對期限顯示可重試錯誤，不得讓按鈕看似無反應。
+
+手機開始按鈕文字：
+
+```text
+開始觸控遊戲
+```
+
+手機不得要求 Pointer Lock，也不得 attach 滑鼠視角。開始點擊必須在同一使用者手勢內先嘗試 `requestFullscreen()`，再嘗試 `screen.orientation.lock("landscape")`；任何 API 缺少或拒絕都只記錄診斷並降級，不得讓按鈕失效。直式時不開始任務計時，遊玩中轉直式則進入 PAUSED，且所有絕對期限繼續。
 
 專案不得以 `file://` 直接執行。入口需在 ES Modules 無法載入前顯示本機伺服器提示，Windows 可使用 `start-local.cmd` 一鍵啟動。
 
@@ -669,7 +711,7 @@ maxOffset =
 
 # 第九章　操作系統
 
-## 9.1 按鍵配置
+## 9.1 桌面按鍵配置
 
 | 按鍵  | 功能                 |
 | --- | ------------------ |
@@ -683,7 +725,7 @@ maxOffset =
 | C   | QTE：二氧化碳處理         |
 | Esc | 暫停或解除 Pointer Lock |
 
-不得使用：
+桌面不得使用：
 
 - WASD
 
@@ -699,7 +741,25 @@ maxOffset =
 
 ---
 
-## 9.2 鍵盤事件
+## 9.2 手機觸控配置
+
+手機版不提供視角移動，所有觸控都只操作機身、BP、QTE 或暫停：
+
+| 觸控／硬體輸入 | 功能 |
+| --- | --- |
+| 左下四向鍵 | 局部血管截面上下左右移動；允許多點斜向 |
+| O／C 圓鍵 | 氣體交換快速連打 |
+| PAUSE | 暫停世界模擬 |
+| 音量提高／降低 | 瀏覽器送出對應 KeyboardEvent 時，提高／降低 BP |
+| 畫面 BP ＋／− | 音量鍵未送達時的永久備援 |
+
+觸控必須使用 Pointer Events，不建立 Android／iOS 分叉。按住型控制使用 `pointerdown`、`pointerup`、`pointercancel`、`lostpointercapture` 與 pointer capture；QTE 在每次 `pointerdown` 只記錄一次。所有控制面套用 `touch-action: none`，避免捲動、縮放或長按選取干擾。
+
+`DeviceSupport` 必須辨識 iOS／iPadOS 與 Android，供診斷及相容性測試使用，但平台判定不得改寫玩法。直式方向閘門是強制條件；Screen Orientation lock 與 Fullscreen 只是 best effort。
+
+---
+
+## 9.3 鍵盤與音量鍵事件
 
 使用：
 
@@ -725,11 +785,20 @@ QTE 必須排除自動重複：
 if (event.repeat) return;
 ```
 
+手機模式另接受瀏覽器可能提供的：
+
+```javascript
+event.code === "AudioVolumeUp";
+event.code === "AudioVolumeDown";
+```
+
+分別映射為 `KeyZ` 與 `KeyX`。UI Events 並未要求瀏覽器一定提供這些硬體鍵事件，因此畫面 BP 控制不得移除。
+
 ---
 
-## 9.3 方向鍵座標
+## 9.4 機身座標
 
-方向鍵永遠依照血管截面的局部上下左右移動。
+桌面方向鍵與手機觸控十字永遠依照血管截面的局部上下左右移動。
 
 攝影機旋轉不得改變：
 
@@ -761,6 +830,8 @@ if (event.repeat) return;
 
 使用 Pointer Lock API。
 
+此節只適用桌面 `DESKTOP_POINTER`。手機 `MOBILE_TOUCH` 不 attach `CameraController` 或 `PointerLockController`，`yaw` 與 `pitch` 固定為 0，觸控滑動不得改變視覺方向。
+
 ---
 
 ## 10.2 垂直角度限制
@@ -779,7 +850,7 @@ pitch = clamp(
 
 ## 10.3 暫停
 
-使用者按下 Esc 或 Pointer Lock 中斷時：
+桌面按下 Esc／Pointer Lock 中斷，或手機按下 PAUSE／轉為直式／分頁隱藏時：
 
 1. 遊戲進入 PAUSED
 
@@ -793,7 +864,7 @@ pitch = clamp(
 
 6. 顯示「點擊恢復遊戲」
 
-7. 點擊後重新鎖定滑鼠
+7. 桌面點擊後重新鎖定滑鼠；手機回到橫式後點擊恢復觸控
 
 進入 PAUSED 時必須保存：
 
@@ -2420,13 +2491,14 @@ currentLevel = 1;
 | GameStateMachine       | 主狀態切換                       |
 | LevelManager           | 關卡、區段與過關                    |
 | RunProgression         | 四關進度、重試、重新開始與結局路由             |
-| DeviceSupport          | 桌面支援判定與手機／平板拒絕                 |
+| DeviceSupport          | 桌面／手機模式與 iOS／Android 裝置描述          |
 | VesselTrack            | 曲線、血管與局部座標                  |
 | TrackSection           | 血管區段資料                      |
 | PlayerRBC              | 玩家位置、模型與 HP                 |
 | HoodController         | 引擎蓋與瘧原蟲遮蔽動畫                 |
-| InputController        | 鍵盤、QTE 與輸入佇列                |
-| CameraController       | Pointer Lock 與視角            |
+| InputController        | 鍵盤、音量鍵映射、QTE 與共用輸入佇列         |
+| MobileControls         | 橫式方向閘門、四向觸控、BP、O／C 與暫停       |
+| CameraController       | 桌面 Pointer Lock 滑鼠視角          |
 | PointerLockController  | Pointer Lock 要求、釋放、拒絕與暫停整合       |
 | BloodPressureSystem    | BP、速度與高低血壓                  |
 | EntityManager          | 物件生成、更新與移除                  |
@@ -2973,7 +3045,7 @@ Phase 10 實測基線：
 
 ## 31.8 自動測試
 
-不依賴外部測試框架。Node 入口為 `tests/run-tests.mjs`，瀏覽器入口為 `tests/unit-test.html`；STABLE 1.1 基線必須維持 204 項測試及 9 項靜態稽核全部通過。至少涵蓋：
+不依賴外部測試框架。Node 入口為 `tests/run-tests.mjs`，瀏覽器入口為 `tests/unit-test.html`；STABLE 1.1 現行基線必須維持 210 項測試及 9 項靜態稽核全部通過。至少涵蓋：
 
 - 距離換算
 
@@ -2988,6 +3060,8 @@ Phase 10 實測基線：
 - 關卡轉換
 
 - 固定 seed 生成結果
+
+- 桌面／手機裝置描述、橫式方向閘門、Pointer Events 多點控制、O／C、暫停與音量鍵 BP 映射
 
 ## 31.9 架構與階段交付
 
@@ -3340,8 +3414,22 @@ Phase 10 實測基線：
 - 引擎蓋加大；任何瘧原蟲頭罩效果與復原期間均以程序化水蒸氣模糊全畫面。
 - 截止前未抵達時進入 Time Out，乾扁紅血球送往肝臟工廠；正好在 deadline 抵達不得誤判。
 - 移除玩家畫面上的編號階段標章、內部 state、FPS、Pointer Lock、checkpoint seed 與動畫內部識別。
-- `npm run test:stable` 必須通過 204 tests 與 9 audits。
+- `npm run test:stable` 必須通過現行 210 tests 與 9 audits。
 - 發布必須由使用者明示授權；推送 `main` 前需重跑完整 gate，並追蹤 GitHub Pages workflow 至成功。
+
+---
+
+## STABLE 維護：手機橫式支援
+
+完成：
+
+- 移除載入 Three.js 前拒絕手機的舊流程；`DeviceSupport` 改為選擇桌面 Pointer 或手機 Touch 模式。
+- 直式顯示全畫面方向閘門，橫式才可開始；遊玩途中轉直式會暫停世界而不停止絕對期限。
+- 手機固定視角，不要求 Pointer Lock；四向、O／C、BP 與暫停均使用 Pointer Events。
+- `AudioVolumeUp`／`AudioVolumeDown` 映射 BP；因平台可能不送出硬體鍵事件，畫面 BP ＋／−永久保留。
+- Android 嘗試 Fullscreen 後鎖定 landscape；iOS 或 API 拒絕時降級為方向閘門，不得阻止啟動。
+- 手機 renderer 使用集中設定的較低 pixel ratio／resolution scale，HUD 遵守橫式與 safe area。
+- 現行 gate 為 210 tests 與 9 audits；另以 Android Chrome 與 iOS Safari 實機清單驗證。
 
 ---
 
@@ -3374,10 +3462,10 @@ python3 -m http.server 8000
 預期結果：
 
 - `git status --short` 無輸出。
-- `npm test` 為 204 passed、0 failed。
+- `npm test` 為 210 passed、0 failed。
 - `npm run test:audit` 為 9 passed、0 failed。
 - `http://127.0.0.1:8000/` 顯示遊戲。
-- `http://127.0.0.1:8000/tests/unit-test.html` 顯示 204 項通過。
+- `http://127.0.0.1:8000/tests/unit-test.html` 顯示 210 項通過。
 
 本案沒有 npm dependencies，不應先執行 `npm install`，也不應產生 `node_modules/` 或 `package-lock.json`。
 
@@ -3445,15 +3533,16 @@ classroom-rbc-racer-tzk/
 只有同時符合下列條件，才算成功還原或重建：
 
 1. 可從乾淨工作樹啟動，無需安裝專案套件。
-2. 204 項測試與 9 項稽核全部通過。
+2. 210 項測試與 9 項稽核全部通過。
 3. Chrome、Edge、Firefox 桌面版可進入遊戲。
 4. 1280 × 720 與 1920 × 1080 無 HUD 溢位。
-5. 手機與平板在 Three.js 載入前被拒絕。
+5. Android Chrome 與 iOS／iPadOS Safari 橫式可啟動；直式方向閘門、觸控、O／C、BP 備援與暫停正確。
 6. 四關、氣體交換、狀態效果、過場、重試與結局均符合本總案。
 7. Three.js r184 三個 vendor 檔案雜湊一致。
 8. GitHub Pages 專案子路徑與線上測試頁均正常。
 9. `git status --short` 只包含明確授權的變更。
 10. 簡報與開發截圖不在部署根目錄內。
 11. 正式名稱、副標、STABLE 狀態與 Version 1.1（20260715）在設定、介面與文件中一致。
+12. 實機音量鍵是否送達已分平台記錄；未送達時畫面 BP ＋／−可完整替代。
 
 ---

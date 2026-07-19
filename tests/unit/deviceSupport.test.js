@@ -2,12 +2,9 @@ import { GAME_CONFIG } from "../../js/config.js?v=stable-v1.1-20260715-r2";
 import {
   getDeviceSupport,
   isMobileDevice,
-  showUnsupportedMobileDevice
+  isMobilePreviewRequested
 } from "../../js/core/DeviceSupport.js?v=stable-v1.1-20260715-r2";
-import {
-  assertEqual,
-  assertThrows
-} from "./TestHarness.js";
+import { assertEqual } from "./TestHarness.js";
 
 const DESKTOP_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
@@ -22,40 +19,6 @@ const ANDROID_TABLET_USER_AGENT =
   "Mozilla/5.0 (Linux; Android 16; Tablet) " +
   "AppleWebKit/537.36 Chrome/150.0 Safari/537.36";
 
-function createElement() {
-  return {
-    dataset: {},
-    hidden: false,
-    disabled: false,
-    textContent: ""
-  };
-}
-
-function createUnsupportedFixture() {
-  const elements = new Map(
-    [
-      "#game-root",
-      "#game-canvas",
-      "#game-hud",
-      "#game-overlay",
-      ".overlay-index",
-      "#overlay-kicker",
-      "#overlay-title",
-      "#overlay-copy",
-      ".overlay-controls",
-      "#overlay-action",
-      ".overlay-note"
-    ].map((selector) => [selector, createElement()])
-  );
-
-  return {
-    elements,
-    root: {
-      querySelector: (selector) => elements.get(selector) ?? null
-    }
-  };
-}
-
 export function registerDeviceSupportTests(harness) {
   harness.test("desktop user agents remain supported at any viewport", () => {
     const support = getDeviceSupport({
@@ -65,20 +28,33 @@ export function registerDeviceSupportTests(harness) {
 
     assertEqual(support.supported, true);
     assertEqual(support.isMobile, false);
+    assertEqual(
+      support.inputMode,
+      GAME_CONFIG.deviceSupport.desktopInputMode
+    );
+    assertEqual(
+      support.platform,
+      GAME_CONFIG.deviceSupport.otherPlatform
+    );
     assertEqual(support.reason, null);
   });
 
-  harness.test("mobile Client Hint blocks startup before UA fallback", () => {
+  harness.test("mobile Client Hint selects supported touch input", () => {
     const support = getDeviceSupport({
       userAgent: DESKTOP_USER_AGENT,
       userAgentData: { mobile: true }
     });
 
-    assertEqual(support.supported, false);
-    assertEqual(support.reason, GAME_CONFIG.deviceSupport.mobileReason);
+    assertEqual(support.supported, true);
+    assertEqual(support.isMobile, true);
+    assertEqual(
+      support.inputMode,
+      GAME_CONFIG.deviceSupport.mobileInputMode
+    );
+    assertEqual(support.reason, null);
   });
 
-  harness.test("iPhone and Android phone user agents are rejected", () => {
+  harness.test("iPhone and Android phone user agents select mobile mode", () => {
     assertEqual(
       isMobileDevice({ userAgent: IPHONE_USER_AGENT }),
       true
@@ -89,7 +65,7 @@ export function registerDeviceSupportTests(harness) {
     );
   });
 
-  harness.test("Android tablets and desktop-UA iPads are rejected", () => {
+  harness.test("Android tablets and desktop-UA iPads select mobile mode", () => {
     assertEqual(
       isMobileDevice({ userAgent: ANDROID_TABLET_USER_AGENT }),
       true
@@ -104,42 +80,67 @@ export function registerDeviceSupportTests(harness) {
     );
   });
 
-  harness.test("mobile refusal screen never exposes game controls", () => {
-    const fixture = createUnsupportedFixture();
-    const result = showUnsupportedMobileDevice(fixture.root);
-    const gameRoot = fixture.elements.get("#game-root");
+  harness.test("mobile profiles distinguish iOS and Android compatibility", () => {
+    const ios = getDeviceSupport({
+      userAgent: IPHONE_USER_AGENT,
+      platform: "iPhone",
+      maxTouchPoints: 5
+    });
+    const ipad = getDeviceSupport({
+      userAgent: DESKTOP_USER_AGENT,
+      platform: "MacIntel",
+      maxTouchPoints: 5
+    });
+    const android = getDeviceSupport({
+      userAgent: ANDROID_PHONE_USER_AGENT
+    });
 
-    assertEqual(result.gameInitialized, false);
     assertEqual(
-      gameRoot.dataset.gameState,
-      GAME_CONFIG.deviceSupport.blockedState
+      ios.platform,
+      GAME_CONFIG.deviceSupport.iosPlatform
     );
     assertEqual(
-      gameRoot.dataset.deviceSupport,
-      GAME_CONFIG.deviceSupport.blockedDatasetValue
-    );
-    assertEqual(gameRoot.dataset.mobileDevice, "true");
-    assertEqual(gameRoot.dataset.gameInitialized, "false");
-    assertEqual(fixture.elements.get("#game-canvas").hidden, true);
-    assertEqual(fixture.elements.get("#game-hud").hidden, true);
-    assertEqual(fixture.elements.get("#game-overlay").hidden, false);
-    assertEqual(
-      fixture.elements.get("#game-overlay").dataset.mode,
-      GAME_CONFIG.deviceSupport.overlayMode
+      ipad.platform,
+      GAME_CONFIG.deviceSupport.iosPlatform
     );
     assertEqual(
-      fixture.elements.get("#overlay-title").textContent,
-      "不支援手機"
+      android.platform,
+      GAME_CONFIG.deviceSupport.androidPlatform
     );
-    assertEqual(fixture.elements.get(".overlay-controls").hidden, true);
-    assertEqual(fixture.elements.get("#overlay-action").hidden, true);
-    assertEqual(fixture.elements.get("#overlay-action").disabled, true);
   });
 
-  harness.test("mobile refusal renderer requires the complete overlay", () => {
-    assertThrows(
-      () => showUnsupportedMobileDevice({ querySelector: () => null }),
-      Error
+  harness.test("mobile preview override is restricted to local hosts", () => {
+    assertEqual(
+      isMobilePreviewRequested({
+        hostname: "127.0.0.1",
+        search: "?input=mobile"
+      }),
+      true
+    );
+    assertEqual(
+      isMobilePreviewRequested({
+        hostname: "localhost",
+        search: "?input=mobile"
+      }),
+      true
+    );
+    assertEqual(
+      isMobilePreviewRequested({
+        hostname: "kisaraki.github.io",
+        search: "?input=mobile"
+      }),
+      false
+    );
+    assertEqual(
+      getDeviceSupport(
+        {
+          userAgent: DESKTOP_USER_AGENT,
+          userAgentData: { mobile: false }
+        },
+        GAME_CONFIG.deviceSupport,
+        { forceMobile: true }
+      ).inputMode,
+      GAME_CONFIG.deviceSupport.mobileInputMode
     );
   });
 }

@@ -2,7 +2,7 @@
 
 ## 自動門檻
 
-- [x] `npm run test:stable`：204 passed、0 failed。
+- [x] `npm run test:stable`：210 passed、0 failed。
 - [x] STABLE audit：9 passed、0 failed。
 - [x] `git diff --check` 無錯誤。
 - [x] 所有 JavaScript／MJS 通過 `node --check`。
@@ -64,9 +64,19 @@
 - [ ] 前景 Chrome 1280 x 720 與 1920 x 1080。
 - [ ] Edge 1280 x 720 與 1920 x 1080。
 - [ ] Firefox 1280 x 720 與 1920 x 1080。
-- [ ] 手機／平板仍在載入 Three.js 前拒絕執行。
+
+## 手機橫式
+
+- [x] 單元測試確認 iPhone、iPadOS 桌面 UA、Android 手機／平板都選擇 `MOBILE_TOUCH`，不再拒絕初始化。
+- [x] 單元測試確認直式方向閘門、轉橫式、控制釋放、四向多點、O／C、PAUSE、音量鍵映射與方向鎖定降級。
+- [ ] 模擬手機直式顯示「請將手機轉為橫式」，Three.js 可初始化但開始控制不可操作。
+- [ ] 模擬手機橫式顯示觸控 UI，沒有滑鼠 VIEW 儀表或圓形視角光標。
+- [ ] Android Chrome 實機完成 `tests/stable-mobile-manual-test-checklist.md`。
+- [ ] iOS／iPadOS Safari 實機完成 `tests/stable-mobile-manual-test-checklist.md`。
+- [ ] 實機音量鍵送達與否已分平台記錄；無論結果，畫面 BP ＋／−可完整替代。
 
 ## 發布邊界
 
 - [x] STABLE 1.1 實作與發布紀錄已推送 GitHub。
 - [x] `main` 的 GitHub Pages workflow 通過並完成部署。
+- [ ] 本次手機維護變更尚未獲使用者指示 push 或重新部署。

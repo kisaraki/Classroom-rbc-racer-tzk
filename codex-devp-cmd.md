@@ -2,9 +2,9 @@
 
 | 項目 | 內容 |
 | --- | --- |
-| 文件版本 | 3.5 |
-| 對應總案版本 | 3.5 |
-| 技術決策附錄版本 | 1.6 |
+| 文件版本 | 3.6 |
+| 對應總案版本 | 3.6 |
+| 技術決策附錄版本 | 1.7 |
 | 正式名稱 | Project Aorta：大動脈計畫室 |
 | 副標 | RBC RACER |
 | 專案狀態 | STABLE |
@@ -79,6 +79,8 @@
     不得放入 rbc-racer 部署根目錄。
 11. 循環系統繁體中文術語遵守 CIRCULATION_TERMINOLOGY.md；玩家可見文字使用
     充氧血、減氧血與微血管，且不得把四個關卡誤稱為四種循環。
+12. 手機與平板使用 MOBILE_TOUCH 橫式模式，不得恢復舊手機拒絕流程；觸控、O／C、
+    PAUSE 與 BP 備援必須保留，音量鍵只作為瀏覽器有送出事件時的額外路徑。
 
 每次工作完成前必須執行適用的完整測試、git diff --check、檢查 git status，
 並回報實際輸出、未執行項目與殘餘風險。不要只提出計畫；可執行時必須完成實作與驗證。
@@ -97,6 +99,7 @@
 - Python 3 或其他純靜態 HTTP server
 - 桌面版 Chrome、Edge、Firefox
 - 鍵盤、滑鼠與 WebGL
+- Android Chrome 與 iOS／iPadOS Safari 實機，用於手機發布驗收
 
 STABLE 1.1 必須以目前環境實際執行 `npm run test:stable`；不得為 Node.js 版本差異加入相依套件或編譯步驟。Phase 10 的 Node.js `v24.15.0` 紀錄僅是歷史環境證據。
 
@@ -144,7 +147,7 @@ git merge-base --is-ancestor 0cdaa69b27c58816144ef58face1d72e99f9a2fd HEAD
 預期：
 
 - `git status --short` 在乾淨 Clone 無輸出。
-- `npm test`：204 passed、0 failed。
+- `npm test`：210 passed、0 failed。
 - `npm run test:audit`：9 passed、0 failed。
 - 不出現 `node_modules/` 或 `package-lock.json`。
 
@@ -223,7 +226,7 @@ http://127.0.0.1:8000/tests/phase-09-cutscene-preview.html
 11. 未經使用者要求不得 push；不得降低 STABLE gate 或另造編號階段。
 ```
 
-歷史里程碑的最低測試數是回歸參考，不是為了湊數。最終必須達到現行 204 tests 與 9 audits，並符合正式產品識別。
+歷史里程碑的最低測試數是回歸參考，不是為了湊數。最終必須達到現行 210 tests 與 9 audits，並符合正式產品識別及手機橫式契約。
 
 ---
 
@@ -235,7 +238,7 @@ http://127.0.0.1:8000/tests/phase-09-cutscene-preview.html
 | 01 | Scene、Renderer、Camera、RBC 駕駛、輸入、Pointer Lock、基本 HUD | 可操作桌面原型 | 51 |
 | 02 | LevelManager、第一關、TubeGeometry、局部框架與距離進度 | 第一關無障礙可駕駛 | 60 |
 | 03 | 完整 HUD、循環小地圖、四個心臟腔室靠近與心臟輪廓 | 兩解析度可讀 | 78 |
-| 04 | 七類實體、InstancedMesh、生成、掃掠碰撞、縮小 RBC、手機拒絕 | 第一關物件閉環 | 109 |
+| 04 | 七類實體、InstancedMesh、生成、掃掠碰撞、縮小 RBC、歷史手機拒絕 | 第一關物件閉環；手機拒絕已由現行維護契約取代 | 109 |
 | 05 | 高／低 BP、Wound、停滯、危害時鐘、血管環境反光 | BP 機制可驗證 | 125 |
 | 06 | Gas Token、O／C QTE、失敗可通過、工具列、第一關垂直切片 | 標題到第一關完成 | 145 |
 | 07 | 酒精、瘧原蟲、輸入佇列、遮蔽與跨暫停絕對期限 | 狀態可重疊且可清除 | 158 |
@@ -243,6 +246,7 @@ http://127.0.0.1:8000/tests/phase-09-cutscene-preview.html
 | 09 | 轉場、回收、墜落、中風、勝利、重試／重開／主選單 | 完整流程與結局 | 181 |
 | 10 | 最終氣體交換規則、色彩切換、回歸、效能、Pages | 190 tests + 8 audits | 190 + 8 |
 | STABLE 1.1 | 小地圖交換鎖點、2 倍減益、血球破裂、CO 中毒、Time Out、蒸氣、啟動、可見碰撞輪廓與正式產品識別 | 204 tests + 9 audits；`main` 發布前必須完整通過 | 204 + 9 |
+| STABLE mobile | 手機橫式、固定視角、Pointer Events、O／C、音量鍵 BP 映射、畫面 BP 備援、Android／iOS 降級 | 現行 210 tests + 9 audits；Android／iOS 實機另驗 | 210 + 9 |
 
 ## 6.1 Phase 00
 
@@ -281,7 +285,7 @@ http://127.0.0.1:8000/tests/phase-09-cutscene-preview.html
 - 使用固定 seed、距離式生成、物件池、InstancedMesh 與明確資源釋放。
 - 使用掃掠縱向碰撞與截面 `collisionRadius`，依優先序只結算一次。
 - 縮小 RBC 與 RBC 字樣，維持完整可讀且可迴避。
-- 啟動時在 Three.js 前拒絕手機與平板。
+- 本項「手機拒絕」只保留為歷史紀錄；乾淨重建最終必須套用第 6.13 節的手機橫式支援，不得交付拒絕版。
 
 ## 6.6 Phase 05
 
@@ -343,6 +347,18 @@ http://127.0.0.1:8000/tests/phase-09-cutscene-preview.html
 - 完成 `npm run test:stable`、`git diff --check`、語法檢查與適用的桌面瀏覽器驗收。
 - 未經使用者另行授權不得 push 或部署 GitHub Pages。
 
+## 6.13 STABLE 手機橫式支援
+
+- `DeviceSupport` 判斷桌面／手機與 iOS／Android，但 `supported` 對兩者都為 true；不得保留 `showUnsupportedMobileDevice`。
+- 手機只允許橫式。直式方向閘門蓋住所有操作；遊玩中轉直式進入 PAUSED，任務與狀態絕對期限繼續。
+- 手機不 attach `CameraController` 或 Pointer Lock，固定前方視角；觸控不可改變 yaw／pitch。
+- `MobileControls` 使用 Pointer Events 與 pointer capture，提供四向機身、O／C、BP ＋／−及 PAUSE；支援多點斜向和快速 QTE。
+- 手機模式接受 `AudioVolumeUp`／`AudioVolumeDown`，映射為 Z／X。Android／iOS 可能保留硬體音量鍵，畫面 BP 備援不可移除。
+- 使用者點擊開始時 best effort 要求 Fullscreen 與 `screen.orientation.lock("landscape")`；API 缺少或拒絕時由方向閘門降級，不顯示錯誤或阻斷。
+- CSS 使用 `dvh`／`dvw`、safe-area、`touch-action: none` 與至少可觸碰的控制尺寸；手機 renderer pixel ratio／resolution scale 必須集中在 config。
+- 自動測試至少涵蓋裝置描述、橫式判斷、直式釋放控制、多點方向、QTE、PAUSE、方向鎖定降級及音量鍵映射。
+- 發布前另依 `tests/stable-mobile-manual-test-checklist.md` 在 Android Chrome 與 iOS Safari 實機驗收。
+
 ---
 
 # 七、最終規格與測試常數
@@ -356,7 +372,7 @@ RELEASE_VERSION=1.1
 RELEASE_DATE=20260715
 THREE_RELEASE=r184
 THREE_PACKAGE_VERSION=0.184.0
-EXPECTED_TESTS=204
+EXPECTED_TESTS=210
 EXPECTED_AUDITS=9
 LEVEL_TARGET_SECONDS=300,90,180,90
 TISSUE_GAS_OPPORTUNITIES=10
@@ -421,7 +437,14 @@ git diff --stat
 | Edge | 必測 | 必測 | 必測 | 專案持續性錯誤 0 |
 | Firefox | 必測 | 必測 | 必測 | 專案持續性錯誤 0 |
 
-另測：手機拒絕、Esc 暫停、分頁切換、QTE 到期、酒精／瘧原蟲重疊、四關轉換、所有結局、重試及重新開始。
+手機另依下表實機驗收：
+
+| 平台 | 瀏覽器 | 直式閘門 | 橫式觸控／QTE | BP | Console |
+| --- | --- | --- | --- | --- | --- |
+| Android | Chrome | 必測 | 多點與快速連打必測 | 音量鍵事件與畫面備援分別記錄 | 專案持續性錯誤 0 |
+| iOS／iPadOS | Safari | 必測 | 多點與快速連打必測 | 音量鍵事件與畫面備援分別記錄 | 專案持續性錯誤 0 |
+
+另測：Esc／PAUSE、分頁切換、手機旋轉、QTE 到期、酒精／瘧原蟲重疊、四關轉換、所有結局、重試及重新開始。
 
 ---
 
@@ -466,7 +489,9 @@ https://kisaraki.github.io/Classroom-rbc-racer-tzk/tests/unit-test.html
 | Real Clock 燈動、秒數不動 | 顯示更新未讀取 GameClock elapsed | 用單元測試與實際秒數驗證，不只看狀態燈 |
 | QTE 或狀態在暫停後卡住 | 使用 simulation delta 或 interval | 改用 GameClock 絕對 deadline 與 pending 結果 |
 | 高速穿透碰撞 | 只判斷本幀端點 | 使用 previous/current distance 掃掠判定 |
-| 手機仍載入 3D | 裝置檢查太晚 | 在動態匯入 Three.js 前拒絕 |
+| 手機顯示舊拒絕畫面 | 舊 `showUnsupportedMobileDevice` 或文件契約未移除 | 改由 DeviceSupport 選 `MOBILE_TOUCH`，初始化 Three.js 並顯示橫式方向閘門 |
+| 手機開始按鈕無反應 | 手機仍要求 Pointer Lock，或 Fullscreen／orientation lock rejection 未捕捉 | 手機直接啟用 session；鎖定 API 只 best effort，失敗後仍可橫式操作 |
+| 實體音量鍵只改系統音量 | OS／瀏覽器未把硬體事件交給網頁 | 這是允許的相容性結果；確認畫面 BP ＋／−可完整操作並記錄平台 |
 | 既有 clone 測試失敗 | 未提交檔案、產物污染或版本漂移 | 先查 `git status` 與 diff；不得直接重建或重設 |
 
 ---
@@ -500,11 +525,11 @@ Commit / push / deployment status:
 
 1. 工作模式與來源證據已明確回報。
 2. 專案可由純靜態 server 啟動，不需 package install 或 build。
-3. 204 項測試與 9 項稽核全數通過。
+3. 210 項測試與 9 項稽核全數通過。
 4. Three.js r184 vendor 與 MIT license 雜湊一致。
 5. 四關共用資料驅動核心，所有遊戲數值集中在 `js/config.js`。
-6. 三瀏覽器、兩解析度與 Pointer Lock／暫停流程通過。
-7. 手機與平板在載入 3D 前拒絕。
+6. 三瀏覽器、兩桌面解析度與 Pointer Lock／暫停流程通過。
+7. Android Chrome 與 iOS／iPadOS Safari 橫式可啟動；直式閘門、觸控、O／C、PAUSE 與 BP 備援通過。
 8. 氣體交換只在體微血管／肺泡微血管發生，10／20 次機會、一次成功、全失敗可通過。
 9. RBC 紅／紅紫切換及 checkpoint 保存正確。
 10. Geometry、Material、Texture、物件池與效能上限通過。
@@ -514,6 +539,7 @@ Commit / push / deployment status:
 14. 所有未完成、未測與殘餘風險已誠實列出。
 15. 玩家可見循環術語與 Location 已通過 `CIRCULATION_TERMINOLOGY.md` 對照。
 16. 正式名稱、副標、STABLE 狀態與 Version 1.1（20260715）在設定、介面、測試與文件中一致。
-16. RBC 十字線至機體下緣，以及增益／減益本體與標示牌，均依總案碰撞輪廓成立。
+17. RBC 十字線至機體下緣，以及增益／減益本體與標示牌，均依總案碰撞輪廓成立。
+18. 音量鍵是否送達已依平台誠實記錄；未送達不得判定失敗，只要畫面 BP 備援完整可用。
 
 ---

@@ -23,8 +23,10 @@ export class HUDManager {
   #cutsceneRenderer;
   #statusElements = new Map();
   #instrumentDiagnostics = null;
+  #isMobile;
 
-  constructor(root = document) {
+  constructor(root = document, { isMobile = false } = {}) {
+    this.#isMobile = isMobile;
     this.#elements = {
       hud: requireElement(root, "#game-hud"),
       hpValue: requireElement(root, "#hp-value"),
@@ -236,8 +238,9 @@ export class HUDManager {
     this.#elements.overlayTitle.textContent = "血液循環任務啟航";
     this.#elements.overlayCopy.textContent =
       "依序完成四段體循環與肺循環，在時限內抵達並完成氣體交換。";
-    this.#elements.overlayAction.textContent =
-      "開始遊戲並鎖定滑鼠視角";
+    this.#elements.overlayAction.textContent = this.#isMobile
+      ? "開始觸控遊戲"
+      : "開始遊戲並鎖定滑鼠視角";
     this.#setActions({ primary: true });
   }
 
@@ -253,7 +256,9 @@ export class HUDManager {
       "前一關已完成，生命與分數已保留。點擊後從 " +
       level.start.locationLabel +
       " 繼續循環。";
-    this.#elements.overlayAction.textContent = "繼續並鎖定滑鼠視角";
+    this.#elements.overlayAction.textContent = this.#isMobile
+      ? "繼續觸控遊戲"
+      : "繼續並鎖定滑鼠視角";
     this.#setActions({ primary: true });
   }
 
@@ -331,7 +336,12 @@ export class HUDManager {
       (
         GAME_CONFIG.qte.durationMs /
         GAME_CONFIG.timing.millisecondsPerSecond
-      ).toFixed(1) + " 秒內分別按滿 O 與 C，不必交替。";
+      ).toFixed(1) +
+      (
+        this.#isMobile
+          ? " 秒內連點畫面 O 與 C，不必交替。"
+          : " 秒內分別按滿 O 與 C，不必交替。"
+      );
     this.#elements.qteOxygenCount.textContent =
       diagnostics.oxygenCount + " / " + diagnostics.oxygenThreshold;
     this.#elements.qteCarbonCount.textContent =

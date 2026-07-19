@@ -2,7 +2,7 @@
 
 **副標：RBC RACER**
 
-《Project Aorta：大動脈計畫室》是一款桌面瀏覽器第一人稱血液循環賽車遊戲。玩家駕駛程序化紅血球，依序完成四段體循環與肺循環，在血管截面中閃避危害、取得增益，並在體微血管或肺泡微血管完成氣體交換。
+《Project Aorta：大動脈計畫室》是一款支援桌面與手機橫式瀏覽器的第一人稱血液循環賽車遊戲。玩家駕駛程序化紅血球，依序完成四段體循環與肺循環，在血管截面中閃避危害、取得增益，並在體微血管或肺泡微血管完成氣體交換。
 
 - 正式遊戲：<https://kisaraki.github.io/Classroom-rbc-racer-tzk/>
 - 瀏覽器測試：<https://kisaraki.github.io/Classroom-rbc-racer-tzk/tests/unit-test.html>
@@ -16,9 +16,9 @@
 | 副標 | RBC RACER |
 | 發布狀態 | STABLE |
 | Version | 1.1（20260715） |
-| 總案版本 | 3.5 |
-| 技術決策附錄 | 1.6 |
-| 自動測試 | 204 passed、0 failed |
+| 總案版本 | 3.6 |
+| 技術決策附錄 | 1.7 |
+| 自動測試 | 210 passed、0 failed |
 | 靜態稽核 | 9 passed、0 failed |
 | 前一功能基線 | `e22cd963ed5bd12cca877200dd2f2238cff169fc` |
 | STABLE 1.1 實作基線 | `363f4c9124448a013d4d7c12e3f3bf2eddc7444e` |
@@ -36,8 +36,9 @@
 - 正式 Three.js 固定為 r184，入口為 `vendor/three.module.js`，並保留 `three.core.js` 與 MIT 授權。
 - 所有玩法、時間、機率、尺寸、碰撞與效能數值集中在 `js/config.js`。
 - 四關由同一組 `LevelManager`、`VesselTrack`、`EntityManager`、`CollisionSystem` 與 `QTESystem` 資料驅動，不建立關卡專用核心分支。
-- 世界模擬可因暫停、Pointer Lock 解除、QTE 或低血壓停滯而停止，但任務期限、QTE、狀態、冷卻與過場絕對時間繼續運行。
-- 手機與平板必須在載入 Three.js 前拒絕執行。
+- 世界模擬可因暫停、桌面 Pointer Lock 解除、手機轉為直式、QTE 或低血壓停滯而停止，但任務期限、QTE、狀態、冷卻與過場絕對時間繼續運行。
+- 手機與平板必須使用橫式畫面；直式方向閘門不得讓遊戲開始或繼續駕駛。
+- 手機採固定視角與 Pointer Events 觸控操作，不要求 Pointer Lock，也不得以觸控改變視角。
 - 每次維護或空機還原都必須通過 `npm run test:stable`；不得以歷史報告代替實際測試。
 
 ## 四關路線
@@ -60,11 +61,14 @@
 - 任務期限到達且尚未抵達時，播放乾扁紅血球送往肝臟工廠的 Time Out 結局；正好在期限抵達仍算成功。
 - RBC 截面碰撞採十字線至機體下緣的垂直膠囊；增益／減益的完整程序化本體與標示牌均可成立碰撞。
 - 開始按鈕立即顯示 Pointer Lock 等待狀態；拒絕、未支援或靜默逾時會顯示可重試錯誤。
+- 手機啟動時略過 Pointer Lock，嘗試全螢幕與橫向方向鎖定；API 不可用時仍由橫式方向閘門確保操作。
 - 直接以 `file://` 開啟時顯示靜態伺服器指引，不保留看似可用但無效的開始按鈕。
 - 玩家畫面不顯示編號階段、build、FPS、內部 state、checkpoint seed 或其他開發診斷文字。
 - 正式產品識別固定為「Project Aorta：大動脈計畫室／RBC RACER／STABLE／Version：1.1（20260715）」。
 
 ## 操作方式
+
+### 桌面版
 
 | 輸入 | 功能 |
 | --- | --- |
@@ -78,11 +82,24 @@
 
 WASD、滑鼠按鍵、滾輪與觸控板手勢不控制 RBC。
 
+### 手機版
+
+| 輸入 | 功能 |
+| --- | --- |
+| 畫面左下觸控十字 | 在目前血管截面上下左右移動 RBC，可多點形成斜向 |
+| 硬體音量提高／降低鍵 | 嘗試提高／降低 BP 與速度 |
+| 畫面 `BP ＋／−` | 音量鍵未由瀏覽器提供時的必要備援 |
+| 畫面 `O／C` | 氣體交換快速連打 |
+| 畫面 `PAUSE` | 暫停世界模擬 |
+
+手機版固定前方視角，不提供滑動環視。由於 iOS Safari 與多數 Android 瀏覽器會將實體音量鍵保留給作業系統，網頁不一定能收到 `AudioVolumeUp`／`AudioVolumeDown`；遊戲仍會攔接瀏覽器有提供的事件，並永久保留畫面 BP 備援鍵，避免無法控制速度。
+
 ## 執行需求
 
-- 桌面版 Chrome、Edge 或 Firefox。
-- 鍵盤、滑鼠、WebGL、ES Modules 與 Pointer Lock 支援。
-- 最低驗收解析度 1280 × 720；參考解析度 1920 × 1080。
+- 桌面版 Chrome、Edge 或 Firefox：需要鍵盤、滑鼠、WebGL、ES Modules 與 Pointer Lock。
+- Android：以 Chrome 橫式為主要目標；需要 Pointer Events、WebGL 與 ES Modules。
+- iOS／iPadOS：以 Safari 橫式為主要目標；方向鎖定或一般元素全螢幕不可用時會自動降級為橫式方向閘門。
+- 桌面最低驗收解析度 1280 × 720，參考解析度 1920 × 1080；手機只支援橫式可視區域。
 - 遊玩不需 Node.js、npm install、build 或後端服務。
 - 執行命令列測試時需要 Node.js。
 - 本機啟動需要 Python 3 或其他靜態檔案伺服器。
@@ -104,10 +121,13 @@ python -m http.server 8000
 開啟：
 
 - 遊戲：<http://127.0.0.1:8000/>
+- 本機手機模式預覽：<http://127.0.0.1:8000/?input=mobile>
 - 瀏覽器測試：<http://127.0.0.1:8000/tests/unit-test.html>
 - 過場預覽：<http://127.0.0.1:8000/tests/phase-09-cutscene-preview.html>
 
 不得直接雙擊 `index.html`。瀏覽器會阻擋由 `file://` 載入的 ES Modules；`js/entryGuard.js` 只負責顯示此傳輸層錯誤，不包含遊戲邏輯。
+
+`?input=mobile` 只在 `localhost` 與 `127.0.0.1` 生效，供桌面瀏覽器切換視窗尺寸檢查手機 UI；GitHub Pages 與其他主機會忽略此覆寫，不能取代 Android／iOS 實機驗收。
 
 ## 自動驗證
 
@@ -127,11 +147,11 @@ npm run test:audit
 預期結果：
 
 ```text
-Summary: 204 passed, 0 failed, 204 total.
+Summary: 210 passed, 0 failed, 210 total.
 STABLE audit: 9 passed, 0 failed.
 ```
 
-測試涵蓋四關路線、駕駛時間、10／20 次交換機會、一次成功、全部失敗可通過、紅／紅紫狀態、checkpoint、絕對期限、暫停、BP、碰撞、標示牌、累積危害、Time Out、過場、資源釋放、物件池、固定 seed、手機拒絕與啟動錯誤處理。
+測試涵蓋四關路線、駕駛時間、10／20 次交換機會、一次成功、全部失敗可通過、紅／紅紫狀態、checkpoint、絕對期限、暫停、BP、碰撞、標示牌、累積危害、Time Out、過場、資源釋放、物件池、固定 seed、手機裝置描述、橫式閘門、多點觸控、O／C、音量鍵映射與桌面啟動錯誤處理。
 
 稽核會阻擋外部 runtime 媒體、CDN、framework、後端、資料庫、套件依賴、非相對模組路徑、關卡核心分叉、未集中數值、Three.js 雜湊漂移及 Pages 子路徑錯誤。
 
@@ -145,7 +165,7 @@ STABLE audit: 9 passed, 0 failed.
 | `js/world/` | 程序化血管、局部框架、模型與批次資產 |
 | `js/player/` | RBC 本體、駕駛、反光、標示與頭罩 |
 | `js/systems/` | BP、生成、碰撞、QTE、Score 與狀態效果 |
-| `js/input/` | 鍵盤、滑鼠視角與 Pointer Lock |
+| `js/input/` | 鍵盤、手機觸控、音量鍵映射、滑鼠視角與 Pointer Lock |
 | `js/ui/` | HUD、循環圖、儀表與訊息 |
 | `js/cutscenes/` | 轉場與各類結局 |
 | `tests/` | Node／瀏覽器共用測試與靜態稽核 |
@@ -156,8 +176,8 @@ STABLE audit: 9 passed, 0 failed.
 
 | 文件 | 作用 |
 | --- | --- |
-| `classroom-rbc-racer-tzk.md` | 3.5 版完整總案、玩法、架構、驗收與重建契約 |
-| `TECHNICAL_DECISIONS.md` | 1.6 版已決策的時間、路線、碰撞、QTE、BP 與資料所有權 |
+| `classroom-rbc-racer-tzk.md` | 3.6 版完整總案、玩法、架構、驗收與重建契約 |
+| `TECHNICAL_DECISIONS.md` | 1.7 版已決策的時間、路線、碰撞、QTE、BP、手機輸入與資料所有權 |
 | `codex-devp-cmd.md` | RESTORE／MAINTAIN／REBUILD 空機操作手冊 |
 | `CIRCULATION_TERMINOLOGY.md` | 台灣教材術語與內部 ID 對照 |
 | `reports/stable-1.1-release-report.md` | Version 1.1 實作、驗證與發布結果 |
@@ -200,7 +220,7 @@ https://kisaraki.github.io/Classroom-rbc-racer-tzk/tests/unit-test.html
 | 長時間樣本 | 60 秒 |
 | 可量測的 JS heap 成長 | 最多 16 MB |
 
-Phase 10 是最近一次 Chrome、Edge、Firefox、兩種解析度與完整效能量測歷史基線。STABLE 1.1 已通過 Node、靜態稽核與本機 Chromium 煙霧測試；三瀏覽器完整駕駛、Pointer Lock、碰撞手感與 60 秒效能仍應在目標教室設備依手動清單複驗，不得由設定值推論為已執行。
+Phase 10 是最近一次 Chrome、Edge、Firefox、兩種桌面解析度與完整效能量測歷史基線。STABLE 1.1 手機維護版已通過 Node、靜態稽核與模擬視窗煙霧測試；三種桌面瀏覽器完整駕駛、Pointer Lock、Android Chrome、iOS Safari、硬體音量鍵可見性、碰撞手感與 60 秒效能仍應在目標實機依手動清單複驗，不得由設定值推論為已執行。
 
 ## Three.js Vendor
 

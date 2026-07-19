@@ -2,7 +2,10 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    >
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E">
     <meta
       name="description"
@@ -13,6 +16,7 @@
     <link rel="stylesheet" href="./css/hud.css?v=stable-v1.1-20260715-r2">
     <link rel="stylesheet" href="./css/menu.css?v=stable-v1.1-20260715-r2">
     <link rel="stylesheet" href="./css/cutscene.css?v=stable-v1.1-20260715-r2">
+    <link rel="stylesheet" href="./css/mobile.css?v=stable-v1.1-20260715-r2">
   </head>
   <body>
     <main
@@ -197,7 +201,8 @@
 
         <div id="body-reticle" class="reticle reticle--body" aria-hidden="true">
           <i></i>
-          <span>KEY / BODY</span>
+          <span class="desktop-control-copy">KEY / BODY</span>
+          <span class="mobile-control-copy">TOUCH / BODY</span>
         </div>
         <div id="view-reticle" class="reticle reticle--view" aria-hidden="true">
           <i></i>
@@ -268,6 +273,88 @@
       </section>
 
       <section
+        id="mobile-controls"
+        class="mobile-controls"
+        aria-label="手機觸控操作"
+        hidden
+      >
+        <div class="mobile-drive-pad" aria-label="紅血球機身方向控制">
+          <span>BODY</span>
+          <button
+            class="mobile-control mobile-control--up"
+            type="button"
+            data-mobile-hold-code="ArrowUp"
+            data-pressed="false"
+            aria-label="機身向上"
+          >↑</button>
+          <button
+            class="mobile-control mobile-control--left"
+            type="button"
+            data-mobile-hold-code="ArrowLeft"
+            data-pressed="false"
+            aria-label="機身向左"
+          >←</button>
+          <button
+            class="mobile-control mobile-control--right"
+            type="button"
+            data-mobile-hold-code="ArrowRight"
+            data-pressed="false"
+            aria-label="機身向右"
+          >→</button>
+          <button
+            class="mobile-control mobile-control--down"
+            type="button"
+            data-mobile-hold-code="ArrowDown"
+            data-pressed="false"
+            aria-label="機身向下"
+          >↓</button>
+        </div>
+
+        <div class="mobile-pressure-pad" aria-label="血壓速度控制">
+          <span>VOL / BP</span>
+          <button
+            class="mobile-control"
+            type="button"
+            data-mobile-hold-code="KeyX"
+            data-pressed="false"
+            aria-label="降低血壓與速度"
+          ><b>−</b><small>BP</small></button>
+          <button
+            class="mobile-control"
+            type="button"
+            data-mobile-hold-code="KeyZ"
+            data-pressed="false"
+            aria-label="提高血壓與速度"
+          ><b>＋</b><small>BP</small></button>
+        </div>
+
+        <div class="mobile-qte-pad" aria-label="氣體交換控制">
+          <span>GAS EXCHANGE</span>
+          <button
+            class="mobile-control mobile-control--oxygen"
+            type="button"
+            data-mobile-qte-code="KeyO"
+            data-pressed="false"
+            aria-label="輸入氧氣 O"
+          ><b>O</b><small>氧氣</small></button>
+          <button
+            class="mobile-control mobile-control--carbon"
+            type="button"
+            data-mobile-qte-code="KeyC"
+            data-pressed="false"
+            aria-label="輸入二氧化碳 C"
+          ><b>C</b><small>二氧化碳</small></button>
+        </div>
+
+        <button
+          id="mobile-pause-control"
+          class="mobile-pause-control"
+          type="button"
+          aria-label="暫停遊戲"
+        ><b>Ⅱ</b><span>PAUSE</span></button>
+      </section>
+
+      <section
         id="cutscene-layer"
         class="cutscene-layer"
         aria-live="polite"
@@ -296,9 +383,12 @@
             四關將依序完成體循環與肺循環；請在時限內抵達，並完成組織或肺部的氣體交換。
           </p>
           <div class="overlay-controls" aria-label="核心操作">
-            <span><b>↑↓←→ / 十字</b> BODY</span>
-            <span><b>Z / X</b> PRESSURE</span>
-            <span><b>MOUSE / 圓形</b> VIEW</span>
+            <span class="desktop-control-copy"><b>↑↓←→ / 十字</b> BODY</span>
+            <span class="desktop-control-copy"><b>Z / X</b> PRESSURE</span>
+            <span class="desktop-control-copy"><b>MOUSE / 圓形</b> VIEW</span>
+            <span class="mobile-control-copy"><b>TOUCH 十字</b> BODY</span>
+            <span class="mobile-control-copy"><b>音量鍵／BP ±</b> PRESSURE</span>
+            <span class="mobile-control-copy"><b>TOUCH O / C</b> QTE</span>
           </div>
           <div id="overlay-actions" class="overlay-actions">
             <button id="overlay-action" type="button">
@@ -322,9 +412,29 @@
             </button>
           </div>
           <p class="overlay-note">
-            點擊開始後滑鼠會控制視線；按 ESC 可解除滑鼠控制並暫停。
+            <span class="desktop-control-copy">
+              點擊開始後滑鼠會控制視線；按 ESC 可解除滑鼠控制並暫停。
+            </span>
+            <span class="mobile-control-copy">
+              手機版固定駕駛視角；請保持橫向，使用觸控鍵操作機身與氣體交換。
+            </span>
           </p>
         </div>
+      </section>
+
+      <section
+        id="mobile-orientation-guard"
+        class="mobile-orientation-guard"
+        role="alert"
+        aria-live="assertive"
+        hidden
+      >
+        <div class="orientation-device" aria-hidden="true">
+          <i></i>
+        </div>
+        <p>LANDSCAPE REQUIRED</p>
+        <h2>請將手機轉為橫式</h2>
+        <span>遊戲只在橫向螢幕啟用；旋轉後即可繼續。</span>
       </section>
 
       <noscript class="noscript-message">
